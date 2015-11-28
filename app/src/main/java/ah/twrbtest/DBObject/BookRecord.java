@@ -1,5 +1,7 @@
 package ah.twrbtest.DBObject;
 
+import java.util.Date;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -7,7 +9,7 @@ public class BookRecord extends RealmObject {
     @PrimaryKey
     private long id;
     private String personId;
-    private String getinDate;
+    private Date getInDate;
     private String fromStation;
     private String toStation;
     private String orderQtuStr;
@@ -42,12 +44,12 @@ public class BookRecord extends RealmObject {
         this.personId = personId;
     }
 
-    public String getGetinDate() {
-        return getinDate;
+    public Date getGetInDate() {
+        return getInDate;
     }
 
-    public void setGetinDate(String getinDate) {
-        this.getinDate = getinDate;
+    public void setGetInDate(Date getInDate) {
+        this.getInDate = getInDate;
     }
 
     public String getFromStation() {

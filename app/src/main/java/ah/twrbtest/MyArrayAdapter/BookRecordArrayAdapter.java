@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Helper.AsyncBookHelper;
@@ -62,7 +63,7 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
     @Override
     protected void setView(MyArrayAdapter.ViewHolder viewHolder, final BookRecord bookRecord) {
         update(viewHolder, bookRecord);
-        ((ViewHolder) viewHolder).textView_date.setText(bookRecord.getGetinDate());
+        ((ViewHolder) viewHolder).textView_date.setText(AdaptHelper.dateToString(bookRecord.getGetInDate()));
         ((ViewHolder) viewHolder).textView_no.setText(bookRecord.getTrainNo());
         ((ViewHolder) viewHolder).textView_from.setText(BookableStation.getNameByNo(bookRecord.getFromStation()));
         ((ViewHolder) viewHolder).textView_to.setText(BookableStation.getNameByNo(bookRecord.getToStation()));

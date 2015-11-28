@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">哎呀呀專用</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="file_bookablestation">station_data/booking_station</string>
+    <string name="default_pronounce_sample_path">ps/[num].ayaya</string>
+</resources>

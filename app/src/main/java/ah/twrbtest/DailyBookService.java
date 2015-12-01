@@ -5,6 +5,7 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.SystemClock;
 
 import java.util.Calendar;
 import java.util.Hashtable;
@@ -20,7 +21,7 @@ import io.realm.RealmResults;
 /**
  * Created by Wei on 2015/11/27.
  * 在 Application.onCreate 中呼叫此 service，並在此 service.onDestroy 中註冊下次自動執行
- * <p/>
+ *
  * 有可能會發生多個 service 同時運行的狀況
  */
 public class DailyBookService extends IntentService {
@@ -46,6 +47,16 @@ public class DailyBookService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         System.out.println("Daily book service start.");
+        book();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        registerService();
+    }
+
+    private void book() {
         final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -64,27 +75,24 @@ public class DailyBookService extends IntentService {
                     timer.cancel();
                 }
             }
-        }, 3000);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        registerService();
+        }, 0, 3000);
     }
 
     private void registerService() {
-        java.util.Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, BEGIN_H);
-        calendar.set(Calendar.MINUTE, BEGIN_M);
-        calendar.set(Calendar.SECOND, 0);
-        if (calendar.getTime().getHours() >= BEGIN_H)
-            calendar.add(Calendar.DATE, 1);
-
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(DailyBookService.this, DailyBookService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, getNextTimeMillis(), pendingIntent);
+    }
+
+    private long getNextTimeMillis() {
+        Calendar c = Calendar.getInstance();
+        if (c.getTime().getHours() >= BEGIN_H)
+            c.add(Calendar.DATE, 1);
+        c.set(Calendar.HOUR_OF_DAY, BEGIN_H);
+        c.set(Calendar.MINUTE, BEGIN_M);
+        c.set(Calendar.SECOND, 0);
+        return c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis() + SystemClock.elapsedRealtime();
     }
 
     private class AutoBooker {

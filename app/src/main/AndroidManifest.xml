@@ -20,7 +20,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".DailyBookService" />
+
+        <service android:name=".AutoBook.DailyBookService" />
+        <service android:name=".AutoBook.FrequentlyBookService" />
     </application>
 
 </manifest>

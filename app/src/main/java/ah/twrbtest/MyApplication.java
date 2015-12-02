@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ah.twrbtest.AutoBook.DailyBookService;
+import ah.twrbtest.AutoBook.FrequentlyBookService;
 import ah.twrbtest.DBObject.BookableStation;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -51,6 +53,7 @@ public class MyApplication extends Application {
         setupPronounceSamples();
 
         startService(new Intent(MyApplication.this, DailyBookService.class));
+        startService(new Intent(MyApplication.this, FrequentlyBookService.class));
     }
 
     private List<String> readAllLines(InputStream inputStream) throws IOException {

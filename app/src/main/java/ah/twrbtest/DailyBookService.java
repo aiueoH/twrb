@@ -9,8 +9,6 @@ import android.os.SystemClock;
 
 import java.util.Calendar;
 import java.util.Hashtable;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Helper.AsyncBookHelper;
@@ -46,36 +44,38 @@ public class DailyBookService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        System.out.println("Daily book service start.");
-        book();
+        System.out.println("DailyBookService onHandleIntent.");
+        bookUntilEndTime();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        System.out.println("DailyBookService onDestroy.");
         registerService();
     }
 
-    private void book() {
-        final Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (checkTime()) {
-                    RealmResults<BookRecord> results = Realm.getDefaultInstance()
-                            .where(BookRecord.class)
-                            .equalTo("code", "")
-                            .equalTo("isCancelled", false)
-                            .findAll();
-                    for (BookRecord bookRecord : results)
-                        if (!bookers.containsKey(bookRecord.getId()))
-                            bookers.put(bookRecord.getId(), new AutoBooker(bookRecord));
-                } else {
-                    System.out.println("Not in specific time, daily book service stopped.");
-                    timer.cancel();
-                }
+    private void bookUntilEndTime() {
+        while (checkTime()) {
+            book();
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        }, 0, 3000);
+        }
+        System.out.println("Not in specific time, will stop DailyBookService.");
+    }
+
+    private void book() {
+        RealmResults<BookRecord> results = Realm.getDefaultInstance()
+                .where(BookRecord.class)
+                .equalTo("code", "")
+                .equalTo("isCancelled", false)
+                .findAll();
+        for (BookRecord bookRecord : results)
+            if (!bookers.containsKey(bookRecord.getId()))
+                bookers.put(bookRecord.getId(), new AutoBooker(bookRecord));
     }
 
     private void registerService() {

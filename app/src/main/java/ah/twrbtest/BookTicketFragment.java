@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.twrb.core.booking.BookingInfo;
 import com.twrb.core.helpers.IDCreator;
@@ -42,6 +43,7 @@ public class BookTicketFragment extends Fragment {
     Spinner to_spinner;
     Spinner qtu_spinner;
     Button submit_button;
+    Button save_button;
 
     private BookableStationArrayAdapter bookableStationArrayAdapter;
     private DateArrayAdapter dateArrayAdapter;
@@ -84,6 +86,7 @@ public class BookTicketFragment extends Fragment {
         this.to_spinner = ButterKnife.findById(view, R.id.spinner_to);
         this.qtu_spinner = ButterKnife.findById(view, R.id.spinner_qtu);
         this.submit_button = ButterKnife.findById(view, R.id.button_submit);
+        this.save_button = ButterKnife.findById(view, R.id.button_save);
 
         this.from_spinner.setAdapter(this.bookableStationArrayAdapter);
         this.to_spinner.setAdapter(this.bookableStationArrayAdapter);
@@ -92,10 +95,16 @@ public class BookTicketFragment extends Fragment {
 
         this.id_editText.setText(IDCreator.create());
 
-        submit_button.setOnClickListener(new View.OnClickListener() {
+        this.submit_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 book();
+            }
+        });
+        this.save_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                save();
             }
         });
 
@@ -134,37 +143,46 @@ public class BookTicketFragment extends Fragment {
         this.bookableStationArrayAdapter = new BookableStationArrayAdapter(getActivity(), R.layout.item_bookablestation, bss);
     }
 
-    public void book() {
-        System.out.println("submit book");
-
+    private BookingInfo getBookingInfo() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        final BookingInfo info = new BookingInfo();
+        BookingInfo info = new BookingInfo();
         info.PERSON_ID = this.id_editText.getText().toString();
         info.TRAIN_NO = this.no_editText.getText().toString();
         info.GETIN_DATE = dateFormat.format((Date) this.date_spinner.getSelectedItem());
         info.FROM_STATION = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_from)).getSelectedItem()).getNo();
         info.TO_STATION = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_to)).getSelectedItem()).getNo();
         info.ORDER_QTU_STR = "" + (((Spinner) getView().findViewById(R.id.spinner_qtu)).getSelectedItemPosition() + 1);
-        System.out.println(info.PERSON_ID);
-        System.out.println(info.TRAIN_NO);
-        System.out.println(info.GETIN_DATE);
-        System.out.println(info.FROM_STATION);
-        System.out.println(info.TO_STATION);
-        System.out.println(info.ORDER_QTU_STR);
+        return info;
+    }
 
+    public void book() {
         this.mProgressDialog = ProgressDialog.show(getActivity(), "", "訂票中");
+        final BookingInfo info = getBookingInfo();
+        BookRecord bookRecord = saveToDB(info);
+        new AsyncBookHelper(bookRecord).execute((long) 0);
+        bookingId = bookRecord.getId();
+    }
+
+    public void save() {
+        BookingInfo info = getBookingInfo();
+        saveToDB(info);
+        Toast.makeText(getActivity(), "已加入待訂清單", Toast.LENGTH_SHORT);
+    }
+
+    public BookRecord saveToDB(BookingInfo info) {
         Realm.getDefaultInstance().beginTransaction();
         BookRecord bookRecord = Realm.getDefaultInstance().createObject(BookRecord.class);
         bookRecord.setId(System.currentTimeMillis());
         AdaptHelper.to(info, bookRecord);
         Realm.getDefaultInstance().commitTransaction();
-        new AsyncBookHelper(bookRecord).execute((long) 0);
-        bookingId = bookRecord.getId();
+        return bookRecord;
     }
 
     public void onEvent(OnBookedEvent e) {
         if (e.getBookRecordId() == this.bookingId) {
             this.mProgressDialog.dismiss();
+            String result = e.isSuccess() ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+            Toast.makeText(getActivity(), result, Toast.LENGTH_LONG);
         }
     }
 }

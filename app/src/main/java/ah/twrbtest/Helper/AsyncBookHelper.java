@@ -35,11 +35,13 @@ public class AsyncBookHelper extends AsyncTask<Long, Integer, Boolean> {
     protected void onPostExecute(Boolean result) {
         super.onPostExecute(result);
         BookRecord bookRecord = Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", this.bookRecordId).findFirst();
-        if (bookRecord != null) {
-            Realm.getDefaultInstance().beginTransaction();
-            AdaptHelper.to(this.bookingInfo, bookRecord);
-            Realm.getDefaultInstance().commitTransaction();
+        if (bookRecord == null) {
+            bookRecord = Realm.getDefaultInstance().createObject(BookRecord.class);
+            bookRecord.setId(this.bookRecordId);
         }
+        Realm.getDefaultInstance().beginTransaction();
+        AdaptHelper.to(this.bookingInfo, bookRecord);
+        Realm.getDefaultInstance().commitTransaction();
         System.out.println(result ? "訂位代碼:" + this.bookingInfo.CODE : "失敗");
         EventBus.getDefault().post(new OnBookedEvent(this.bookRecordId, result));
     }

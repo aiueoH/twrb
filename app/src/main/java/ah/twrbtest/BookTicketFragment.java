@@ -1,6 +1,7 @@
 package ah.twrbtest;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.MyArrayAdapter.BookableStationArrayAdapter;
 import ah.twrbtest.MyArrayAdapter.DateArrayAdapter;
 import butterknife.ButterKnife;
+import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -44,6 +46,8 @@ public class BookTicketFragment extends Fragment {
     private BookableStationArrayAdapter bookableStationArrayAdapter;
     private DateArrayAdapter dateArrayAdapter;
     private SimpleAdapter qtuAdapter;
+    private ProgressDialog mProgressDialog;
+    private long bookingId = 0;
 
     public static BookTicketFragment newInstance() {
         return new BookTicketFragment();
@@ -55,6 +59,18 @@ public class BookTicketFragment extends Fragment {
         buildBookableStationArrayAdapter();
         buildDateArrayAdapter();
         buildQtuAdapter();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -136,12 +152,19 @@ public class BookTicketFragment extends Fragment {
         System.out.println(info.TO_STATION);
         System.out.println(info.ORDER_QTU_STR);
 
-
+        this.mProgressDialog = ProgressDialog.show(getActivity(), "", "訂票中");
         Realm.getDefaultInstance().beginTransaction();
         BookRecord bookRecord = Realm.getDefaultInstance().createObject(BookRecord.class);
         bookRecord.setId(System.currentTimeMillis());
         AdaptHelper.to(info, bookRecord);
         Realm.getDefaultInstance().commitTransaction();
-        new AsyncBookHelper(bookRecord).execute(bookRecord.getId());
+        new AsyncBookHelper(bookRecord).execute((long) 0);
+        bookingId = bookRecord.getId();
+    }
+
+    public void onEvent(OnBookedEvent e) {
+        if (e.getBookRecordId() == this.bookingId) {
+            this.mProgressDialog.dismiss();
+        }
     }
 }

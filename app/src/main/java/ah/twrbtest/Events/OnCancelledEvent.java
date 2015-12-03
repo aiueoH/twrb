@@ -1,4 +1,4 @@
-package ah.twrbtest;
+package ah.twrbtest.Events;
 
 public class OnCancelledEvent {
     private boolean isSuccess;

@@ -7,7 +7,7 @@ import com.twrb.core.helpers.BookingHelper;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
-import ah.twrbtest.OnBookedEvent;
+import ah.twrbtest.Events.OnBookedEvent;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 

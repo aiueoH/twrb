@@ -26,6 +26,8 @@ import java.util.Map;
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
+import ah.twrbtest.Events.OnBookRecordAddedEvent;
+import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.MyArrayAdapter.BookableStationArrayAdapter;
 import ah.twrbtest.MyArrayAdapter.DateArrayAdapter;
@@ -168,6 +170,7 @@ public class BookTicketFragment extends Fragment {
     public void save() {
         BookingInfo info = getBookingInfo();
         saveToDB(info);
+        EventBus.getDefault().post(new OnBookRecordAddedEvent());
         Toast.makeText(getActivity(), "已加入待訂清單", Toast.LENGTH_SHORT).show();
     }
 
@@ -182,8 +185,9 @@ public class BookTicketFragment extends Fragment {
 
     public void onEvent(OnBookedEvent e) {
         if (e.getBookRecordId() == this.bookingId) {
-            this.mProgressDialog.dismiss();
+            EventBus.getDefault().post(new OnBookRecordAddedEvent());
             String result = e.isSuccess() ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+            this.mProgressDialog.dismiss();
             Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();
         }
     }

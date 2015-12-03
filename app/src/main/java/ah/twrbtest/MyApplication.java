@@ -17,6 +17,7 @@ import java.util.List;
 import ah.twrbtest.AutoBook.DailyBookService;
 import ah.twrbtest.AutoBook.FrequentlyBookService;
 import ah.twrbtest.DBObject.BookableStation;
+import ah.twrbtest.Events.OnBookRecordAddedEvent;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
@@ -53,6 +54,10 @@ public class MyApplication extends Application {
         setupPronounceSamples();
 
         startService(new Intent(MyApplication.this, DailyBookService.class));
+        startService(new Intent(MyApplication.this, FrequentlyBookService.class));
+    }
+
+    public void onEvent(OnBookRecordAddedEvent e) {
         startService(new Intent(MyApplication.this, FrequentlyBookService.class));
     }
 

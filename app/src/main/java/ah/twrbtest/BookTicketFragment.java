@@ -66,12 +66,14 @@ public class BookTicketFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        System.out.println("BookTicketFragment onResume");
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        System.out.println("BookTicketFragment onPause");
         EventBus.getDefault().unregister(this);
     }
 
@@ -166,7 +168,7 @@ public class BookTicketFragment extends Fragment {
     public void save() {
         BookingInfo info = getBookingInfo();
         saveToDB(info);
-        Toast.makeText(getActivity(), "已加入待訂清單", Toast.LENGTH_SHORT);
+        Toast.makeText(getActivity(), "已加入待訂清單", Toast.LENGTH_SHORT).show();
     }
 
     public BookRecord saveToDB(BookingInfo info) {
@@ -182,7 +184,7 @@ public class BookTicketFragment extends Fragment {
         if (e.getBookRecordId() == this.bookingId) {
             this.mProgressDialog.dismiss();
             String result = e.isSuccess() ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-            Toast.makeText(getActivity(), result, Toast.LENGTH_LONG);
+            Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();
         }
     }
 }

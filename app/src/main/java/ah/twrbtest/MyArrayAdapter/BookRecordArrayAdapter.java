@@ -14,10 +14,7 @@ import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.Helper.AsyncCancelHelper;
-import ah.twrbtest.OnBookedEvent;
-import ah.twrbtest.OnCancelledEvent;
 import ah.twrbtest.R;
-import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
 public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
@@ -25,17 +22,6 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
 
     public BookRecordArrayAdapter(Context context, int resource, List<BookRecord> bookRecords) {
         super(context, resource, bookRecords);
-        EventBus.getDefault().register(this);
-    }
-
-    public void onEvent(OnCancelledEvent e) {
-        notifyDataSetChanged();
-        System.out.println("Book record array adapter receive OnCancelledEvent");
-    }
-
-    public void onEvent(OnBookedEvent e) {
-        notifyDataSetChanged();
-        System.out.println("Book record array adapter receive OnBookedEvent");
     }
 
     @Override

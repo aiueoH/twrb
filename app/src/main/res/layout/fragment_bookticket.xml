@@ -189,13 +189,18 @@
                     android:id="@+id/button_submit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="吉胃拂拭訂，一訂搞定！" />
+                    android:background="@drawable/book_ticket_button"
+                    android:text="吉胃拂拭訂，一訂搞定！"
+                    android:textColor="#FFFFFF" />
 
                 <Button
                     android:id="@+id/button_save"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="加入待訂清單" />
+                    android:layout_marginLeft="15dp"
+                    android:background="@drawable/book_ticket_button"
+                    android:text="加入待訂清單"
+                    android:textColor="#FFFFFF" />
 
             </LinearLayout>
         </LinearLayout>

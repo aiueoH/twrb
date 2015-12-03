@@ -32,7 +32,8 @@ public class FrequentlyBookService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         System.out.println(this.getClass().getName() + " onHandleIntent.");
-        book();
+        if (!DailyBookService.checkTime())
+            book();
     }
 
     @Override

@@ -18,6 +18,7 @@ import ah.twrbtest.AutoBook.DailyBookService;
 import ah.twrbtest.AutoBook.FrequentlyBookService;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
+import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
@@ -55,6 +56,8 @@ public class MyApplication extends Application {
 
         startService(new Intent(MyApplication.this, DailyBookService.class));
         startService(new Intent(MyApplication.this, FrequentlyBookService.class));
+
+        EventBus.getDefault().register(this);
     }
 
     public void onEvent(OnBookRecordAddedEvent e) {

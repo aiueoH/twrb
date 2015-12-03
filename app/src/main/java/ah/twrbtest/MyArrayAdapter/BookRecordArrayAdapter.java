@@ -24,6 +24,7 @@ import io.realm.Realm;
 
 public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
     MyArrayAdapter.ViewHolder viewHolder;
+    private long bookRecordId = 0;
     private ProgressDialog mProgressDialog;
 
     public BookRecordArrayAdapter(Context context, int resource, List<BookRecord> bookRecords) {
@@ -86,15 +87,19 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
     public void onEvent(OnCancelledEvent e) {
         notifyDataSetChanged();
         System.out.println("BookRecordFragment received OnCancelledEvent");
-        this.mProgressDialog.dismiss();
-        Toast.makeText(getContext(), e.isSuccess() ? "取消成功！" : "取消失敗，不介意的話再試一次看看吧！", Toast.LENGTH_SHORT).show();
+        if (e.getBookRecordId() == this.bookRecordId) {
+            this.mProgressDialog.dismiss();
+            Toast.makeText(getContext(), e.isSuccess() ? "取消成功！" : "取消失敗，不介意的話再試一次看看吧！", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void onEvent(OnBookedEvent e) {
         notifyDataSetChanged();
         System.out.println("BookRecordFragment received OnBookedEvent");
-        this.mProgressDialog.dismiss();
-        Toast.makeText(getContext(), e.isSuccess() ? "訂票成功！" : "訂票失敗，孫中山也是革命十次才成功", Toast.LENGTH_SHORT).show();
+        if (e.getBookRecordId() == this.bookRecordId) {
+            this.mProgressDialog.dismiss();
+            Toast.makeText(getContext(), e.isSuccess() ? "訂票成功！" : "訂票失敗，孫中山也是革命十次才成功", Toast.LENGTH_SHORT).show();
+        }
     }
 
     static class ViewHolder extends MyArrayAdapter.ViewHolder {
@@ -148,7 +153,8 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
         public void onClick(View v) {
             if (bookRecord.getCode().equals("")) {
                 BookRecordArrayAdapter.this.mProgressDialog = ProgressDialog.show(getContext(), "", "訂票中");
-                new AsyncBookHelper(this.bookRecord).execute(bookRecord.getId());
+                BookRecordArrayAdapter.this.bookRecordId = this.bookRecord.getId();
+                new AsyncBookHelper(this.bookRecord).execute((long) 0);
             }
         }
     }
@@ -162,7 +168,8 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
         public void onClick(View v) {
             if (!bookRecord.getCode().equals("")) {
                 BookRecordArrayAdapter.this.mProgressDialog = ProgressDialog.show(getContext(), "", "取消中");
-                new AsyncCancelHelper(this.bookRecord).execute(bookRecord.getId());
+                BookRecordArrayAdapter.this.bookRecordId = this.bookRecord.getId();
+                new AsyncCancelHelper(this.bookRecord).execute((long) 0);
             }
         }
     }

@@ -1,7 +1,5 @@
 package ah.twrbtest.Helper;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 
 import com.twrb.core.booking.BookingInfo;
@@ -14,22 +12,18 @@ import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
 public class AsyncCancelHelper extends AsyncTask<Long, Integer, Boolean> {
-    private ProgressDialog progressDialog;
-    private Context context;
-    private BookRecord bookRecord;
+    private long bookRecordId;
     private BookingInfo bookingInfo;
 
-    public AsyncCancelHelper(Context context, BookRecord bookRecord) {
-        this.context = context;
-        this.bookRecord = bookRecord;
+    public AsyncCancelHelper(BookRecord bookRecord) {
+        this.bookRecordId = bookRecord.getId();
         this.bookingInfo = new BookingInfo();
-        AdaptHelper.to(this.bookRecord, this.bookingInfo);
+        AdaptHelper.to(bookRecord, this.bookingInfo);
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        this.progressDialog = ProgressDialog.show(this.context, "", "叮叮叮叮叮叮叮叮叮");
     }
 
     @Override
@@ -40,13 +34,18 @@ public class AsyncCancelHelper extends AsyncTask<Long, Integer, Boolean> {
     @Override
     protected void onPostExecute(Boolean resut) {
         super.onPostExecute(resut);
-        Realm.getDefaultInstance().beginTransaction();
-        this.bookRecord.setIsCancelled(true);
-        Realm.getDefaultInstance().commitTransaction();
         if (resut)
             this.bookingInfo.CODE = "";
-        this.progressDialog.dismiss();
+        BookRecord bookRecord = Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", this.bookRecordId).findFirst();
+        if (bookRecord == null) {
+            bookRecord = Realm.getDefaultInstance().createObject(BookRecord.class);
+            bookRecord.setId(this.bookRecordId);
+        }
+        Realm.getDefaultInstance().beginTransaction();
+        AdaptHelper.to(this.bookingInfo, bookRecord);
+        bookRecord.setIsCancelled(true);
+        Realm.getDefaultInstance().commitTransaction();
         System.out.println(resut ? "已退訂" + this.bookingInfo.CODE : "退訂失敗");
-        EventBus.getDefault().post(new OnCancelledEvent());
+        EventBus.getDefault().post(new OnCancelledEvent(resut));
     }
 }

@@ -1,11 +1,13 @@
 package ah.twrbtest.MyArrayAdapter;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -14,11 +16,15 @@ import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.Helper.AsyncCancelHelper;
+import ah.twrbtest.OnBookedEvent;
+import ah.twrbtest.OnCancelledEvent;
 import ah.twrbtest.R;
+import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
 public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
     MyArrayAdapter.ViewHolder viewHolder;
+    private ProgressDialog mProgressDialog;
 
     public BookRecordArrayAdapter(Context context, int resource, List<BookRecord> bookRecords) {
         super(context, resource, bookRecords);
@@ -67,6 +73,28 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
         ((ViewHolder) viewHolder).button_cancel.setVisibility(bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
         ((ViewHolder) viewHolder).textView_isCancelled.setVisibility(bookRecord.isCancelled() ? View.VISIBLE : View.GONE);
 
+    }
+
+    public void registerEventBus() {
+        EventBus.getDefault().register(this);
+    }
+
+    public void unregisterEventBus() {
+        EventBus.getDefault().unregister(this);
+    }
+
+    public void onEvent(OnCancelledEvent e) {
+        notifyDataSetChanged();
+        System.out.println("BookRecordFragment received OnCancelledEvent");
+        this.mProgressDialog.dismiss();
+        Toast.makeText(getContext(), e.isSuccess() ? "取消成功！" : "取消失敗，不介意的話再試一次看看吧！", Toast.LENGTH_SHORT).show();
+    }
+
+    public void onEvent(OnBookedEvent e) {
+        notifyDataSetChanged();
+        System.out.println("BookRecordFragment received OnBookedEvent");
+        this.mProgressDialog.dismiss();
+        Toast.makeText(getContext(), e.isSuccess() ? "訂票成功！" : "訂票失敗，孫中山也是革命十次才成功", Toast.LENGTH_SHORT).show();
     }
 
     static class ViewHolder extends MyArrayAdapter.ViewHolder {
@@ -118,8 +146,10 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
 
         @Override
         public void onClick(View v) {
-            if (bookRecord.getCode().equals(""))
+            if (bookRecord.getCode().equals("")) {
+                BookRecordArrayAdapter.this.mProgressDialog = ProgressDialog.show(getContext(), "", "訂票中");
                 new AsyncBookHelper(this.bookRecord).execute(bookRecord.getId());
+            }
         }
     }
 
@@ -130,8 +160,10 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
 
         @Override
         public void onClick(View v) {
-            if (!bookRecord.getCode().equals(""))
-                new AsyncCancelHelper(getContext(), this.bookRecord).execute(bookRecord.getId());
+            if (!bookRecord.getCode().equals("")) {
+                BookRecordArrayAdapter.this.mProgressDialog = ProgressDialog.show(getContext(), "", "取消中");
+                new AsyncCancelHelper(this.bookRecord).execute(bookRecord.getId());
+            }
         }
     }
 }

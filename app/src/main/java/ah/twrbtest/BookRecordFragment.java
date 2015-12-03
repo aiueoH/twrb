@@ -13,7 +13,6 @@ import java.util.List;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.MyArrayAdapter.BookRecordArrayAdapter;
 import butterknife.ButterKnife;
-import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -43,14 +42,14 @@ public class BookRecordFragment extends Fragment {
         super.onResume();
         System.out.println("BookRecordFragment onResume");
         this.bookRecordArrayAdapter.notifyDataSetChanged();
-        EventBus.getDefault().register(this);
+        this.bookRecordArrayAdapter.registerEventBus();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         System.out.println("BookRecordFragment onPause");
-        EventBus.getDefault().unregister(this);
+        this.bookRecordArrayAdapter.unregisterEventBus();
     }
 
     @Override
@@ -59,16 +58,5 @@ public class BookRecordFragment extends Fragment {
         this.listView = ButterKnife.findById(view, R.id.listView);
         this.listView.setAdapter(this.bookRecordArrayAdapter);
         return view;
-    }
-
-
-    public void onEvent(OnCancelledEvent e) {
-        this.bookRecordArrayAdapter.notifyDataSetChanged();
-        System.out.println("BookRecordFragment received OnCancelledEvent");
-    }
-
-    public void onEvent(OnBookedEvent e) {
-        this.bookRecordArrayAdapter.notifyDataSetChanged();
-        System.out.println("BookRecordFragment received OnBookedEvent");
     }
 }

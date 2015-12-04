@@ -86,7 +86,7 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
 
     public void onEvent(OnCancelledEvent e) {
         notifyDataSetChanged();
-        System.out.println("BookRecordFragment received OnCancelledEvent");
+        System.out.println("BookRecordArrayAdapter received OnCancelledEvent");
         if (e.getBookRecordId() == this.bookRecordId) {
             this.mProgressDialog.dismiss();
             Toast.makeText(getContext(), e.isSuccess() ? "取消成功！" : "取消失敗，不介意的話再試一次看看吧！", Toast.LENGTH_SHORT).show();
@@ -95,7 +95,7 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
 
     public void onEvent(OnBookedEvent e) {
         notifyDataSetChanged();
-        System.out.println("BookRecordFragment received OnBookedEvent");
+        System.out.println("BookRecordArrayAdapter received OnBookedEvent");
         if (e.getBookRecordId() == this.bookRecordId) {
             this.mProgressDialog.dismiss();
             Toast.makeText(getContext(), e.isSuccess() ? "訂票成功！" : "訂票失敗，孫中山也是革命十次才成功", Toast.LENGTH_SHORT).show();

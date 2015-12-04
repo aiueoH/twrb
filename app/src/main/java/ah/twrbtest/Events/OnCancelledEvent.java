@@ -4,7 +4,8 @@ public class OnCancelledEvent {
     private boolean isSuccess;
     private long bookRecordId;
 
-    public OnCancelledEvent(boolean isSuccess) {
+    public OnCancelledEvent(long bookRecordId, boolean isSuccess) {
+        this.bookRecordId = bookRecordId;
         this.isSuccess = isSuccess;
     }
 

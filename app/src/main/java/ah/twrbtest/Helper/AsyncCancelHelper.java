@@ -46,6 +46,6 @@ public class AsyncCancelHelper extends AsyncTask<Long, Integer, Boolean> {
         bookRecord.setIsCancelled(true);
         Realm.getDefaultInstance().commitTransaction();
         System.out.println(resut ? "已退訂" + this.bookingInfo.CODE : "退訂失敗");
-        EventBus.getDefault().post(new OnCancelledEvent(resut));
+        EventBus.getDefault().post(new OnCancelledEvent(this.bookRecordId, resut));
     }
 }

@@ -40,9 +40,20 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        setupRealm();
+        setupBookableStationIfNotExist();
+        setupPronounceSamples();
+        EventBus.getDefault().register(this);
+        registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
+        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTime());
+    }
+
+    private void setupRealm() {
         RealmConfiguration config = new RealmConfiguration.Builder(this).build();
         Realm.setDefaultConfiguration(config);
+    }
 
+    private void setupBookableStationIfNotExist() {
         Realm realm = Realm.getDefaultInstance();
         RealmResults<BookableStation> results = realm.where(BookableStation.class).findAll();
         if (results.isEmpty()) {
@@ -65,12 +76,6 @@ public class MyApplication extends Application {
         } else {
             System.out.println("Bookable stations already existing, " + results.size() + " stations.");
         }
-        setupPronounceSamples();
-
-        EventBus.getDefault().register(this);
-
-        registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
-        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTime());
     }
 
     public void onEvent(OnBookRecordAddedEvent e) {

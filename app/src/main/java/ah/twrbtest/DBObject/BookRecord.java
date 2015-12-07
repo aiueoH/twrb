@@ -20,6 +20,14 @@ public class BookRecord extends RealmObject {
 
     private boolean isCancelled = false;
 
+    public BookRecord() {
+        this.id = generateId();
+    }
+
+    public static long generateId() {
+        return System.currentTimeMillis() + new Object().hashCode();
+    }
+
     public boolean isCancelled() {
         return isCancelled;
     }

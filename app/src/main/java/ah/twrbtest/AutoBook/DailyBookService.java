@@ -91,14 +91,18 @@ public class DailyBookService extends IntentService {
     }
 
     private void book() {
-        RealmResults<BookRecord> results = Realm.getDefaultInstance()
+        RealmResults<BookRecord> results = getAllBookableRecords();
+        for (BookRecord bookRecord : results)
+            if (!bookers.containsKey(bookRecord.getId()))
+                bookers.put(bookRecord.getId(), new AutoBooker(bookRecord));
+    }
+
+    private RealmResults<BookRecord> getAllBookableRecords() {
+        return Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
                 .equalTo("isCancelled", false)
                 .findAll();
-        for (BookRecord bookRecord : results)
-            if (!bookers.containsKey(bookRecord.getId()))
-                bookers.put(bookRecord.getId(), new AutoBooker(bookRecord));
     }
 
     private void registerNextStart(long nextTimeMillis) {

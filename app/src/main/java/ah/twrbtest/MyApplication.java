@@ -1,6 +1,10 @@
 package ah.twrbtest;
 
+import android.app.AlarmManager;
 import android.app.Application;
+import android.app.IntentService;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 
 import com.twrb.core.helpers.DefaultSequenceRecognizerCreator;
@@ -10,7 +14,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,9 +30,16 @@ import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 
 public class MyApplication extends Application {
+    private static MyApplication instance;
+
+    public static MyApplication getInstance() {
+        return instance;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         RealmConfiguration config = new RealmConfiguration.Builder(this).build();
         Realm.setDefaultConfiguration(config);
 
@@ -54,14 +67,33 @@ public class MyApplication extends Application {
         }
         setupPronounceSamples();
 
-        startService(new Intent(MyApplication.this, DailyBookService.class));
-        startService(new Intent(MyApplication.this, FrequentlyBookService.class));
-
         EventBus.getDefault().register(this);
+
+        registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
+        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTime());
     }
 
     public void onEvent(OnBookRecordAddedEvent e) {
-        startService(new Intent(MyApplication.this, FrequentlyBookService.class));
+        System.out.println("MyApplication received OnBookRecordAddedEvent.");
+        registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
+        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTime());
+    }
+
+    public void registerServiceAlarmIfNotExist(Class<? extends IntentService> cls, long startTime) {
+        Intent intent = new Intent(this, cls);
+        if (PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_NO_CREATE) == null) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, startTime, PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
+            System.out.println(cls.getName() + " will start at " + new Date(startTime).toString() + ".");
+        } else {
+            System.out.println(cls.getName() + " already exist.");
+        }
+    }
+
+    public void cancelPendingIntentService(Class<? extends IntentService> cls) {
+        PendingIntent pi = PendingIntent.getService(this, 0, new Intent(this, cls), PendingIntent.FLAG_NO_CREATE);
+        if (pi != null)
+            pi.cancel();
     }
 
     private List<String> readAllLines(InputStream inputStream) throws IOException {

@@ -1,17 +1,11 @@
 package ah.twrbtest.AutoBook;
 
-import android.app.AlarmManager;
 import android.app.IntentService;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
-
-import java.util.Calendar;
-import java.util.Date;
 
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Helper.AsyncBookHelper;
+import ah.twrbtest.MyApplication;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -29,9 +23,14 @@ public class FrequentlyBookService extends IntentService {
         super("FrequentlyBookService");
     }
 
+    public static long getNextStartTime() {
+        return (long) (SERVICE_INTERVAL + RANDOM_SERVICE_INTERVAL_FACTOR * (Math.random() - 0.5));
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
         System.out.println(this.getClass().getName() + " onHandleIntent.");
+        MyApplication.getInstance().cancelPendingIntentService(this.getClass());
         if (!DailyBookService.checkTime())
             book();
     }
@@ -43,9 +42,7 @@ public class FrequentlyBookService extends IntentService {
         if (getBookableBookRecord().isEmpty()) {
             System.out.println("No bookable BookRecord, do not register next start.");
         } else {
-            long interval = getRandomServiceInterval();
-            System.out.println(this.getClass().getName() + " will start again at " + new Date(interval + Calendar.getInstance().getTimeInMillis()).toString() + ".");
-            registerNextStart(interval + SystemClock.elapsedRealtime());
+            MyApplication.getInstance().registerServiceAlarmIfNotExist(this.getClass(), getNextStartTime());
         }
     }
 
@@ -63,23 +60,12 @@ public class FrequentlyBookService extends IntentService {
         }
     }
 
-    private void registerNextStart(long nextTimeMillis) {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, this.getClass());
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextTimeMillis, pendingIntent);
-    }
-
     private RealmResults<BookRecord> getBookableBookRecord() {
         return Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
                 .equalTo("isCancelled", false)
                 .findAll();
-    }
-
-    private long getRandomServiceInterval() {
-        return (long) (SERVICE_INTERVAL + RANDOM_SERVICE_INTERVAL_FACTOR * (Math.random() - 0.5));
     }
 
     private long getRandomBookInterval() {

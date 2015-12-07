@@ -14,6 +14,7 @@ import java.util.Hashtable;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
+import ah.twrbtest.MyApplication;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -49,9 +50,20 @@ public class DailyBookService extends IntentService {
         return (h == BEGIN_H || h == END_H) && (m >= BEGIN_M || m <= END_M);
     }
 
+    public static long getNextStartTime() {
+        Calendar c = Calendar.getInstance();
+        if (c.getTime().getHours() >= BEGIN_H)
+            c.add(Calendar.DATE, 1);
+        c.set(Calendar.HOUR_OF_DAY, BEGIN_H);
+        c.set(Calendar.MINUTE, BEGIN_M);
+        c.set(Calendar.SECOND, (int) (Math.random() * RANDOM_SERVICE_INTERVAL_FACTOR));
+        return c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
         System.out.println(this.getClass().getName() + " onHandleIntent.");
+        MyApplication.getInstance().cancelPendingIntentService(this.getClass());
         bookUntilEndTime();
     }
 
@@ -59,7 +71,7 @@ public class DailyBookService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         System.out.println(this.getClass().getName() + " onDestroy.");
-        long interval = getRandomServiceInterval();
+        long interval = getNextStartTime();
         System.out.println(this.getClass().getName() + " will start again at " + new Date(interval + Calendar.getInstance().getTimeInMillis()).toString() + ".");
         registerNextStart(interval + SystemClock.elapsedRealtime());
     }
@@ -98,16 +110,6 @@ public class DailyBookService extends IntentService {
         Intent intent = new Intent(this, this.getClass());
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextTimeMillis, pendingIntent);
-    }
-
-    protected long getRandomServiceInterval() {
-        Calendar c = Calendar.getInstance();
-        if (c.getTime().getHours() >= BEGIN_H)
-            c.add(Calendar.DATE, 1);
-        c.set(Calendar.HOUR_OF_DAY, BEGIN_H);
-        c.set(Calendar.MINUTE, BEGIN_M);
-        c.set(Calendar.SECOND, (int) (Math.random() * RANDOM_SERVICE_INTERVAL_FACTOR));
-        return c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
     }
 
     private class AutoBooker {

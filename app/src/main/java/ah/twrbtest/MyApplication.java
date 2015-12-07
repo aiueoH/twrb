@@ -14,7 +14,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -45,7 +44,7 @@ public class MyApplication extends Application {
         setupPronounceSamples();
         EventBus.getDefault().register(this);
         registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
-        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTime());
+        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval());
     }
 
     private void setupRealm() {
@@ -81,7 +80,7 @@ public class MyApplication extends Application {
     public void onEvent(OnBookRecordAddedEvent e) {
         System.out.println("MyApplication received OnBookRecordAddedEvent.");
         registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
-        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTime());
+        registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
     }
 
     public void registerServiceAlarmIfNotExist(Class<? extends IntentService> cls, long startTime) {
@@ -89,7 +88,10 @@ public class MyApplication extends Application {
         if (PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_NO_CREATE) == null) {
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             alarmManager.set(AlarmManager.RTC_WAKEUP, startTime, PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
-            System.out.println(cls.getName() + " will start at " + new Date(startTime).toString() + ".");
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(startTime);
+            String s = c.getTime().toString();
+            System.out.println(cls.getName() + " will start at " + s + ".");
         } else {
             System.out.println(cls.getName() + " already exist.");
         }

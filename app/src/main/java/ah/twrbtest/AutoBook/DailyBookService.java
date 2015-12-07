@@ -5,10 +5,8 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Hashtable;
 
 import ah.twrbtest.DBObject.BookRecord;
@@ -50,7 +48,7 @@ public class DailyBookService extends IntentService {
         return (h == BEGIN_H || h == END_H) && (m >= BEGIN_M || m <= END_M);
     }
 
-    public static long getNextStartTime() {
+    public static long getNextStartTimeInterval() {
         Calendar c = Calendar.getInstance();
         if (c.getTime().getHours() >= BEGIN_H)
             c.add(Calendar.DATE, 1);
@@ -71,9 +69,7 @@ public class DailyBookService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         System.out.println(this.getClass().getName() + " onDestroy.");
-        long interval = getNextStartTime();
-        System.out.println(this.getClass().getName() + " will start again at " + new Date(interval + Calendar.getInstance().getTimeInMillis()).toString() + ".");
-        registerNextStart(interval + SystemClock.elapsedRealtime());
+        registerNextStart(getNextStartTimeInterval() + System.currentTimeMillis());
     }
 
     private void bookUntilEndTime() {

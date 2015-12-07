@@ -23,7 +23,7 @@ public class FrequentlyBookService extends IntentService {
         super("FrequentlyBookService");
     }
 
-    public static long getNextStartTime() {
+    public static long getNextStartTimeInterval() {
         return (long) (SERVICE_INTERVAL + RANDOM_SERVICE_INTERVAL_FACTOR * (Math.random() - 0.5));
     }
 
@@ -39,11 +39,10 @@ public class FrequentlyBookService extends IntentService {
     public void onDestroy() {
         System.out.println(this.getClass().getName() + " onDestroy.");
         super.onDestroy();
-        if (getBookableBookRecord().isEmpty()) {
+        if (getBookableBookRecord().isEmpty())
             System.out.println("No bookable BookRecord, do not register next start.");
-        } else {
-            MyApplication.getInstance().registerServiceAlarmIfNotExist(this.getClass(), getNextStartTime());
-        }
+        else
+            MyApplication.getInstance().registerServiceAlarmIfNotExist(this.getClass(), getNextStartTimeInterval() + System.currentTimeMillis());
     }
 
     private void book() {

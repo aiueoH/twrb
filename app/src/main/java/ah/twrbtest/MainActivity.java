@@ -68,7 +68,6 @@ public class MainActivity extends Activity {
         FragmentManager fm = getFragmentManager();
         fm.beginTransaction()
                 .replace(R.id.container, fragment)
-                .addToBackStack(null)
                 .commit();
     }
 

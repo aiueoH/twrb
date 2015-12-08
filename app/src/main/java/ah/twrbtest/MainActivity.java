@@ -28,23 +28,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-//        this.realm = Realm.getDefaultInstance();
-//        this.realm.beginTransaction();
-//        User u = realm.createObject(User.class);
-//        u.setId(System.currentTimeMillis());
-//        u.setTitle("haha title");
-//        u.setContent("內容");
-//        this.realm.commitTransaction();
-//
-//
-//        RealmResults<User> rr = this.realm.where(User.class).findAll();
-//        for (User user : rr) {
-//            System.out.println("------------------");
-//            System.out.println(user.getId());
-//            System.out.println(user.getTitle());
-//            System.out.println(user.getContent());
-//        }
-
         bookTicketFragment = BookTicketFragment.newInstance();
         switchFragment(bookTicketFragment);
     }
@@ -70,26 +53,4 @@ public class MainActivity extends Activity {
                 .replace(R.id.container, fragment)
                 .commit();
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
 }

@@ -1,9 +1,6 @@
 package ah.twrbtest.AutoBook;
 
-import android.app.AlarmManager;
 import android.app.IntentService;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 
 import java.util.Calendar;
@@ -51,14 +48,14 @@ public class DailyBookService extends IntentService {
         return (h == BEGIN_H || h == END_H) && (m >= BEGIN_M || m <= END_M);
     }
 
-    public static long getNextStartTimeInterval() {
+    public static long getNextStartTimeInterval(Calendar now) {
         Calendar c = Calendar.getInstance();
         if (c.get(Calendar.HOUR_OF_DAY) >= BEGIN_H)
             c.add(Calendar.DATE, 1);
         c.set(Calendar.HOUR_OF_DAY, BEGIN_H);
         c.set(Calendar.MINUTE, BEGIN_M);
         c.set(Calendar.SECOND, (int) (Math.random() * RANDOM_SERVICE_INTERVAL_FACTOR));
-        return c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+        return c.getTimeInMillis() - now.getTimeInMillis();
     }
 
     @Override
@@ -72,7 +69,7 @@ public class DailyBookService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         System.out.println(this.getClass().getName() + " onDestroy.");
-        registerNextStart(getNextStartTimeInterval() + System.currentTimeMillis());
+        MyApplication.getInstance().registerServiceAlarmIfNotExist(this.getClass(), getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
     }
 
     private void bookUntilEndTime() {
@@ -130,13 +127,6 @@ public class DailyBookService extends IntentService {
                 .greaterThanOrEqualTo("getInDate", now.getTime())
                 .lessThanOrEqualTo("getInDate", bookableDateEnd.getTime())
                 .findAll();
-    }
-
-    private void registerNextStart(long nextTimeMillis) {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, this.getClass());
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextTimeMillis, pendingIntent);
     }
 
     private class AutoBooker {

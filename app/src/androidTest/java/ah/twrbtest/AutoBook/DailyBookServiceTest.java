@@ -43,6 +43,7 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
         assertNotNull(getService());
     }
 
+    @SuppressWarnings("unchecked")
     @SmallTest
     public void testGetAllBookableRecords() throws Exception {
         setService();
@@ -70,6 +71,7 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
         addBookRecord(2015, 0, 15);
         addBookRecord(2015, 0, 16);
         addBookRecord(2015, 0, 17);
+        addBookRecord(2015, 0, 18);
 
         c = Calendar.getInstance();
         c.set(Calendar.SECOND, 0);
@@ -77,11 +79,11 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
 
         c.set(2015, 0, 1, (int) begin_h.get(null), (int) begin_m.get(null) - 1);
         rr = (RealmResults<BookRecord>) method.invoke(getService(), c);
-        assertEquals(5, rr.size());
+        assertEquals(6, rr.size());
 
         c.set(2015, 0, 1, (int) begin_h.get(null), (int) begin_m.get(null));
         rr = (RealmResults<BookRecord>) method.invoke(getService(), c);
-        assertEquals(6, rr.size());
+        assertEquals(7, rr.size());
     }
 
     @SmallTest
@@ -104,13 +106,13 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
         result = (Calendar) method.invoke(getService(), c);
         assertEquals(2015, result.get(Calendar.YEAR));
         assertEquals(0, result.get(Calendar.MONTH));
-        assertEquals(14, result.get(Calendar.DATE));
+        assertEquals(15, result.get(Calendar.DATE));
 
         c.set(2015, 0, 1, (int) begin_h.get(null), (int) begin_m.get(null));
         result = (Calendar) method.invoke(getService(), c);
         assertEquals(2015, result.get(Calendar.YEAR));
         assertEquals(0, result.get(Calendar.MONTH));
-        assertEquals(15, result.get(Calendar.DATE));
+        assertEquals(16, result.get(Calendar.DATE));
     }
 
     @SmallTest

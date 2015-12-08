@@ -106,7 +106,7 @@ public class DailyBookService extends IntentService {
         sample.set(Calendar.MILLISECOND, 0);
         if (now.equals(sample) || now.after(sample))
             result.add(Calendar.DATE, 1);
-        result.add(Calendar.DATE, 13);
+        result.add(Calendar.DATE, 14);
         setHMSMsTo0(result);
         return result;
     }

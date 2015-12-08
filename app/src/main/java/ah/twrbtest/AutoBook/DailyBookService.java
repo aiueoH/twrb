@@ -42,7 +42,10 @@ public class DailyBookService extends IntentService {
     }
 
     public static boolean checkTime() {
-        java.util.Calendar calendar = Calendar.getInstance();
+        return checkTime(Calendar.getInstance());
+    }
+
+    private static boolean checkTime(Calendar calendar) {
         int h = calendar.getTime().getHours();
         int m = calendar.getTime().getMinutes();
         return (h == BEGIN_H || h == END_H) && (m >= BEGIN_M || m <= END_M);
@@ -91,17 +94,41 @@ public class DailyBookService extends IntentService {
     }
 
     private void book() {
-        RealmResults<BookRecord> results = getAllBookableRecords();
+        RealmResults<BookRecord> results = getAllBookableRecords(Calendar.getInstance());
         for (BookRecord bookRecord : results)
             if (!bookers.containsKey(bookRecord.getId()))
                 bookers.put(bookRecord.getId(), new AutoBooker(bookRecord));
     }
 
-    private RealmResults<BookRecord> getAllBookableRecords() {
+    private Calendar getBookableDateEnd(Calendar now) {
+        Calendar sample = (Calendar) now.clone();
+        Calendar result = (Calendar) now.clone();
+        sample.set(Calendar.HOUR_OF_DAY, BEGIN_H);
+        sample.set(Calendar.MINUTE, BEGIN_M);
+        sample.set(Calendar.SECOND, 0);
+        sample.set(Calendar.MILLISECOND, 0);
+        if (now.equals(sample) || now.after(sample))
+            result.add(Calendar.DATE, 1);
+        result.add(Calendar.DATE, 13);
+        setHMSMsTo0(result);
+        return result;
+    }
+
+    private void setHMSMsTo0(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
+
+    private RealmResults<BookRecord> getAllBookableRecords(Calendar now) {
+        Calendar bookableDateEnd = getBookableDateEnd(now);
         return Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
                 .equalTo("isCancelled", false)
+                .greaterThanOrEqualTo("getInDate", now.getTime())
+                .lessThanOrEqualTo("getInDate", bookableDateEnd.getTime())
                 .findAll();
     }
 

@@ -46,14 +46,14 @@ public class DailyBookService extends IntentService {
     }
 
     private static boolean checkTime(Calendar calendar) {
-        int h = calendar.getTime().getHours();
-        int m = calendar.getTime().getMinutes();
+        int h = calendar.get(Calendar.HOUR_OF_DAY);
+        int m = calendar.get(Calendar.MINUTE);
         return (h == BEGIN_H || h == END_H) && (m >= BEGIN_M || m <= END_M);
     }
 
     public static long getNextStartTimeInterval() {
         Calendar c = Calendar.getInstance();
-        if (c.getTime().getHours() >= BEGIN_H)
+        if (c.get(Calendar.HOUR_OF_DAY) >= BEGIN_H)
             c.add(Calendar.DATE, 1);
         c.set(Calendar.HOUR_OF_DAY, BEGIN_H);
         c.set(Calendar.MINUTE, BEGIN_M);

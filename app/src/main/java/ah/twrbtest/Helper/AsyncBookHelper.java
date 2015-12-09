@@ -37,8 +37,8 @@ public class AsyncBookHelper extends AsyncTask<Long, Integer, Boolean> {
         BookRecord bookRecord = Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", this.bookRecordId).findFirst();
         Realm.getDefaultInstance().beginTransaction();
         if (bookRecord == null) {
-            bookRecord = Realm.getDefaultInstance().createObject(BookRecord.class);
-            bookRecord.setId(this.bookRecordId);
+            bookRecord = new BookRecord();
+            Realm.getDefaultInstance().copyToRealm(bookRecord);
         }
         AdaptHelper.to(this.bookingInfo, bookRecord);
         Realm.getDefaultInstance().commitTransaction();

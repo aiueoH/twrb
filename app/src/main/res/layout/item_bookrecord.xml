@@ -112,13 +112,15 @@
                 android:id="@+id/textView9"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="電腦代碼：" />
+                android:text="電腦代碼："
+                android:textColor="#4fa14c" />
 
             <TextView
                 android:id="@+id/textView_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="961133" />
+                android:text="961133"
+                android:textColor="#4fa14c" />
         </LinearLayout>
 
         <LinearLayout

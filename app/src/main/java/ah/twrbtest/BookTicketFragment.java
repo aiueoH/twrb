@@ -176,9 +176,9 @@ public class BookTicketFragment extends Fragment {
 
     public BookRecord saveToDB(BookingInfo info) {
         Realm.getDefaultInstance().beginTransaction();
-        BookRecord bookRecord = Realm.getDefaultInstance().createObject(BookRecord.class);
-        bookRecord.setId(System.currentTimeMillis());
+        BookRecord bookRecord = new BookRecord();
         AdaptHelper.to(info, bookRecord);
+        Realm.getDefaultInstance().copyToRealm(bookRecord);
         Realm.getDefaultInstance().commitTransaction();
         return bookRecord;
     }

@@ -35,6 +35,10 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        realm.where(BookRecord.class).findAll().clear();
+        realm.commitTransaction();
     }
 
     @SmallTest

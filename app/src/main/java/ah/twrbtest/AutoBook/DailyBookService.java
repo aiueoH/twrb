@@ -3,6 +3,7 @@ package ah.twrbtest.AutoBook;
 import android.app.IntentService;
 import android.content.Intent;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Hashtable;
 
@@ -91,42 +92,23 @@ public class DailyBookService extends IntentService {
     }
 
     private void book() {
-        RealmResults<BookRecord> results = getAllBookableRecords(Calendar.getInstance());
+        ArrayList<BookRecord> results = getAllBookableRecords(Calendar.getInstance());
         for (BookRecord bookRecord : results)
             if (!bookers.containsKey(bookRecord.getId()))
                 bookers.put(bookRecord.getId(), new AutoBooker(bookRecord));
     }
 
-    private Calendar getBookableDateEnd(Calendar now) {
-        Calendar sample = (Calendar) now.clone();
-        Calendar result = (Calendar) now.clone();
-        sample.set(Calendar.HOUR_OF_DAY, BEGIN_H);
-        sample.set(Calendar.MINUTE, BEGIN_M);
-        sample.set(Calendar.SECOND, 0);
-        sample.set(Calendar.MILLISECOND, 0);
-        if (now.equals(sample) || now.after(sample))
-            result.add(Calendar.DATE, 1);
-        result.add(Calendar.DATE, 14);
-        setHMSMsTo0(result);
-        return result;
-    }
-
-    private void setHMSMsTo0(Calendar calendar) {
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-    }
-
-    private RealmResults<BookRecord> getAllBookableRecords(Calendar now) {
-        Calendar bookableDateEnd = getBookableDateEnd(now);
-        return Realm.getDefaultInstance()
+    private ArrayList<BookRecord> getAllBookableRecords(Calendar now) {
+        RealmResults<BookRecord> rr = Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
                 .equalTo("isCancelled", false)
-                .greaterThanOrEqualTo("getInDate", now.getTime())
-                .lessThanOrEqualTo("getInDate", bookableDateEnd.getTime())
                 .findAll();
+        ArrayList<BookRecord> brs = new ArrayList<>();
+        for (BookRecord br : rr)
+            if (BookRecord.isBookable(br, now))
+                brs.add(br);
+        return brs;
     }
 
     private class AutoBooker {

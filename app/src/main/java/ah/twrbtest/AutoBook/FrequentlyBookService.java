@@ -44,14 +44,14 @@ public class FrequentlyBookService extends IntentService {
     public void onDestroy() {
         System.out.println(this.getClass().getName() + " onDestroy.");
         super.onDestroy();
-        if (getBookableBookRecord().isEmpty())
+        if (getBookableBookRecord(Calendar.getInstance()).isEmpty())
             System.out.println("No bookable BookRecord, do not register next start.");
         else
             EventBus.getDefault().post(new OnBookableRecordFoundEvent());
     }
 
     private void book() {
-        ArrayList<BookRecord> results = getBookableBookRecord();
+        ArrayList<BookRecord> results = getBookableBookRecord(Calendar.getInstance());
         for (BookRecord bookRecord : results) {
             new AsyncBookHelper(bookRecord).execute((long) 0);
             try {
@@ -64,7 +64,7 @@ public class FrequentlyBookService extends IntentService {
         }
     }
 
-    private ArrayList<BookRecord> getBookableBookRecord() {
+    private ArrayList<BookRecord> getBookableBookRecord(Calendar now) {
         RealmResults<BookRecord> rr = Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
@@ -72,7 +72,7 @@ public class FrequentlyBookService extends IntentService {
                 .findAll();
         ArrayList<BookRecord> brs = new ArrayList<>();
         for (BookRecord br : rr)
-            if (BookRecord.isBookable(br, Calendar.getInstance()))
+            if (BookRecord.isBookable(br, now))
                 brs.add(br);
         return brs;
     }

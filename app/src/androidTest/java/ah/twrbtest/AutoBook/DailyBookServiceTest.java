@@ -9,12 +9,12 @@ import org.junit.Before;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import ah.twrbtest.DBObject.BookRecord;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
 
 public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
     public DailyBookServiceTest() {
@@ -50,7 +50,7 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
         Field begin_h, begin_m, end_h, end_m;
         Calendar c;
         Method method;
-        RealmResults<BookRecord> rr;
+        ArrayList<BookRecord> bookRecords;
         method = DailyBookService.class.getDeclaredMethod("getAllBookableRecords", Calendar.class);
         begin_h = DailyBookService.class.getDeclaredField("BEGIN_H");
         begin_h.setAccessible(true);
@@ -62,28 +62,34 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
         end_m.setAccessible(true);
         method.setAccessible(true);
 
-        addBookRecord(2015, 0, 1);
-        addBookRecord(2015, 0, 2);
-        addBookRecord(2015, 0, 3);
-        addBookRecord(2015, 0, 3);
-        addBookRecord(2015, 0, 13);
-        addBookRecord(2015, 0, 14);
-        addBookRecord(2015, 0, 15);
-        addBookRecord(2015, 0, 16);
-        addBookRecord(2015, 0, 17);
-        addBookRecord(2015, 0, 18);
+        addBookRecord(2015, 1, 1);
+        addBookRecord(2015, 1, 2);
+        addBookRecord(2015, 1, 3);
+        addBookRecord(2015, 1, 3);
+        addBookRecord(2015, 1, 13);
+        addBookRecord(2015, 1, 14);
+        addBookRecord(2015, 1, 15);
+        addBookRecord(2015, 1, 16);
+        addBookRecord(2015, 1, 17);
+        addBookRecord(2015, 1, 19);
+        addBookRecord(2015, 1, 20);
+        addBookRecord(2015, 1, 21);
 
         c = Calendar.getInstance();
         c.set(Calendar.SECOND, 0);
         c.set(Calendar.MILLISECOND, 0);
 
-        c.set(2015, 0, 1, (int) begin_h.get(null), (int) begin_m.get(null) - 1);
-        rr = (RealmResults<BookRecord>) method.invoke(getService(), c);
-        assertEquals(6, rr.size());
+        c.set(2015, 0, 1, 0, 0);
+        bookRecords = (ArrayList<BookRecord>) method.invoke(getService(), c);
+        assertEquals(0, bookRecords.size());
 
-        c.set(2015, 0, 1, (int) begin_h.get(null), (int) begin_m.get(null));
-        rr = (RealmResults<BookRecord>) method.invoke(getService(), c);
-        assertEquals(7, rr.size());
+        c.set(2015, 1, 1, (int) begin_h.get(null), (int) begin_m.get(null) - 1);
+        bookRecords = (ArrayList<BookRecord>) method.invoke(getService(), c);
+        assertEquals(7, bookRecords.size());
+
+        c.set(2015, 1, 1, (int) begin_h.get(null), (int) begin_m.get(null));
+        bookRecords = (ArrayList<BookRecord>) method.invoke(getService(), c);
+        assertEquals(8, bookRecords.size());
     }
 
     private void setService() {

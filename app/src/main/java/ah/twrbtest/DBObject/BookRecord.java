@@ -8,6 +8,9 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 public class BookRecord extends RealmObject {
+    // 每日訂票時間
+    public static final int MID_NIGHT_H = 23;
+    public static final int MID_NIGHT_M = 59;
     @PrimaryKey
     private long id;
     private String personId;
@@ -35,15 +38,21 @@ public class BookRecord extends RealmObject {
     }
 
     public static boolean isBookable(BookRecord bookRecord, Calendar now) {
-        Calendar s = (Calendar) now.clone();
-        s.set(Calendar.HOUR_OF_DAY, 0);
-        s.set(Calendar.MINUTE, 0);
-        s.set(Calendar.SECOND, 0);
-        s.set(Calendar.MILLISECOND, 0);
-        Calendar t = Calendar.getInstance();
-        t.setTime(bookRecord.getGetInDate());
-        t.add(Calendar.DATE, -14);
-        return t.after(s) || t.equals(s);
+        Calendar today = (Calendar) now.clone();
+        if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
+            today.add(Calendar.DATE, 1);
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        Calendar bookableDate = Calendar.getInstance();
+        bookableDate.setTime(bookRecord.getGetInDate());
+        bookableDate.set(Calendar.HOUR_OF_DAY, 0);
+        bookableDate.set(Calendar.MINUTE, 0);
+        bookableDate.set(Calendar.SECOND, 0);
+        bookableDate.set(Calendar.MILLISECOND, 0);
+        bookableDate.add(Calendar.DATE, -14);
+        return today.after(bookableDate) || today.equals(bookableDate);
     }
 
     public boolean isCancelled() {

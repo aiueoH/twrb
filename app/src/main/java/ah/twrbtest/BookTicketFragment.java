@@ -160,15 +160,29 @@ public class BookTicketFragment extends Fragment {
     }
 
     public void book() {
+        BookingInfo info = getBookingInfo();
+        System.out.println("$$$$$$$$$$$$$" + info.TRAIN_NO + "$$$$$$$$$");
+        if (!info.verify()) {
+            Toast.makeText(getActivity(), "檢查一下你的欄位好嗎？", Toast.LENGTH_SHORT).show();
+            return;
+        }
         this.mProgressDialog = ProgressDialog.show(getActivity(), "", "訂票中");
-        final BookingInfo info = getBookingInfo();
         BookRecord bookRecord = saveToDB(info);
-        new AsyncBookHelper(bookRecord).execute((long) 0);
+        if (BookRecord.isBookable(bookRecord, Calendar.getInstance()))
+            new AsyncBookHelper(bookRecord).execute((long) 0);
+        else {
+            Toast.makeText(getActivity(), "還沒開放訂票，我先把他加入待訂清單哦", Toast.LENGTH_LONG).show();
+            this.mProgressDialog.dismiss();
+        }
         bookingId = bookRecord.getId();
     }
 
     public void save() {
         BookingInfo info = getBookingInfo();
+        if (!info.verify()) {
+            Toast.makeText(getActivity(), "檢查一下你的欄位好嗎？", Toast.LENGTH_SHORT).show();
+            return;
+        }
         long id = saveToDB(info).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(id));
         Toast.makeText(getActivity(), "已加入待訂清單", Toast.LENGTH_SHORT).show();

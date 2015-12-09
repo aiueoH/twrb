@@ -39,20 +39,22 @@ public class BookRecord extends RealmObject {
 
     public static boolean isBookable(BookRecord bookRecord, Calendar now) {
         Calendar today = (Calendar) now.clone();
-        if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
-            today.add(Calendar.DATE, 1);
         today.set(Calendar.HOUR_OF_DAY, 0);
         today.set(Calendar.MINUTE, 0);
         today.set(Calendar.SECOND, 0);
         today.set(Calendar.MILLISECOND, 0);
-        Calendar bookableDate = Calendar.getInstance();
-        bookableDate.setTime(bookRecord.getGetInDate());
-        bookableDate.set(Calendar.HOUR_OF_DAY, 0);
-        bookableDate.set(Calendar.MINUTE, 0);
-        bookableDate.set(Calendar.SECOND, 0);
-        bookableDate.set(Calendar.MILLISECOND, 0);
+        Calendar getInDate = Calendar.getInstance();
+        getInDate.setTime(bookRecord.getGetInDate());
+        getInDate.set(Calendar.HOUR_OF_DAY, 0);
+        getInDate.set(Calendar.MINUTE, 0);
+        getInDate.set(Calendar.SECOND, 0);
+        getInDate.set(Calendar.MILLISECOND, 0);
+        Calendar bookableDate = (Calendar) getInDate.clone();
         bookableDate.add(Calendar.DATE, -14);
-        return today.after(bookableDate) || today.equals(bookableDate);
+        if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
+            bookableDate.add(Calendar.DATE, -1);
+        return (today.before(getInDate) || today.equals(getInDate)) &&
+                (today.after(bookableDate) || today.equals(bookableDate));
     }
 
     public boolean isCancelled() {

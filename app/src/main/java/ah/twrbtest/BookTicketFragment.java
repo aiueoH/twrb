@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
@@ -189,12 +188,7 @@ public class BookTicketFragment extends Fragment {
     }
 
     public BookRecord saveToDB(BookingInfo info) {
-        Realm.getDefaultInstance().beginTransaction();
-        BookRecord bookRecord = new BookRecord();
-        AdaptHelper.to(info, bookRecord);
-        Realm.getDefaultInstance().copyToRealm(bookRecord);
-        Realm.getDefaultInstance().commitTransaction();
-        return bookRecord;
+        return BookRecordFactory.createBookRecord(info);
     }
 
     public void onEvent(OnBookedEvent e) {

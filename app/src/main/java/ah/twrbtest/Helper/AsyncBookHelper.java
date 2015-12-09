@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import com.twrb.core.booking.BookingInfo;
 import com.twrb.core.helpers.BookingHelper;
 
+import ah.twrbtest.BookRecordFactory;
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Events.OnBookedEvent;
@@ -35,13 +36,13 @@ public class AsyncBookHelper extends AsyncTask<Long, Integer, Boolean> {
     protected void onPostExecute(Boolean result) {
         super.onPostExecute(result);
         BookRecord bookRecord = Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", this.bookRecordId).findFirst();
-        Realm.getDefaultInstance().beginTransaction();
         if (bookRecord == null) {
-            bookRecord = new BookRecord();
-            Realm.getDefaultInstance().copyToRealm(bookRecord);
+            BookRecordFactory.createBookRecord(this.bookingInfo);
+        } else {
+            Realm.getDefaultInstance().beginTransaction();
+            AdaptHelper.to(this.bookingInfo, bookRecord);
+            Realm.getDefaultInstance().commitTransaction();
         }
-        AdaptHelper.to(this.bookingInfo, bookRecord);
-        Realm.getDefaultInstance().commitTransaction();
         System.out.println(result ? "訂位代碼:" + this.bookingInfo.CODE : "失敗");
         EventBus.getDefault().post(new OnBookedEvent(this.bookRecordId, result));
     }

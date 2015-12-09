@@ -1,7 +1,13 @@
 package ah.twrbtest.Events;
 
-/**
- * Created by Wei on 2015/12/3.
- */
 public class OnBookRecordAddedEvent {
+    private long bookRecordId;
+
+    public OnBookRecordAddedEvent(long bookRecordId) {
+        this.bookRecordId = bookRecordId;
+    }
+
+    public long getBookRecordId() {
+        return bookRecordId;
+    }
 }

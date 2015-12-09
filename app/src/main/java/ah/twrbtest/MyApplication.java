@@ -21,8 +21,10 @@ import java.util.List;
 
 import ah.twrbtest.AutoBook.DailyBookService;
 import ah.twrbtest.AutoBook.FrequentlyBookService;
+import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
+import ah.twrbtest.Events.OnBookableRecordFoundEvent;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -79,6 +81,13 @@ public class MyApplication extends Application {
 
     public void onEvent(OnBookRecordAddedEvent e) {
         System.out.println("MyApplication received OnBookRecordAddedEvent.");
+        BookRecord br = BookRecord.get(e.getBookRecordId());
+        if (br != null && BookRecord.isBookable(br, Calendar.getInstance()))
+            EventBus.getDefault().post(new OnBookableRecordFoundEvent());
+    }
+
+    public void onEvent(OnBookableRecordFoundEvent e) {
+        System.out.println("MyApplication received OnBookableRecordFoundEvent.");
         registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
         registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
     }

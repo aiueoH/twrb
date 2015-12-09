@@ -169,8 +169,8 @@ public class BookTicketFragment extends Fragment {
 
     public void save() {
         BookingInfo info = getBookingInfo();
-        saveToDB(info);
-        EventBus.getDefault().post(new OnBookRecordAddedEvent());
+        long id = saveToDB(info).getId();
+        EventBus.getDefault().post(new OnBookRecordAddedEvent(id));
         Toast.makeText(getActivity(), "已加入待訂清單", Toast.LENGTH_SHORT).show();
     }
 
@@ -185,7 +185,7 @@ public class BookTicketFragment extends Fragment {
 
     public void onEvent(OnBookedEvent e) {
         if (e.getBookRecordId() == this.bookingId) {
-            EventBus.getDefault().post(new OnBookRecordAddedEvent());
+            EventBus.getDefault().post(new OnBookRecordAddedEvent(this.bookingId));
             String result = e.isSuccess() ? "訂票成功！" : "訂票失敗，已加入待訂清單";
             this.mProgressDialog.dismiss();
             Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();

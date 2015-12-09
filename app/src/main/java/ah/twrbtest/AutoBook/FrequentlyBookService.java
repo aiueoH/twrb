@@ -3,9 +3,14 @@ package ah.twrbtest.AutoBook;
 import android.app.IntentService;
 import android.content.Intent;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+
 import ah.twrbtest.DBObject.BookRecord;
+import ah.twrbtest.Events.OnBookableRecordFoundEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.MyApplication;
+import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -42,11 +47,11 @@ public class FrequentlyBookService extends IntentService {
         if (getBookableBookRecord().isEmpty())
             System.out.println("No bookable BookRecord, do not register next start.");
         else
-            MyApplication.getInstance().registerServiceAlarmIfNotExist(this.getClass(), getNextStartTimeInterval() + System.currentTimeMillis());
+            EventBus.getDefault().post(new OnBookableRecordFoundEvent());
     }
 
     private void book() {
-        RealmResults<BookRecord> results = getBookableBookRecord();
+        ArrayList<BookRecord> results = getBookableBookRecord();
         for (BookRecord bookRecord : results) {
             new AsyncBookHelper(bookRecord).execute((long) 0);
             try {
@@ -59,12 +64,17 @@ public class FrequentlyBookService extends IntentService {
         }
     }
 
-    private RealmResults<BookRecord> getBookableBookRecord() {
-        return Realm.getDefaultInstance()
+    private ArrayList<BookRecord> getBookableBookRecord() {
+        RealmResults<BookRecord> rr = Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
                 .equalTo("isCancelled", false)
                 .findAll();
+        ArrayList<BookRecord> brs = new ArrayList<>();
+        for (BookRecord br : rr)
+            if (BookRecord.isBookable(br, Calendar.getInstance()))
+                brs.add(br);
+        return brs;
     }
 
     private long getRandomBookInterval() {

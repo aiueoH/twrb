@@ -1,7 +1,9 @@
 package ah.twrbtest.DBObject;
 
+import java.util.Calendar;
 import java.util.Date;
 
+import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -24,8 +26,24 @@ public class BookRecord extends RealmObject {
         this.id = generateId();
     }
 
+    public static BookRecord get(long id) {
+        return Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", id).findFirst();
+    }
+
     public static long generateId() {
         return System.currentTimeMillis() + new Object().hashCode();
+    }
+
+    public static boolean isBookable(BookRecord bookRecord, Calendar now) {
+        Calendar s = (Calendar) now.clone();
+        s.set(Calendar.HOUR_OF_DAY, 0);
+        s.set(Calendar.MINUTE, 0);
+        s.set(Calendar.SECOND, 0);
+        s.set(Calendar.MILLISECOND, 0);
+        Calendar t = Calendar.getInstance();
+        t.setTime(bookRecord.getGetInDate());
+        t.add(Calendar.DATE, -14);
+        return t.after(s) || t.equals(s);
     }
 
     public boolean isCancelled() {

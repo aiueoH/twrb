@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Hashtable;
 
 import ah.twrbtest.DBObject.BookRecord;
+import ah.twrbtest.Events.OnBookableRecordFoundEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.MyApplication;
@@ -71,6 +72,8 @@ public class DailyBookService extends IntentService {
         super.onDestroy();
         System.out.println(this.getClass().getName() + " onDestroy.");
         MyApplication.getInstance().registerServiceAlarmIfNotExist(this.getClass(), getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
+        if (!getAllBookableRecords(Calendar.getInstance()).isEmpty())
+            EventBus.getDefault().post(new OnBookableRecordFoundEvent());
     }
 
     private void bookUntilEndTime() {

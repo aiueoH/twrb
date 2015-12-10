@@ -21,6 +21,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".TimetableActivity" />
+
         <service android:name=".AutoBook.DailyBookService" />
         <service android:name=".AutoBook.FrequentlyBookService" />
     </application>

@@ -23,6 +23,7 @@ import ah.twrbtest.AutoBook.DailyBookService;
 import ah.twrbtest.AutoBook.FrequentlyBookService;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
+import ah.twrbtest.DBObject.TimetableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
 import ah.twrbtest.Events.OnBookableRecordFoundEvent;
 import de.greenrobot.event.EventBus;
@@ -42,6 +43,7 @@ public class MyApplication extends Application {
         super.onCreate();
         instance = this;
         setupRealm();
+        setupTimetableStationIfNotExist();
         setupBookableStationIfNotExist();
         setupPronounceSamples();
         EventBus.getDefault().register(this);
@@ -52,6 +54,38 @@ public class MyApplication extends Application {
     private void setupRealm() {
         RealmConfiguration config = new RealmConfiguration.Builder(this).build();
         Realm.setDefaultConfiguration(config);
+    }
+
+    private void setupTimetableStationIfNotExist() {
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<TimetableStation> rr = realm.where(TimetableStation.class).findAll();
+        if (!rr.isEmpty()) {
+            System.out.println("Timetable stations already existing, " + rr.size() + " stations.");
+            return;
+        }
+        try {
+            List<String> lines = readAllLines(getAssets().open(getString(R.string.file_timetableStation)));
+            ArrayList<TimetableStation> tss = new ArrayList<>();
+            TimetableStation ts;
+            for (String s : lines) {
+                String[] data = s.split(",");
+                ts = new TimetableStation();
+                tss.add(ts);
+                ts.setCityNo(data[0]);
+                ts.setNo(data[1]);
+                ts.setNameCh(data[2]);
+                ts.setNameEn(data[3]);
+                ts.setBookNo(data[4]);
+                ts.setIsBookable(!ts.getBookNo().equals("-1"));
+            }
+            realm.beginTransaction();
+            realm.copyToRealm(tss);
+            realm.commitTransaction();
+            System.out.println("Import timetable stations OK.");
+        } catch (IOException e) {
+            System.out.println("Import timetable stations fail.");
+            e.printStackTrace();
+        }
     }
 
     private void setupBookableStationIfNotExist() {
@@ -69,9 +103,9 @@ public class MyApplication extends Application {
                     bs.setName(data[1]);
                 }
                 realm.commitTransaction();
-                System.out.println("Import stations OK.");
+                System.out.println("Import bookable stations OK.");
             } catch (IOException e) {
-                System.out.println("Import stations fail.");
+                System.out.println("Import bookable stations fail.");
                 e.printStackTrace();
             }
         } else {

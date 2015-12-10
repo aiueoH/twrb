@@ -1,4 +1,4 @@
-package ah.twrbtest;
+package ah.twrbtest.Fragments;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ah.twrbtest.BookRecordFactory;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
@@ -30,6 +31,7 @@ import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.MyArrayAdapter.BookableStationArrayAdapter;
 import ah.twrbtest.MyArrayAdapter.DateArrayAdapter;
+import ah.twrbtest.R;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;

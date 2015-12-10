@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.view.Window;
 import android.widget.Button;
 
+import ah.twrbtest.Fragments.BookRecordFragment;
+import ah.twrbtest.Fragments.BookTicketFragment;
+import ah.twrbtest.Fragments.SearchFragment;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -16,8 +19,8 @@ public class MainActivity extends Activity {
 
     @Bind(R.id.button_ticket)
     Button ticket_button;
-    @Bind(R.id.button_timetable)
-    Button titmetable_button;
+    @Bind(R.id.button_search)
+    Button search_button;
     BookTicketFragment bookTicketFragment;
     private Realm realm;
 
@@ -32,9 +35,9 @@ public class MainActivity extends Activity {
         switchFragment(bookTicketFragment);
     }
 
-    @OnClick(R.id.button_timetable)
-    public void onTimetableButtonClick() {
-        switchFragment(TimetableFragment.newInstance());
+    @OnClick(R.id.button_search)
+    public void onSearchButtonClick() {
+        switchFragment(SearchFragment.newInstance());
     }
 
     @OnClick(R.id.button_ticket)

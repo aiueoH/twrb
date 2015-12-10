@@ -1,10 +1,12 @@
-package ah.twrbtest;
+package ah.twrbtest.Fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import ah.twrbtest.R;
 
 public class TimetableFragment extends Fragment {
 

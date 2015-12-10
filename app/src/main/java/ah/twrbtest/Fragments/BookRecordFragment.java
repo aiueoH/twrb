@@ -1,4 +1,4 @@
-package ah.twrbtest;
+package ah.twrbtest.Fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -12,6 +12,7 @@ import java.util.List;
 
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.MyArrayAdapter.BookRecordArrayAdapter;
+import ah.twrbtest.R;
 import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmResults;

@@ -85,7 +85,9 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         ButterKnife.bind(this, view);
         this.from_spinner.setAdapter(this.timetableStationArrayAdapter);
+        this.from_spinner.setSelection(14); // 台北
         this.to_spinner.setAdapter(this.timetableStationArrayAdapter);
+        this.to_spinner.setSelection(71); // 花蓮
         this.date_spinner.setAdapter(this.dateArrayAdapter);
         return view;
     }

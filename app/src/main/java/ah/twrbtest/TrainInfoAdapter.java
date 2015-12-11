@@ -16,6 +16,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import de.greenrobot.event.EventBus;
 
 public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyViewHolder> {
     private static HashMap<String, Integer> TRAINTYPE_COLOR = new HashMap<String, Integer>() {{
@@ -42,15 +43,17 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        holder.trainType_textView.setText(this.trainInfos.get(position).TYPE);
-        holder.trainNo_textView.setText(this.trainInfos.get(position).NO);
-        holder.depatureTime_textView.setText(this.trainInfos.get(position).DEPARTURE_TIME);
-        holder.arrivalTime_textView.setText(this.trainInfos.get(position).ARRIVAL_TIME);
-        holder.trainType_textView.setTextColor(getTrainTypeColor(this.trainInfos.get(position).TYPE));
-        holder.trainNo_textView.setTextColor(getTrainTypeColor(this.trainInfos.get(position).TYPE));
+        final TrainInfo ti = this.trainInfos.get(position);
+        holder.trainType_textView.setText(ti.TYPE);
+        holder.trainNo_textView.setText(ti.NO);
+        holder.depatureTime_textView.setText(ti.DEPARTURE_TIME);
+        holder.arrivalTime_textView.setText(ti.ARRIVAL_TIME);
+        holder.trainType_textView.setTextColor(getTrainTypeColor(ti.TYPE));
+        holder.trainNo_textView.setTextColor(getTrainTypeColor(ti.TYPE));
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                EventBus.getDefault().post(new OnItemClickEvent(ti));
             }
         });
     }
@@ -76,12 +79,22 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         TextView arrivalTime_textView;
         @Bind(R.id.card_view)
         CardView cardView;
-//        @Bind(R.id.linearLayout_trainTypeNo)
-//        LinearLayout trainTypeNo_layout;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+        }
+    }
+
+    public static class OnItemClickEvent {
+        private TrainInfo trainInfo;
+
+        public OnItemClickEvent(TrainInfo trainInfo) {
+            this.trainInfo = trainInfo;
+        }
+
+        public TrainInfo getTrainInfo() {
+            return trainInfo;
         }
     }
 }

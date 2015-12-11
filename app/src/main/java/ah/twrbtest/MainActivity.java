@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
         ButterKnife.bind(this);
         this.bookTicketFragment = BookTicketFragment.newInstance();
         this.searchFragment = SearchFragment.newInstance();
-        switchFragment(bookTicketFragment);
+        switchFragment(this.searchFragment);
     }
 
     @OnClick(R.id.button_search)

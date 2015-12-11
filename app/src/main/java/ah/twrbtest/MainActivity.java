@@ -38,7 +38,7 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
-        switchFragment(SearchFragment.newInstance());
+        switchFragment(this.searchFragment);
     }
 
     @OnClick(R.id.button_ticket)
@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.button_bookticket)
     public void onBookTicketButtonClick() {
-        switchFragment(bookTicketFragment);
+        switchFragment(this.bookTicketFragment);
     }
 
     public void switchFragment(Fragment fragment) {

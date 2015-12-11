@@ -2,8 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:minWidth="250dp"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:padding="20dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -70,25 +71,25 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="50dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="3dp">
 
         <Button
             android:id="@+id/button_book"
-            android:layout_width="wrap_content"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/book_ticket_button"
+            android:background="@drawable/quick_book_button"
             android:text="訂"
             android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/button_save"
-            android:layout_width="wrap_content"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:background="@drawable/book_ticket_button"
+            android:layout_marginLeft="40dp"
+            android:background="@drawable/quick_book_button"
             android:text="儲存"
             android:textColor="#FFFFFF" />
     </LinearLayout>

@@ -21,7 +21,8 @@ public class MainActivity extends Activity {
     Button ticket_button;
     @Bind(R.id.button_search)
     Button search_button;
-    BookTicketFragment bookTicketFragment;
+    private BookTicketFragment bookTicketFragment;
+    private SearchFragment searchFragment;
     private Realm realm;
 
     @Override
@@ -30,8 +31,8 @@ public class MainActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-        bookTicketFragment = BookTicketFragment.newInstance();
+        this.bookTicketFragment = BookTicketFragment.newInstance();
+        this.searchFragment = SearchFragment.newInstance();
         switchFragment(bookTicketFragment);
     }
 

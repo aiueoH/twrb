@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,8 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 
 public class BookRecordFragment extends Fragment {
+    @Bind(R.id.textView_emptyMsg)
+    TextView emptyMsg_textView;
     @Bind(R.id.recyclerView)
     RecyclerView recyclerView;
     private BookRecordAdapter bookRecordAdapter;
@@ -56,6 +59,7 @@ public class BookRecordFragment extends Fragment {
         ButterKnife.bind(this, view);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         this.recyclerView.setAdapter(this.bookRecordAdapter);
+        updateEmptyMsg();
         return view;
     }
 
@@ -82,5 +86,9 @@ public class BookRecordFragment extends Fragment {
         BookRecord br = BookRecord.get(e.getBookRecordId());
         bookRecords.add(0, br);
         this.bookRecordAdapter.notifyItemInserted(0);
+    }
+
+    public void updateEmptyMsg() {
+        this.emptyMsg_textView.setVisibility(this.bookRecords.isEmpty() ? View.VISIBLE : View.GONE);
     }
 }

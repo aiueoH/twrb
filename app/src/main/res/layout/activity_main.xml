@@ -17,33 +17,30 @@
 
             <Button
                 android:id="@+id/button_search"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="3dp"
+                android:layout_weight="1"
                 android:background="@drawable/menubutton"
                 android:text="查詢" />
 
             <Button
                 android:id="@+id/button_ticket"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="3dp"
+                android:layout_weight="1"
                 android:background="@drawable/menubutton"
                 android:text="火車票" />
 
             <Button
                 android:id="@+id/button_bookticket"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="3dp"
+                android:layout_weight="1"
                 android:background="@drawable/menubutton"
                 android:text="訂票" />
-
-            <Button
-                android:id="@+id/button_test"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TEST" />
 
         </LinearLayout>
 

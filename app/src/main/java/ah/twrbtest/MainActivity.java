@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.Window;
 import android.widget.Button;
 
-import ah.twrbtest.AutoBook.FrequentlyBookService;
 import ah.twrbtest.Fragments.BookRecordFragment;
 import ah.twrbtest.Fragments.BookTicketFragment;
 import ah.twrbtest.Fragments.SearchFragment;
@@ -37,11 +36,6 @@ public class MainActivity extends Activity {
         this.searchFragment = SearchFragment.newInstance();
         this.bookRecordFragment = BookRecordFragment.newInstance();
         switchFragment(this.searchFragment);
-    }
-
-    @OnClick(R.id.button_test)
-    public void onTestBtnClick() {
-        MyApplication.getInstance().registerServiceAlarm(FrequentlyBookService.class, 0);
     }
 
     @OnClick(R.id.button_search)

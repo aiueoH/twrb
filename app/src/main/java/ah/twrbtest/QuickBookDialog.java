@@ -50,17 +50,17 @@ public class QuickBookDialog extends Dialog {
         buildQtuAdapter();
         SharedPreferences sp = this.context.getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
         String id = sp.getString("personId", "");
-        int qtu = sp.getInt("qtu", 1);
+        int qtu = sp.getInt("qtu", -1);
         this.id_editText.setText(id);
         this.qtu_spinner.setAdapter(this.qtuAdapter);
-        this.qtu_spinner.setSelection(qtu + 1);
+        this.qtu_spinner.setSelection(qtu - 1);
     }
 
     @OnItemSelected(R.id.spinner_qtu)
     public void onQtuSpinnerItemSelected(int position) {
         SharedPreferences sp = this.context.getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putInt("qtu", position - 1);
+        editor.putInt("qtu", position + 1);
         editor.commit();
     }
 

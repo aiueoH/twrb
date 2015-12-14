@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:layout_marginBottom="2dp"
+    android:layout_marginLeft="30dp"
+    android:layout_marginRight="30dp"
+    android:layout_marginTop="2dp">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:background="@drawable/border_bookrecord"
+        android:baselineAligned="false"
+        android:contextClickable="false"
         android:orientation="vertical"
         android:padding="5dp">
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:gravity="right"
             android:orientation="horizontal">
 
             <TextView
@@ -41,37 +45,37 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:gravity="right"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/textView_from"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="台南"
+                android:text="拍謝"
                 android:textSize="25dp" />
 
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=">>>>>>>>>>>>>>>>>>>>>>>>>"
-                android:textSize="8dp" />
+                android:layout_marginLeft="10dp"
+                android:text=">"
+                android:textSize="20dp" />
 
             <TextView
                 android:id="@+id/textView_to"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="台北"
+                android:layout_marginLeft="10dp"
+                android:text="看到這個訊息請重新安裝app"
                 android:textSize="25dp" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:gravity="right"
             android:orientation="horizontal">
 
             <TextView
@@ -88,9 +92,8 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:gravity="right"
             android:orientation="horizontal">
 
             <TextView
@@ -103,9 +106,8 @@
 
         <LinearLayout
             android:id="@+id/linearLayout_code"
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:gravity="right"
             android:orientation="horizontal">
 
             <TextView
@@ -113,20 +115,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="電腦代碼："
-                android:textColor="#4fa14c" />
+                android:textColor="#499646" />
 
             <TextView
                 android:id="@+id/textView_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="961133"
-                android:textColor="#4fa14c" />
+                android:textColor="#499646" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:gravity="center"
             android:orientation="horizontal">
 
             <TextView
@@ -134,12 +135,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="XXXXX已退訂XXXXX"
-                android:textColor="#FF0000"
+                android:textColor="#f56262"
                 android:textSize="20dp" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="horizontal">
@@ -164,5 +165,7 @@
                 android:nestedScrollingEnabled="false"
                 android:text="刪除" />
         </LinearLayout>
+
     </LinearLayout>
-</LinearLayout>
+
+</android.support.v7.widget.CardView>

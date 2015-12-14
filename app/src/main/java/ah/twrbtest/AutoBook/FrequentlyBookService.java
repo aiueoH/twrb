@@ -5,9 +5,11 @@ import android.content.Intent;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Events.OnBookableRecordFoundEvent;
+import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.MyApplication;
 import de.greenrobot.event.EventBus;
@@ -48,32 +50,61 @@ public class FrequentlyBookService extends IntentService {
             System.out.println("No bookable BookRecord, do not register next start.");
         else
             EventBus.getDefault().post(new OnBookableRecordFoundEvent());
+        Realm.getDefaultInstance().close();
     }
 
     private void book() {
-        ArrayList<BookRecord> results = getBookableBookRecord(Calendar.getInstance());
-        for (BookRecord bookRecord : results) {
-            new AsyncBookHelper(bookRecord).execute((long) 0);
-            try {
-                long interval = getRandomBookInterval();
-                System.out.println(this.getClass().getName() + " book break " + interval + " ns.");
-                Thread.sleep(getRandomBookInterval());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        Realm.getDefaultInstance().setAutoRefresh(true);
+        HashSet<Long> allBR = new HashSet<>();
+        ArrayList<BookRecord> rr = getBookableBookRecord(Calendar.getInstance());
+        for (BookRecord br : rr)
+            allBR.add(br.getId());
+        while (true) {
+            rr = getBookableBookRecord(Calendar.getInstance());
+            boolean isExist = false;
+            for (BookRecord br : rr) {
+                long id = 0;
+                try {
+                    id = br.getId();
+                    isExist = allBR.remove(id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    isExist = false;
+                }
+                if (!isExist)
+                    continue;
+                AsyncBookHelper abh = new AsyncBookHelper(br);
+                abh.execute();
+                Boolean result = abh.getResult();
+                if (result != null) {
+                    EventBus.getDefault().post(new OnBookedEvent(id, result));
+                }
+                try {
+                    long interval = getRandomBookInterval();
+                    System.out.println(this.getClass().getName() + " book break " + interval + " ns.");
+                    Thread.sleep(getRandomBookInterval());
+                    break;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+            if (!isExist)
+                return;
         }
     }
 
     private ArrayList<BookRecord> getBookableBookRecord(Calendar now) {
+        Realm.getDefaultInstance().refresh();
         RealmResults<BookRecord> rr = Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
                 .equalTo("isCancelled", false)
                 .findAll();
         ArrayList<BookRecord> brs = new ArrayList<>();
-        for (BookRecord br : rr)
+        for (BookRecord br : rr) {
             if (BookRecord.isBookable(br, now))
                 brs.add(br);
+        }
         return brs;
     }
 

@@ -1,49 +1,44 @@
 package ah.twrbtest.Helper;
 
-import android.os.AsyncTask;
-
 import com.twrb.core.booking.BookingInfo;
 import com.twrb.core.helpers.BookingHelper;
 
-import ah.twrbtest.BookRecordFactory;
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
-import ah.twrbtest.Events.OnBookedEvent;
-import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
-public class AsyncBookHelper extends AsyncTask<Long, Integer, Boolean> {
+public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, Boolean> {
     private long bookRecordId;
-    private BookingInfo bookingInfo;
+    private BookingInfo bookingInfo = new BookingInfo();
 
     public AsyncBookHelper(BookRecord bookRecord) {
         this.bookRecordId = bookRecord.getId();
-        this.bookingInfo = new BookingInfo();
-        AdaptHelper.to(bookRecord, this.bookingInfo);
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
+        AdaptHelper.to(BookRecord.get(this.bookRecordId), this.bookingInfo);
     }
 
     @Override
     protected Boolean doInBackground(Long... params) {
-        return BookingHelper.book(this.bookingInfo);
-    }
-
-    @Override
-    protected void onPostExecute(Boolean result) {
-        super.onPostExecute(result);
-        BookRecord bookRecord = Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", this.bookRecordId).findFirst();
-        if (bookRecord == null) {
-            BookRecordFactory.createBookRecord(this.bookingInfo);
-        } else {
+        boolean result = false;
+        try {
+            result = BookingHelper.book(this.bookingInfo);
+            if (!result) {
+                System.out.println("訂票失敗");
+                return result;
+            }
+            Realm.getDefaultInstance().refresh();
+            BookRecord br = BookRecord.get(this.bookRecordId);
             Realm.getDefaultInstance().beginTransaction();
-            AdaptHelper.to(this.bookingInfo, bookRecord);
+            if (br == null || !br.getCode().isEmpty()) {
+                br = new BookRecord();
+                br.setId(BookRecord.generateId());
+                br = Realm.getDefaultInstance().copyToRealm(br);
+            }
+            AdaptHelper.to(this.bookingInfo, br);
             Realm.getDefaultInstance().commitTransaction();
+            System.out.println("訂位代碼:" + this.bookingInfo.CODE);
+        } finally {
+            Realm.getDefaultInstance().close();
         }
-        System.out.println(result ? "訂位代碼:" + this.bookingInfo.CODE : "失敗");
-        EventBus.getDefault().post(new OnBookedEvent(this.bookRecordId, result));
+        return result;
     }
 }

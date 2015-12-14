@@ -9,6 +9,7 @@ import io.realm.Realm;
 public class BookRecordFactory {
     public static BookRecord createBookRecord(BookingInfo bookingInfo) {
         BookRecord br = new BookRecord();
+        br.setId(BookRecord.generateId());
         AdaptHelper.to(bookingInfo, br);
         Realm.getDefaultInstance().beginTransaction();
         Realm.getDefaultInstance().copyToRealm(br);

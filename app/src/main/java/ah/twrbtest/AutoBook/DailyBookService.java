@@ -11,6 +11,7 @@ import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Events.OnBookableRecordFoundEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
+import ah.twrbtest.Helper.NotifiableAsyncTask;
 import ah.twrbtest.MyApplication;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
@@ -44,10 +45,20 @@ public class DailyBookService extends IntentService {
         return checkTime(Calendar.getInstance());
     }
 
-    private static boolean checkTime(Calendar calendar) {
-        int h = calendar.get(Calendar.HOUR_OF_DAY);
-        int m = calendar.get(Calendar.MINUTE);
-        return (h == BEGIN_H || h == END_H) && (m >= BEGIN_M || m <= END_M);
+    private static boolean checkTime(Calendar now) {
+        Calendar begin = (Calendar) now.clone();
+        Calendar end = (Calendar) now.clone();
+        begin.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DATE));
+        begin.set(Calendar.HOUR, BEGIN_H);
+        begin.set(Calendar.MINUTE, BEGIN_M);
+        begin.set(Calendar.SECOND, 0);
+        begin.set(Calendar.MILLISECOND, 0);
+        end.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DATE));
+        end.set(Calendar.HOUR, END_H);
+        end.set(Calendar.MINUTE, END_M);
+        end.set(Calendar.SECOND, 0);
+        end.set(Calendar.MILLISECOND, 0);
+        return now.equals(begin) || now.after(begin) || now.before(end) || now.equals(end);
     }
 
     public static long getNextStartTimeInterval(Calendar now) {
@@ -102,6 +113,7 @@ public class DailyBookService extends IntentService {
     }
 
     private ArrayList<BookRecord> getAllBookableRecords(Calendar now) {
+        Realm.getDefaultInstance().refresh();
         RealmResults<BookRecord> rr = Realm.getDefaultInstance()
                 .where(BookRecord.class)
                 .equalTo("code", "")
@@ -129,21 +141,28 @@ public class DailyBookService extends IntentService {
         }
 
         private void book() {
-            if (checkTime())
-                new AsyncBookHelper(this.bookRecord).execute((long) 0);
-            else {
+            if (!checkTime()) {
                 System.out.println(String.format("AutoBooker of BookRecord[%d] out of checking time.", bookRecord.getId()));
                 finish();
+                return;
             }
-        }
-
-        public void onEvent(OnBookedEvent e) {
-            if (!e.isSuccess()) {
-                book();
-            } else {
-                System.out.println(String.format("AutoBooker of BookRecord[%d] booked success.", bookRecord.getId()));
-                finish();
-            }
+            AsyncBookHelper abh = new AsyncBookHelper(this.bookRecord);
+            abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
+                @Override
+                public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
+                    Boolean result = (Boolean) notifiableAsyncTask.getResult();
+                    if (result == null)
+                        result = false;
+                    if (!result)
+                        book();
+                    else {
+                        EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
+                        System.out.println(String.format("AutoBooker of BookRecord[%d] booked success.", bookRecord.getId()));
+                        finish();
+                    }
+                }
+            });
+            abh.execute();
         }
     }
 }

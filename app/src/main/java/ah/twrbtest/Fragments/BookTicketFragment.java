@@ -29,6 +29,7 @@ import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
+import ah.twrbtest.Helper.NotifiableAsyncTask;
 import ah.twrbtest.MyArrayAdapter.BookableStationArrayAdapter;
 import ah.twrbtest.MyArrayAdapter.DateArrayAdapter;
 import ah.twrbtest.R;
@@ -52,7 +53,6 @@ public class BookTicketFragment extends Fragment {
     private DateArrayAdapter dateArrayAdapter;
     private SimpleAdapter qtuAdapter;
     private ProgressDialog mProgressDialog;
-    private long bookingId = 0;
 
     public static BookTicketFragment newInstance() {
         return new BookTicketFragment();
@@ -70,14 +70,12 @@ public class BookTicketFragment extends Fragment {
     public void onResume() {
         super.onResume();
         System.out.println("BookTicketFragment onResume");
-        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         System.out.println("BookTicketFragment onPause");
-        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -167,15 +165,28 @@ public class BookTicketFragment extends Fragment {
             Toast.makeText(getActivity(), "檢查一下你的欄位好嗎？", Toast.LENGTH_SHORT).show();
             return;
         }
-        this.mProgressDialog = ProgressDialog.show(getActivity(), "", "訂票中");
-        BookRecord bookRecord = saveToDB(info);
-        if (BookRecord.isBookable(bookRecord, Calendar.getInstance()))
-            new AsyncBookHelper(bookRecord).execute((long) 0);
-        else {
+        final BookRecord bookRecord = saveToDB(info);
+        if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
+            this.mProgressDialog = ProgressDialog.show(getActivity(), "", "訂票中");
+            AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
+            abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
+                @Override
+                public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
+                    Boolean result = (Boolean) notifiableAsyncTask.getResult();
+                    if (result == null)
+                        result = false;
+                    EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
+                    EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
+                    mProgressDialog.dismiss();
+                    String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+                    Toast.makeText(getActivity(), s, Toast.LENGTH_SHORT).show();
+                }
+            });
+            abh.execute();
+        } else {
+            EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
             Toast.makeText(getActivity(), "還沒開放訂票，我先把他加入待訂清單哦", Toast.LENGTH_LONG).show();
-            this.mProgressDialog.dismiss();
         }
-        bookingId = bookRecord.getId();
     }
 
     public void save() {
@@ -191,14 +202,5 @@ public class BookTicketFragment extends Fragment {
 
     public BookRecord saveToDB(BookingInfo info) {
         return BookRecordFactory.createBookRecord(info);
-    }
-
-    public void onEvent(OnBookedEvent e) {
-        if (e.getBookRecordId() == this.bookingId) {
-            EventBus.getDefault().post(new OnBookRecordAddedEvent(this.bookingId));
-            String result = e.isSuccess() ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-            this.mProgressDialog.dismiss();
-            Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();
-        }
     }
 }

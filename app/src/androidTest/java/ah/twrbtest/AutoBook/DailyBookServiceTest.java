@@ -111,6 +111,7 @@ public class DailyBookServiceTest extends ServiceTestCase<DailyBookService> {
         c.set(Calendar.SECOND, 0);
         c.set(Calendar.MILLISECOND, 0);
         BookRecord br = new BookRecord();
+        br.setId(BookRecord.generateId());
         br.setGetInDate(c.getTime());
         Realm.getDefaultInstance().copyToRealm(br);
         Realm.getDefaultInstance().commitTransaction();

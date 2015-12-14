@@ -1,5 +1,7 @@
 package ah.twrbtest.DBObject;
 
+import android.support.annotation.Nullable;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,16 +75,16 @@ public class BookRecord extends RealmObject {
 
     private boolean isCancelled = false;
 
-    public BookRecord() {
-        this.id = generateId();
-    }
-
+    @Nullable
     public static BookRecord get(long id) {
         return Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", id).findFirst();
     }
 
     public static long generateId() {
-        return System.currentTimeMillis() + new Object().hashCode();
+        long id = System.currentTimeMillis();
+        while (get(id) != null)
+            id += 1;
+        return id;
     }
 
     public static boolean isBookable(BookRecord bookRecord, Calendar now) {

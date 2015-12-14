@@ -73,7 +73,6 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
         ((ViewHolder) viewHolder).button_book.setVisibility(!bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
         ((ViewHolder) viewHolder).button_cancel.setVisibility(bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
         ((ViewHolder) viewHolder).textView_isCancelled.setVisibility(bookRecord.isCancelled() ? View.VISIBLE : View.GONE);
-
     }
 
     public void registerEventBus() {

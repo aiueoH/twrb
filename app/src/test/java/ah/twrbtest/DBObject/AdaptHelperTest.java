@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import java.util.Date;
 
+import ah.twrbtest.DBObject.BookRecord;
+
 import static org.junit.Assert.assertEquals;
 
 public class AdaptHelperTest {
@@ -14,6 +16,7 @@ public class AdaptHelperTest {
     public void testTo() throws Exception {
         String date = "2010/01/10";
         BookRecord r = new BookRecord();
+        r.setId(BookRecord.generateId());
         BookingInfo i = new BookingInfo();
         r.setGetInDate(new Date(Date.parse(date)));
         AdaptHelper.to(r, i);
@@ -25,6 +28,7 @@ public class AdaptHelperTest {
         String date = "2010/01/10";
         BookingInfo i = new BookingInfo();
         BookRecord r = new BookRecord();
+        r.setId(BookRecord.generateId());
         i.GETIN_DATE = date;
         AdaptHelper.to(i, r);
         assertEquals(date, AdaptHelper.dateToString(r.getGetInDate()));

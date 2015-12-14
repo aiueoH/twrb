@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Window;
 import android.widget.Button;
 
+import ah.twrbtest.AutoBook.FrequentlyBookService;
 import ah.twrbtest.Fragments.BookRecordFragment;
 import ah.twrbtest.Fragments.BookTicketFragment;
 import ah.twrbtest.Fragments.SearchFragment;
@@ -23,6 +24,7 @@ public class MainActivity extends Activity {
     Button search_button;
     private BookTicketFragment bookTicketFragment;
     private SearchFragment searchFragment;
+    private BookRecordFragment bookRecordFragment;
     private Realm realm;
 
     @Override
@@ -33,7 +35,13 @@ public class MainActivity extends Activity {
         ButterKnife.bind(this);
         this.bookTicketFragment = BookTicketFragment.newInstance();
         this.searchFragment = SearchFragment.newInstance();
+        this.bookRecordFragment = BookRecordFragment.newInstance();
         switchFragment(this.searchFragment);
+    }
+
+    @OnClick(R.id.button_test)
+    public void onTestBtnClick() {
+        MyApplication.getInstance().registerServiceAlarmIfNotExist(FrequentlyBookService.class, 0);
     }
 
     @OnClick(R.id.button_search)
@@ -43,7 +51,7 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.button_ticket)
     public void onTicketButtonClick() {
-        switchFragment(BookRecordFragment.newInstance());
+        switchFragment(this.bookRecordFragment);
     }
 
     @OnClick(R.id.button_bookticket)

@@ -58,6 +58,11 @@ public class SearchFragment extends Fragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);

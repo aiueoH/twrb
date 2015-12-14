@@ -24,6 +24,7 @@ import ah.twrbtest.Events.OnBookRecordAddedEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Events.OnSearchedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
+import ah.twrbtest.Helper.NotifiableAsyncTask;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
@@ -40,7 +41,6 @@ public class TimetableActivity extends Activity {
 
     private SearchInfo searchInfo;
     private ProgressDialog mProgressDialog;
-    private long bookingId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,10 +94,13 @@ public class TimetableActivity extends Activity {
         BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookingInfo());
         if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
             this.mProgressDialog = ProgressDialog.show(this, "", "訂票中");
-            bookingId = bookRecord.getId();
-            new AsyncBookHelper(bookRecord).execute((long) 0);
-        } else
+            AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
+            abh.setOnPostExecuteListener(new OnBookedListener(bookRecord.getId()));
+            abh.execute();
+        } else {
+            EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
             Toast.makeText(this, "還沒開放訂票，我先把他加入待訂清單哦", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
@@ -106,12 +109,23 @@ public class TimetableActivity extends Activity {
         Toast.makeText(this, "已加入待訂清單", Toast.LENGTH_SHORT).show();
     }
 
-    public void onEvent(OnBookedEvent e) {
-        if (e.getBookRecordId() == this.bookingId) {
-            EventBus.getDefault().post(new OnBookRecordAddedEvent(this.bookingId));
-            String result = e.isSuccess() ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-            this.mProgressDialog.dismiss();
-            Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+    class OnBookedListener implements AsyncBookHelper.OnPostExecuteListener {
+        private long id;
+
+        public OnBookedListener(long id) {
+            this.id = id;
+        }
+
+        @Override
+        public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
+            Boolean result = (Boolean) notifiableAsyncTask.getResult();
+            if (result == null)
+                result = false;
+            EventBus.getDefault().post(new OnBookRecordAddedEvent(this.id));
+            EventBus.getDefault().post(new OnBookedEvent(this.id, result));
+            mProgressDialog.dismiss();
+            String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+            Toast.makeText(TimetableActivity.this, s, Toast.LENGTH_SHORT).show();
         }
     }
 }

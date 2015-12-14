@@ -122,7 +122,7 @@ public class MyApplication extends Application {
 
     public void onEvent(OnBookableRecordFoundEvent e) {
         System.out.println("MyApplication received OnBookableRecordFoundEvent.");
-        registerServiceAlarmIfNotExist(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
+        registerServiceAlarmIfNotExist(DailyBookService.class, DailyBookService.getNextStartTimeInterval(Calendar.getInstance()) + Calendar.getInstance().getTimeInMillis());
         registerServiceAlarmIfNotExist(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
     }
 

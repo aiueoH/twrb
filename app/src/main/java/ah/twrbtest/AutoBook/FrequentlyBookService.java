@@ -1,7 +1,9 @@
 package ah.twrbtest.AutoBook;
 
+import android.app.Activity;
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -11,7 +13,6 @@ import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Events.OnBookableRecordFoundEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
-import ah.twrbtest.MyApplication;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -23,7 +24,7 @@ public class FrequentlyBookService extends IntentService {
     private static final long RANDOM_BOOK_INTERVAL_FACTOR = 10 * 1000; // 10 seconds
     // 下一次啟動 service 的時間
     private static final long SERVICE_INTERVAL = 5 * 60 * 1000; // 5 minutes
-    // 下一次啟動 service 的隨機增加時間因子(會乘上 +-0.5)
+    // 下一次啟動 service 的隨機增加時間因子
     private static final long RANDOM_SERVICE_INTERVAL_FACTOR = 3 * 60 * 1000; // 3 minutes
 
     public FrequentlyBookService() {
@@ -37,9 +38,12 @@ public class FrequentlyBookService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         System.out.println(this.getClass().getName() + " onHandleIntent.");
-        MyApplication.getInstance().cancelPendingIntentService(this.getClass());
-        if (!DailyBookService.checkTime())
-            book();
+        if (DailyBookService.checkTime())
+            return;
+        if (!checkLastStartTime())
+            return;
+        book();
+        setLastFinishTime();
     }
 
     @Override
@@ -93,6 +97,23 @@ public class FrequentlyBookService extends IntentService {
         }
     }
 
+    private void setLastFinishTime() {
+        getSharedPreferences("twrbtest", Activity.MODE_PRIVATE)
+                .edit()
+                .putLong("lastFrequentlyBookServiceFinishTime", Calendar.getInstance().getTimeInMillis())
+                .commit();
+    }
+
+    private boolean checkLastStartTime() {
+        SharedPreferences sp = getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
+        long lastTime = sp.getLong("lastFrequentlyBookServiceFinishTime", 0);
+        if (Calendar.getInstance().getTimeInMillis() - lastTime < SERVICE_INTERVAL - RANDOM_BOOK_INTERVAL_FACTOR) {
+            System.out.println(this.getClass().getName() + " start interval too short.");
+            return false;
+        }
+        return true;
+    }
+
     private ArrayList<BookRecord> getBookableBookRecord(Calendar now) {
         Realm.getDefaultInstance().refresh();
         RealmResults<BookRecord> rr = Realm.getDefaultInstance()
@@ -109,6 +130,7 @@ public class FrequentlyBookService extends IntentService {
     }
 
     private long getRandomBookInterval() {
-        return (long) (BOOK_INTERVAL + RANDOM_BOOK_INTERVAL_FACTOR * (Math.random() - 0.5));
+        int sign = Math.random() - 0.5 > 0 ? 1 : -1;
+        return (long) (BOOK_INTERVAL + RANDOM_BOOK_INTERVAL_FACTOR * Math.random() * sign);
     }
 }

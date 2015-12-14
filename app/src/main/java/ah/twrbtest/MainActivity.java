@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
 
     @OnClick(R.id.button_test)
     public void onTestBtnClick() {
-        MyApplication.getInstance().registerServiceAlarmIfNotExist(FrequentlyBookService.class, 0);
+        MyApplication.getInstance().registerServiceAlarm(FrequentlyBookService.class, 0);
     }
 
     @OnClick(R.id.button_search)

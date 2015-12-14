@@ -82,7 +82,7 @@ public class DailyBookService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         System.out.println(this.getClass().getName() + " onDestroy.");
-        MyApplication.getInstance().registerServiceAlarmIfNotExist(this.getClass(), getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
+        MyApplication.getInstance().registerServiceAlarm(this.getClass(), getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
         if (!getAllBookableRecords(Calendar.getInstance()).isEmpty())
             EventBus.getDefault().post(new OnBookableRecordFoundEvent());
     }

@@ -25,9 +25,9 @@ public class FrequentlyBookService extends IntentService {
     // 每筆訂票的間隔隨機增加時間因子(會乘上 +-0.5)
     private static final long RANDOM_BOOK_INTERVAL_FACTOR = 10 * 1000; // 10 seconds
     // 下一次啟動 service 的時間
-    private static final long SERVICE_INTERVAL = 5 * 60 * 1000; // 5 minutes
+    private static final long SERVICE_INTERVAL = 1 * 60 * 1000; // 5 minutes
     // 下一次啟動 service 的隨機增加時間因子
-    private static final long RANDOM_SERVICE_INTERVAL_FACTOR = 3 * 60 * 1000; // 3 minutes
+    private static final long RANDOM_SERVICE_INTERVAL_FACTOR = 1 * 60 * 1000; // 3 minutes
 
     public FrequentlyBookService() {
         super("FrequentlyBookService");
@@ -101,6 +101,8 @@ public class FrequentlyBookService extends IntentService {
                 if (result != null) {
                     EventBus.getDefault().post(new OnBookedEvent(id, result));
                 }
+                if (allBR.isEmpty())
+                    return;
                 try {
                     long interval = getRandomBookInterval();
                     System.out.println(this.getClass().getName() + " book break " + interval + " ns.");

@@ -25,9 +25,9 @@ public class FrequentlyBookService extends IntentService {
     // 每筆訂票的間隔隨機增加時間因子(會乘上 +-0.5)
     private static final long RANDOM_BOOK_INTERVAL_FACTOR = 10 * 1000; // 10 seconds
     // 下一次啟動 service 的時間
-    private static final long SERVICE_INTERVAL = 1 * 60 * 1000; // 5 minutes
+    private static final long SERVICE_INTERVAL = 10 * 60 * 1000; // 10 minutes
     // 下一次啟動 service 的隨機增加時間因子
-    private static final long RANDOM_SERVICE_INTERVAL_FACTOR = 1 * 60 * 1000; // 3 minutes
+    private static final long RANDOM_SERVICE_INTERVAL_FACTOR = 5 * 60 * 1000; // 5 minutes
 
     public FrequentlyBookService() {
         super("FrequentlyBookService");

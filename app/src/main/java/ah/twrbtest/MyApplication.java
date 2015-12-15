@@ -60,7 +60,8 @@ public class MyApplication extends Application {
 
     public void onEvent(OnBookableRecordFoundEvent e) {
         System.out.println("MyApplication received OnBookableRecordFoundEvent.");
-        registerServiceAlarm(DailyBookService.class, DailyBookService.getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
+        long dailyBookServiceStartTime = DailyBookService.checkTime() ? 0 : DailyBookService.getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis();
+        registerServiceAlarm(DailyBookService.class, dailyBookServiceStartTime);
         registerServiceAlarm(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
     }
 

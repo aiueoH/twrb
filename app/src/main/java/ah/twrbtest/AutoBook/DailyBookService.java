@@ -3,6 +3,7 @@ package ah.twrbtest.AutoBook;
 import android.app.IntentService;
 import android.app.Notification;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.NotificationCompat;
 
 import java.util.ArrayList;
@@ -78,8 +79,7 @@ public class DailyBookService extends IntentService {
         System.out.println(this.getClass().getName() + " onHandleIntent.");
         try {
             startForeground();
-            bookUntilEndTime();
-            registNextTime();
+            bookUntilEndTimeOrNoBookableRecord();
             checkHasBookableRecord();
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,8 +110,12 @@ public class DailyBookService extends IntentService {
         startForeground(1, n);
     }
 
-    private void bookUntilEndTime() {
+    private void bookUntilEndTimeOrNoBookableRecord() {
         while (checkTime()) {
+            if (getAllBookableRecords(Calendar.getInstance()).isEmpty()) {
+                System.out.println("No bookable record, stop DailyBookService.");
+                return;
+            }
             book();
             try {
                 Thread.sleep(BOOK_INTERVAL);
@@ -125,7 +129,7 @@ public class DailyBookService extends IntentService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        System.out.println("Not in specific time, will stop DailyBookService.");
+        System.out.println("Not in specific time, stop DailyBookService.");
     }
 
     private void book() {
@@ -135,6 +139,7 @@ public class DailyBookService extends IntentService {
                 bookers.put(bookRecord.getId(), new AutoBooker(bookRecord));
     }
 
+    @NonNull
     private ArrayList<BookRecord> getAllBookableRecords(Calendar now) {
         Realm.getDefaultInstance().refresh();
         RealmResults<BookRecord> rr = Realm.getDefaultInstance()

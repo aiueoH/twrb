@@ -80,6 +80,8 @@ public class DailyBookService extends IntentService {
         try {
             startForeground();
             bookUntilEndTimeOrNoBookableRecord();
+            Calendar c = Calendar.getInstance();
+            MyApplication.getInstance().registerServiceAlarm(this.getClass(), getNextStartTimeInterval(c) + c.getTimeInMillis());
             checkHasBookableRecord();
         } catch (Exception e) {
             e.printStackTrace();

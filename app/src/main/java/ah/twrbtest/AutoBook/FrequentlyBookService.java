@@ -2,8 +2,10 @@ package ah.twrbtest.AutoBook;
 
 import android.app.Activity;
 import android.app.IntentService;
+import android.app.Notification;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v7.app.NotificationCompat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,23 +40,39 @@ public class FrequentlyBookService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         System.out.println(this.getClass().getName() + " onHandleIntent.");
-        if (DailyBookService.checkTime())
-            return;
-        if (!checkLastStartTime())
-            return;
-        book();
-        setLastFinishTime();
+        try {
+            startForeground();
+            if (DailyBookService.checkTime() || !checkLastStartTime())
+                return;
+            book();
+            setLastFinishTime();
+            checkHasBookableRecord();
+            Realm.getDefaultInstance().close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            stopForeground();
+        }
     }
 
-    @Override
-    public void onDestroy() {
-        System.out.println(this.getClass().getName() + " onDestroy.");
-        super.onDestroy();
+    private void stopForeground() {
+        stopForeground(true);
+    }
+
+    private void startForeground() {
+        Notification n = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.ic_media_play)
+                .setContentTitle("三不五時訂個票")
+                .setContentText("等這個通知消失了再去看看有沒有訂到票吧！")
+                .build();
+        startForeground(1, n);
+    }
+
+    private void checkHasBookableRecord() {
         if (getBookableBookRecord(Calendar.getInstance()).isEmpty())
             System.out.println("No bookable BookRecord, do not register next start.");
         else
             EventBus.getDefault().post(new OnBookableRecordFoundEvent());
-        Realm.getDefaultInstance().close();
     }
 
     private void book() {

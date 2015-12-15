@@ -47,8 +47,50 @@ public class MyApplication extends Application {
         setupBookableStationIfNotExist();
         setupPronounceSamples();
         EventBus.getDefault().register(this);
-        registerServiceAlarm(DailyBookService.class, Calendar.getInstance().getTimeInMillis());
-        registerServiceAlarm(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval());
+        registerServiceAlarm(DailyBookService.class, DailyBookService.getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
+        registerServiceAlarm(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
+    }
+
+    public void onEvent(OnBookRecordAddedEvent e) {
+        System.out.println("MyApplication received OnBookRecordAddedEvent.");
+        BookRecord br = BookRecord.get(e.getBookRecordId());
+        if (br != null && BookRecord.isBookable(br, Calendar.getInstance()))
+            EventBus.getDefault().post(new OnBookableRecordFoundEvent());
+    }
+
+    public void onEvent(OnBookableRecordFoundEvent e) {
+        System.out.println("MyApplication received OnBookableRecordFoundEvent.");
+        registerServiceAlarm(DailyBookService.class, DailyBookService.getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
+        registerServiceAlarm(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
+    }
+
+    public void registerServiceAlarm(Class<? extends IntentService> cls, long startTime) {
+        Intent intent = new Intent(this, cls);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, startTime, PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(startTime);
+        String s = c.getTime().toString();
+        System.out.println(cls.getName() + " will start at " + s + ".");
+    }
+
+    public void cancelPendingIntentService(Class<? extends IntentService> cls) {
+        PendingIntent pi = PendingIntent.getService(this, 0, new Intent(this, cls), PendingIntent.FLAG_NO_CREATE);
+        if (pi != null)
+            pi.cancel();
+    }
+
+    private List<String> readAllLines(InputStream inputStream) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        List<String> lines = new ArrayList<>();
+        String line;
+        while (true) {
+            line = br.readLine();
+            if (line == null)
+                break;
+            lines.add(line);
+        }
+        return lines;
     }
 
     private void setupRealm() {
@@ -111,48 +153,6 @@ public class MyApplication extends Application {
         } else {
             System.out.println("Bookable stations already existing, " + results.size() + " stations.");
         }
-    }
-
-    public void onEvent(OnBookRecordAddedEvent e) {
-        System.out.println("MyApplication received OnBookRecordAddedEvent.");
-        BookRecord br = BookRecord.get(e.getBookRecordId());
-        if (br != null && BookRecord.isBookable(br, Calendar.getInstance()))
-            EventBus.getDefault().post(new OnBookableRecordFoundEvent());
-    }
-
-    public void onEvent(OnBookableRecordFoundEvent e) {
-        System.out.println("MyApplication received OnBookableRecordFoundEvent.");
-        registerServiceAlarm(DailyBookService.class, DailyBookService.getNextStartTimeInterval(Calendar.getInstance()) + Calendar.getInstance().getTimeInMillis());
-        registerServiceAlarm(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
-    }
-
-    public void registerServiceAlarm(Class<? extends IntentService> cls, long startTime) {
-        Intent intent = new Intent(this, cls);
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, startTime, PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(startTime);
-        String s = c.getTime().toString();
-        System.out.println(cls.getName() + " will start at " + s + ".");
-    }
-
-    public void cancelPendingIntentService(Class<? extends IntentService> cls) {
-        PendingIntent pi = PendingIntent.getService(this, 0, new Intent(this, cls), PendingIntent.FLAG_NO_CREATE);
-        if (pi != null)
-            pi.cancel();
-    }
-
-    private List<String> readAllLines(InputStream inputStream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        List<String> lines = new ArrayList<>();
-        String line;
-        while (true) {
-            line = br.readLine();
-            if (line == null)
-                break;
-            lines.add(line);
-        }
-        return lines;
     }
 
     private void setupPronounceSamples() {

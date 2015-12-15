@@ -1,7 +1,9 @@
 package ah.twrbtest.AutoBook;
 
 import android.app.IntentService;
+import android.app.Notification;
 import android.content.Intent;
+import android.support.v7.app.NotificationCompat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,17 +76,38 @@ public class DailyBookService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         System.out.println(this.getClass().getName() + " onHandleIntent.");
-        MyApplication.getInstance().cancelPendingIntentService(this.getClass());
-        bookUntilEndTime();
+        try {
+            startForeground();
+            bookUntilEndTime();
+            registNextTime();
+            checkHasBookableRecord();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            stopForeground();
+        }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        System.out.println(this.getClass().getName() + " onDestroy.");
-        MyApplication.getInstance().registerServiceAlarm(this.getClass(), getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
+    private void checkHasBookableRecord() {
         if (!getAllBookableRecords(Calendar.getInstance()).isEmpty())
             EventBus.getDefault().post(new OnBookableRecordFoundEvent());
+    }
+
+    private void registNextTime() {
+        MyApplication.getInstance().registerServiceAlarm(this.getClass(), getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis());
+    }
+
+    private void stopForeground() {
+        stopForeground(true);
+    }
+
+    private void startForeground() {
+        Notification n = new NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.ic_media_play)
+                .setContentTitle("午夜訂票")
+                .setContentText("等這個通知消失了再去看看有沒有訂到票吧！")
+                .build();
+        startForeground(1, n);
     }
 
     private void bookUntilEndTime() {

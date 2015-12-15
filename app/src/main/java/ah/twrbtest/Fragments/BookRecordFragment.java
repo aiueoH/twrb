@@ -2,6 +2,8 @@ package ah.twrbtest.Fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -60,6 +62,7 @@ public class BookRecordFragment extends Fragment {
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         this.recyclerView.setAdapter(this.bookRecordAdapter);
         updateEmptyMsg();
+        this.bookRecordAdapter.setParentView(this.recyclerView);
         return view;
     }
 
@@ -88,7 +91,24 @@ public class BookRecordFragment extends Fragment {
         this.bookRecordAdapter.notifyItemInserted(0);
     }
 
+    public void onEventMainThread(ShowSnackbarEvent e) {
+        e.getSnackbar().show();
+    }
+
     public void updateEmptyMsg() {
         this.emptyMsg_textView.setVisibility(this.bookRecords.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    public static class ShowSnackbarEvent {
+        private Snackbar snackbar;
+
+        public ShowSnackbarEvent(@NonNull Snackbar snackbar) {
+            this.snackbar = snackbar;
+        }
+
+        @NonNull
+        public Snackbar getSnackbar() {
+            return snackbar;
+        }
     }
 }

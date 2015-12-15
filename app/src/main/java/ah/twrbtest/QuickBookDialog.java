@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.design.widget.Snackbar;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.twrb.core.booking.BookingInfo;
 import com.twrb.core.helpers.IDCreator;
@@ -94,7 +94,7 @@ public class QuickBookDialog extends Dialog {
     private boolean setBookingInfo() {
         String id = this.id_editText.getText().toString();
         if (!IDCreator.check(id)) {
-            Toast.makeText(this.context, "你不要用假的身分證字號好不好", Toast.LENGTH_SHORT).show();
+            Snackbar.make(qtu_spinner, "你不要用假的身分證字號好不好", Snackbar.LENGTH_SHORT).show();
             return true;
         }
         this.bookingInfo.PERSON_ID = id;

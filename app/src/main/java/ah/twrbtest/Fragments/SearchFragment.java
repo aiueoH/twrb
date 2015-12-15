@@ -6,11 +6,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TimetableSearcher;
@@ -77,7 +77,7 @@ public class SearchFragment extends Fragment {
     public void onEvent(OnSearchedEvent e) {
         this.progressDialog.dismiss();
         if (e.getTrainInfos() == null || e.getTrainInfos().isEmpty()) {
-            Toast.makeText(getActivity(), "很遺憾，你輸入的資料查不到任何班次", Toast.LENGTH_SHORT).show();
+            Snackbar.make(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT).show();
             return;
         }
         Intent intent = new Intent(getActivity(), TimetableActivity.class);
@@ -106,7 +106,13 @@ public class SearchFragment extends Fragment {
         si.TOSTATION = ((TimetableStation) this.to_spinner.getSelectedItem()).getNo();
         si.setDateTime((Date) (this.date_spinner.getSelectedItem()));
         if (si.FROMSTATION.equals(si.TOSTATION)) {
-            Toast.makeText(getActivity(), "三小！？", Toast.LENGTH_SHORT).show();
+            Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
+                    .setAction("我知道錯了", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                        }
+                    })
+                    .show();
             return;
         }
         this.progressDialog = ProgressDialog.show(getActivity(), "", "正在幫您查查");

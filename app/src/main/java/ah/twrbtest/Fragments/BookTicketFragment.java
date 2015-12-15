@@ -3,6 +3,7 @@ package ah.twrbtest.Fragments;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.twrb.core.booking.BookingInfo;
 import com.twrb.core.helpers.IDCreator;
@@ -160,9 +160,8 @@ public class BookTicketFragment extends Fragment {
 
     public void book() {
         BookingInfo info = getBookingInfo();
-        System.out.println("$$$$$$$$$$$$$" + info.TRAIN_NO + "$$$$$$$$$");
         if (!info.verify()) {
-            Toast.makeText(getActivity(), "檢查一下你的欄位好嗎？", Toast.LENGTH_SHORT).show();
+            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
             return;
         }
         final BookRecord bookRecord = saveToDB(info);
@@ -179,25 +178,25 @@ public class BookTicketFragment extends Fragment {
                     EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
                     mProgressDialog.dismiss();
                     String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-                    Toast.makeText(getActivity(), s, Toast.LENGTH_SHORT).show();
+                    Snackbar.make(id_editText, s, Snackbar.LENGTH_LONG).show();
                 }
             });
             abh.execute();
         } else {
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-            Toast.makeText(getActivity(), "還沒開放訂票，我先把他加入待訂清單哦", Toast.LENGTH_LONG).show();
+            Snackbar.make(id_editText, "還沒開放訂票，我先把他加入待訂清單哦", Snackbar.LENGTH_LONG).show();
         }
     }
 
     public void save() {
         BookingInfo info = getBookingInfo();
         if (!info.verify()) {
-            Toast.makeText(getActivity(), "檢查一下你的欄位好嗎？", Toast.LENGTH_SHORT).show();
+            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
             return;
         }
         long id = saveToDB(info).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(id));
-        Toast.makeText(getActivity(), "已加入待訂清單", Toast.LENGTH_SHORT).show();
+        Snackbar.make(id_editText, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_LONG).show();
     }
 
     public BookRecord saveToDB(BookingInfo info) {

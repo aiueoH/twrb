@@ -2,6 +2,7 @@ package ah.twrbtest;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -23,16 +23,18 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import io.realm.Realm;
 
-/**
- * Created by Wei on 2015/12/12.
- */
 public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.MyViewHolder> {
     private Context context;
+    private View parentView;
     private List<BookRecord> bookRecords;
 
     public BookRecordAdapter(Context context, List<BookRecord> bookRecords) {
         this.context = context;
         this.bookRecords = bookRecords;
+    }
+
+    public void setParentView(View parentView) {
+        this.parentView = parentView;
     }
 
     public List<BookRecord> getBookRecords() {
@@ -147,10 +149,17 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
             progressDialog.dismiss();
             notifyItemChanged(bookRecords.indexOf(bookRecord));
-            String s = "恭喜您，訂到票了！";
-            if (!(boolean) notifiableAsyncTask.getResult())
-                s = "訂票失敗，你知道孫中山革命了幾次才成功嗎？";
-            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
+            Boolean result = (Boolean) notifiableAsyncTask.getResult();
+            result = result == null ? false : result;
+            String msg = result ? "恭喜您，訂到票了！" : "訂票失敗，你知道孫中山革命了幾次才成功嗎？";
+            Snackbar s = Snackbar.make(parentView, msg, Snackbar.LENGTH_LONG);
+            if (!result)
+                s.setAction("我知道", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                    }
+                });
+            s.show();
         }
     }
 
@@ -174,7 +183,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
             String s = "退票成功，酌收手續費 $300";
             if (!(boolean) notifiableAsyncTask.getResult())
                 s = "退票失敗，再試一次好嗎？";
-            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
+            Snackbar.make(parentView, s, Snackbar.LENGTH_SHORT).show();
         }
     }
 }

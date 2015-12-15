@@ -69,8 +69,9 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
         android:layout_marginTop="50dp"
         android:gravity="center"
         android:orientation="horizontal"

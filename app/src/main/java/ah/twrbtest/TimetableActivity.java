@@ -3,10 +3,10 @@ package ah.twrbtest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.twrb.core.booking.BookingInfo;
 import com.twrb.core.timetable.SearchInfo;
@@ -99,14 +99,14 @@ public class TimetableActivity extends Activity {
             abh.execute();
         } else {
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-            Toast.makeText(this, "還沒開放訂票，我先把他加入待訂清單哦", Toast.LENGTH_LONG).show();
+            Snackbar.make(recyclerView, "還沒開放訂票，我就自作主張先加入待訂清單了，不用謝", Snackbar.LENGTH_LONG).show();
         }
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
         long brId = BookRecordFactory.createBookRecord(e.getBookingInfo()).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
-        Toast.makeText(this, "已加入待訂清單", Toast.LENGTH_SHORT).show();
+        Snackbar.make(recyclerView, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_SHORT).show();
     }
 
     class OnBookedListener implements AsyncBookHelper.OnPostExecuteListener {
@@ -125,7 +125,7 @@ public class TimetableActivity extends Activity {
             EventBus.getDefault().post(new OnBookedEvent(this.id, result));
             mProgressDialog.dismiss();
             String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-            Toast.makeText(TimetableActivity.this, s, Toast.LENGTH_SHORT).show();
+            Snackbar.make(recyclerView, s, Snackbar.LENGTH_LONG).show();
         }
     }
 }

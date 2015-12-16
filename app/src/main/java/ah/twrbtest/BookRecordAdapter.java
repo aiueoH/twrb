@@ -16,11 +16,13 @@ import java.util.List;
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
+import ah.twrbtest.Events.OnBookRecordRemovedEvent;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.Helper.AsyncCancelHelper;
 import ah.twrbtest.Helper.NotifiableAsyncTask;
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
 public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.MyViewHolder> {
@@ -82,6 +84,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                 realm.beginTransaction();
                 tmp.removeFromRealm();
                 realm.commitTransaction();
+                EventBus.getDefault().post(new OnBookRecordRemovedEvent());
             }
         });
     }

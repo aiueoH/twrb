@@ -17,6 +17,7 @@ import java.util.List;
 import ah.twrbtest.BookRecordAdapter;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
+import ah.twrbtest.Events.OnBookRecordRemovedEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.R;
 import butterknife.Bind;
@@ -89,6 +90,11 @@ public class BookRecordFragment extends Fragment {
         BookRecord br = BookRecord.get(e.getBookRecordId());
         bookRecords.add(0, br);
         this.bookRecordAdapter.notifyItemInserted(0);
+        updateEmptyMsg();
+    }
+
+    public void onEventMainThread(OnBookRecordRemovedEvent e) {
+        updateEmptyMsg();
     }
 
     public void onEventMainThread(ShowSnackbarEvent e) {

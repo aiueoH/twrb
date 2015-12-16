@@ -1,30 +1,25 @@
 package ah.twrbtest;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.Window;
-import android.widget.Button;
 
 import ah.twrbtest.Fragments.BookRecordFragment;
 import ah.twrbtest.Fragments.BookTicketFragment;
 import ah.twrbtest.Fragments.SearchFragment;
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
-import io.realm.Realm;
 
-public class MainActivity extends Activity {
-
-    @Bind(R.id.button_ticket)
-    Button ticket_button;
-    @Bind(R.id.button_search)
-    Button search_button;
-    private BookTicketFragment bookTicketFragment;
-    private SearchFragment searchFragment;
-    private BookRecordFragment bookRecordFragment;
-    private Realm realm;
+public class MainActivity extends FragmentActivity {
+    @Bind(R.id.tabs)
+    TabLayout tabLayout;
+    @Bind(R.id.container)
+    ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,31 +27,39 @@ public class MainActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        this.bookTicketFragment = BookTicketFragment.newInstance();
-        this.searchFragment = SearchFragment.newInstance();
-        this.bookRecordFragment = BookRecordFragment.newInstance();
-        switchFragment(this.searchFragment);
+        ViewPagerAdapter vpa = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(vpa);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
-    @OnClick(R.id.button_search)
-    public void onSearchButtonClick() {
-        switchFragment(this.searchFragment);
-    }
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final String[] titles = new String[]{
+                "查詢",
+                "火車票",
+                "訂票"};
+        private final Fragment[] fragments = new Fragment[]{
+                SearchFragment.newInstance(),
+                BookRecordFragment.newInstance(),
+                BookTicketFragment.newInstance()
+        };
 
-    @OnClick(R.id.button_ticket)
-    public void onTicketButtonClick() {
-        switchFragment(this.bookRecordFragment);
-    }
+        public ViewPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
 
-    @OnClick(R.id.button_bookticket)
-    public void onBookTicketButtonClick() {
-        switchFragment(this.bookTicketFragment);
-    }
+        @Override
+        public Fragment getItem(int position) {
+            return fragments[position];
+        }
 
-    public void switchFragment(Fragment fragment) {
-        FragmentManager fm = getFragmentManager();
-        fm.beginTransaction()
-                .replace(R.id.container, fragment)
-                .commit();
+        @Override
+        public int getCount() {
+            return fragments.length;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return titles[position];
+        }
     }
 }

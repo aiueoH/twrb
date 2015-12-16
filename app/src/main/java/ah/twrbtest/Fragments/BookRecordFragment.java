@@ -82,6 +82,7 @@ public class BookRecordFragment extends Fragment {
         for (int i = 0; i < this.bookRecords.size(); i++)
             if (id == this.bookRecords.get(i).getId()) {
                 this.bookRecordAdapter.notifyItemChanged(i);
+                this.recyclerView.scrollToPosition(i);
                 break;
             }
     }
@@ -90,6 +91,7 @@ public class BookRecordFragment extends Fragment {
         BookRecord br = BookRecord.get(e.getBookRecordId());
         bookRecords.add(0, br);
         this.bookRecordAdapter.notifyItemInserted(0);
+        this.recyclerView.scrollToPosition(0);
         updateEmptyMsg();
     }
 

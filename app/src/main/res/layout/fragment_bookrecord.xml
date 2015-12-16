@@ -18,6 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginBottom="70dp"
             android:text="你沒有任何訂票，好可憐"
             android:textSize="30dp" />
     </FrameLayout>

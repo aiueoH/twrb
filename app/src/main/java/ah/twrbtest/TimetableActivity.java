@@ -8,7 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.booking.BookInfo;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 
@@ -82,7 +82,7 @@ public class TimetableActivity extends Activity {
 
     public void onEvent(TrainInfoAdapter.OnItemClickEvent e) {
         TrainInfo ti = e.getTrainInfo();
-        BookingInfo bi = new BookingInfo();
+        BookInfo bi = new BookInfo();
         bi.TRAIN_NO = ti.NO;
         bi.FROM_STATION = TimetableStation.get(this.searchInfo.FROMSTATION).getBookNo();
         bi.TO_STATION = TimetableStation.get(this.searchInfo.TOSTATION).getBookNo();
@@ -91,7 +91,7 @@ public class TimetableActivity extends Activity {
     }
 
     public void onEvent(QuickBookDialog.OnBookingEvent e) {
-        BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookingInfo());
+        BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookInfo());
         if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
             this.mProgressDialog = ProgressDialog.show(this, "", "訂票中");
             AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
@@ -104,7 +104,7 @@ public class TimetableActivity extends Activity {
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
-        long brId = BookRecordFactory.createBookRecord(e.getBookingInfo()).getId();
+        long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
         Snackbar.make(recyclerView, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_SHORT).show();
     }

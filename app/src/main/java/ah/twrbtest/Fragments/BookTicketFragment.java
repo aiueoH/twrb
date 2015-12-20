@@ -12,7 +12,7 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.booking.BookInfo;
 import com.twrb.core.helpers.IDCreator;
 
 import java.text.SimpleDateFormat;
@@ -146,9 +146,9 @@ public class BookTicketFragment extends Fragment {
         this.bookableStationArrayAdapter = new BookableStationArrayAdapter(getActivity(), R.layout.item_bookablestation, bss);
     }
 
-    private BookingInfo getBookingInfo() {
+    private BookInfo getBookingInfo() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        BookingInfo info = new BookingInfo();
+        BookInfo info = new BookInfo();
         info.PERSON_ID = this.id_editText.getText().toString();
         info.TRAIN_NO = this.no_editText.getText().toString();
         info.GETIN_DATE = dateFormat.format((Date) this.date_spinner.getSelectedItem());
@@ -159,7 +159,7 @@ public class BookTicketFragment extends Fragment {
     }
 
     public void book() {
-        BookingInfo info = getBookingInfo();
+        BookInfo info = getBookingInfo();
         if (!info.verify()) {
             Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
             return;
@@ -189,7 +189,7 @@ public class BookTicketFragment extends Fragment {
     }
 
     public void save() {
-        BookingInfo info = getBookingInfo();
+        BookInfo info = getBookingInfo();
         if (!info.verify()) {
             Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
             return;
@@ -199,7 +199,7 @@ public class BookTicketFragment extends Fragment {
         Snackbar.make(id_editText, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_LONG).show();
     }
 
-    public BookRecord saveToDB(BookingInfo info) {
+    public BookRecord saveToDB(BookInfo info) {
         return BookRecordFactory.createBookRecord(info);
     }
 }

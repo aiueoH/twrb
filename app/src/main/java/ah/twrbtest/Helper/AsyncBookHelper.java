@@ -1,6 +1,6 @@
 package ah.twrbtest.Helper;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.booking.BookInfo;
 import com.twrb.core.helpers.BookingHelper;
 
 import ah.twrbtest.DBObject.AdaptHelper;
@@ -9,18 +9,18 @@ import io.realm.Realm;
 
 public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, Boolean> {
     private long bookRecordId;
-    private BookingInfo bookingInfo = new BookingInfo();
+    private BookInfo bookInfo = new BookInfo();
 
     public AsyncBookHelper(BookRecord bookRecord) {
         this.bookRecordId = bookRecord.getId();
-        AdaptHelper.to(BookRecord.get(this.bookRecordId), this.bookingInfo);
+        AdaptHelper.to(BookRecord.get(this.bookRecordId), this.bookInfo);
     }
 
     @Override
     protected Boolean doInBackground(Long... params) {
         boolean result = false;
         try {
-            result = BookingHelper.book(this.bookingInfo);
+            result = BookingHelper.book(this.bookInfo);
             if (!result) {
                 System.out.println("訂票失敗");
                 return result;
@@ -33,9 +33,9 @@ public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, Boolean>
                 br.setId(BookRecord.generateId());
                 br = Realm.getDefaultInstance().copyToRealm(br);
             }
-            AdaptHelper.to(this.bookingInfo, br);
+            AdaptHelper.to(this.bookInfo, br);
             Realm.getDefaultInstance().commitTransaction();
-            System.out.println("訂位代碼:" + this.bookingInfo.CODE);
+            System.out.println("訂位代碼:" + this.bookInfo.CODE);
         } finally {
             Realm.getDefaultInstance().close();
         }

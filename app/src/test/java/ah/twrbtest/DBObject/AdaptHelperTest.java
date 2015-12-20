@@ -1,12 +1,10 @@
 package ah.twrbtest.DBObject;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.booking.BookInfo;
 
 import org.junit.Test;
 
 import java.util.Date;
-
-import ah.twrbtest.DBObject.BookRecord;
 
 import static org.junit.Assert.assertEquals;
 
@@ -17,7 +15,7 @@ public class AdaptHelperTest {
         String date = "2010/01/10";
         BookRecord r = new BookRecord();
         r.setId(BookRecord.generateId());
-        BookingInfo i = new BookingInfo();
+        BookInfo i = new BookInfo();
         r.setGetInDate(new Date(Date.parse(date)));
         AdaptHelper.to(r, i);
         assertEquals(date, i.GETIN_DATE);
@@ -26,7 +24,7 @@ public class AdaptHelperTest {
     @Test
     public void testTo1() throws Exception {
         String date = "2010/01/10";
-        BookingInfo i = new BookingInfo();
+        BookInfo i = new BookInfo();
         BookRecord r = new BookRecord();
         r.setId(BookRecord.generateId());
         i.GETIN_DATE = date;

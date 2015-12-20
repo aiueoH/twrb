@@ -1,6 +1,6 @@
 package ah.twrbtest.DBObject;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.booking.BookInfo;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,25 +12,25 @@ public class AdaptHelper {
         return DATE_FORMAT.format(date);
     }
 
-    public static void to(BookRecord bookRecord, BookingInfo bookingInfo) {
-        bookingInfo.PERSON_ID = bookRecord.getPersonId();
-        bookingInfo.GETIN_DATE = DATE_FORMAT.format(bookRecord.getGetInDate());
-        bookingInfo.FROM_STATION = bookRecord.getFromStation();
-        bookingInfo.TO_STATION = bookRecord.getToStation();
-        bookingInfo.ORDER_QTU_STR = bookRecord.getOrderQtuStr();
-        bookingInfo.TRAIN_NO = bookRecord.getTrainNo();
-        bookingInfo.RETURNTICKET = bookRecord.getReturnTicket();
-        bookingInfo.CODE = bookRecord.getCode();
+    public static void to(BookRecord bookRecord, BookInfo bookInfo) {
+        bookInfo.PERSON_ID = bookRecord.getPersonId();
+        bookInfo.GETIN_DATE = DATE_FORMAT.format(bookRecord.getGetInDate());
+        bookInfo.FROM_STATION = bookRecord.getFromStation();
+        bookInfo.TO_STATION = bookRecord.getToStation();
+        bookInfo.ORDER_QTU_STR = bookRecord.getOrderQtuStr();
+        bookInfo.TRAIN_NO = bookRecord.getTrainNo();
+        bookInfo.RETURNTICKET = bookRecord.getReturnTicket();
+        bookInfo.CODE = bookRecord.getCode();
     }
 
-    public static void to(BookingInfo bookingInfo, BookRecord bookRecord) {
-        bookRecord.setPersonId(bookingInfo.PERSON_ID);
-        bookRecord.setGetInDate(new Date(Date.parse(bookingInfo.GETIN_DATE)));
-        bookRecord.setFromStation(bookingInfo.FROM_STATION);
-        bookRecord.setToStation(bookingInfo.TO_STATION);
-        bookRecord.setOrderQtuStr(bookingInfo.ORDER_QTU_STR);
-        bookRecord.setTrainNo(bookingInfo.TRAIN_NO);
-        bookRecord.setReturnTicket(bookingInfo.RETURNTICKET);
-        bookRecord.setCode(bookingInfo.CODE);
+    public static void to(BookInfo bookInfo, BookRecord bookRecord) {
+        bookRecord.setPersonId(bookInfo.PERSON_ID);
+        bookRecord.setGetInDate(new Date(Date.parse(bookInfo.GETIN_DATE)));
+        bookRecord.setFromStation(bookInfo.FROM_STATION);
+        bookRecord.setToStation(bookInfo.TO_STATION);
+        bookRecord.setOrderQtuStr(bookInfo.ORDER_QTU_STR);
+        bookRecord.setTrainNo(bookInfo.TRAIN_NO);
+        bookRecord.setReturnTicket(bookInfo.RETURNTICKET);
+        bookRecord.setCode(bookInfo.CODE);
     }
 }

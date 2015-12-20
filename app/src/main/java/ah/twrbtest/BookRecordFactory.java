@@ -1,16 +1,16 @@
 package ah.twrbtest;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.booking.BookInfo;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import io.realm.Realm;
 
 public class BookRecordFactory {
-    public static BookRecord createBookRecord(BookingInfo bookingInfo) {
+    public static BookRecord createBookRecord(BookInfo bookInfo) {
         BookRecord br = new BookRecord();
         br.setId(BookRecord.generateId());
-        AdaptHelper.to(bookingInfo, br);
+        AdaptHelper.to(bookInfo, br);
         Realm.getDefaultInstance().beginTransaction();
         Realm.getDefaultInstance().copyToRealm(br);
         Realm.getDefaultInstance().commitTransaction();

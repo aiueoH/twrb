@@ -1,7 +1,7 @@
 package ah.twrbtest.Helper;
 
 import com.twrb.core.booking.BookInfo;
-import com.twrb.core.helpers.BookingHelper;
+import com.twrb.core.helpers.BookHelper;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
@@ -20,7 +20,7 @@ public class AsyncCancelHelper extends NotifiableAsyncTask<Long, Integer, Boolea
     protected Boolean doInBackground(Long... params) {
         boolean result;
         try {
-            result = BookingHelper.cancel(this.bookInfo);
+            result = BookHelper.cancel(this.bookInfo);
             Realm.getDefaultInstance().refresh();
             BookRecord br = BookRecord.get(this.bookRecordId);
             Realm.getDefaultInstance().beginTransaction();

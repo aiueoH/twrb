@@ -1,7 +1,7 @@
 package ah.twrbtest.Helper;
 
 import com.twrb.core.booking.BookInfo;
-import com.twrb.core.helpers.BookingHelper;
+import com.twrb.core.helpers.BookHelper;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
@@ -20,7 +20,7 @@ public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, Boolean>
     protected Boolean doInBackground(Long... params) {
         boolean result = false;
         try {
-            result = BookingHelper.book(this.bookInfo);
+            result = BookHelper.book(this.bookInfo);
             if (!result) {
                 System.out.println("訂票失敗");
                 return result;

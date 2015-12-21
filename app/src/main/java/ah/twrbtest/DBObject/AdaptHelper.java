@@ -1,6 +1,6 @@
 package ah.twrbtest.DBObject;
 
-import com.twrb.core.booking.BookInfo;
+import com.twrb.core.book.BookInfo;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

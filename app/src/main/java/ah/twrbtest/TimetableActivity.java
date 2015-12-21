@@ -8,7 +8,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
 
-import com.twrb.core.booking.BookInfo;
+import com.twrb.core.book.BookInfo;
+import com.twrb.core.book.BookResult;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 
@@ -118,13 +119,13 @@ public class TimetableActivity extends Activity {
 
         @Override
         public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-            Boolean result = (Boolean) notifiableAsyncTask.getResult();
+            BookResult result = (BookResult) notifiableAsyncTask.getResult();
             if (result == null)
-                result = false;
+                result = BookResult.UNKNOWN;
             EventBus.getDefault().post(new OnBookRecordAddedEvent(this.id));
             EventBus.getDefault().post(new OnBookedEvent(this.id, result));
             mProgressDialog.dismiss();
-            String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+            String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
             Snackbar.make(recyclerView, s, Snackbar.LENGTH_LONG).show();
         }
     }

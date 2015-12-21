@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.NotificationCompat;
 
+import com.twrb.core.book.BookResult;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Hashtable;
@@ -180,10 +182,10 @@ public class DailyBookService extends IntentService {
             abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
                 @Override
                 public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-                    Boolean result = (Boolean) notifiableAsyncTask.getResult();
+                    BookResult result = (BookResult) notifiableAsyncTask.getResult();
                     if (result == null)
-                        result = false;
-                    if (!result)
+                        result = BookResult.UNKNOWN;
+                    if (!result.equals(BookResult.OK))
                         book();
                     else {
                         EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));

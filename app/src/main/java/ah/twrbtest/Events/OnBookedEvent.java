@@ -1,19 +1,21 @@
 package ah.twrbtest.Events;
 
+import com.twrb.core.book.BookResult;
+
 public class OnBookedEvent {
     private long bookRecordId;
-    private boolean isSuccess;
+    private BookResult result;
 
-    public OnBookedEvent(long bookRecordId, boolean isSuccess) {
+    public OnBookedEvent(long bookRecordId, BookResult result) {
         this.bookRecordId = bookRecordId;
-        this.isSuccess = isSuccess;
+        this.result = result;
     }
 
     public long getBookRecordId() {
         return bookRecordId;
     }
 
-    public boolean isSuccess() {
-        return isSuccess;
+    public BookResult getBookResult() {
+        return result;
     }
 }

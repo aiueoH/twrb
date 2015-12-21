@@ -1,6 +1,6 @@
 package ah.twrbtest.Helper;
 
-import com.twrb.core.booking.BookInfo;
+import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.BookHelper;
 
 import ah.twrbtest.DBObject.AdaptHelper;

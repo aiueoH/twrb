@@ -1,13 +1,14 @@
 package ah.twrbtest.Helper;
 
-import com.twrb.core.booking.BookInfo;
+import com.twrb.core.book.BookInfo;
+import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.BookHelper;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import io.realm.Realm;
 
-public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, Boolean> {
+public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, BookResult> {
     private long bookRecordId;
     private BookInfo bookInfo = new BookInfo();
 
@@ -17,11 +18,11 @@ public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, Boolean>
     }
 
     @Override
-    protected Boolean doInBackground(Long... params) {
-        boolean result = false;
+    protected BookResult doInBackground(Long... params) {
+        BookResult result = BookResult.UNKNOWN;
         try {
             result = BookHelper.book(this.bookInfo);
-            if (!result) {
+            if (!result.equals(BookResult.OK)) {
                 System.out.println("訂票失敗");
                 return result;
             }

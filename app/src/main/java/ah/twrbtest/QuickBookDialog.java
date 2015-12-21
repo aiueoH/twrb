@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
-import com.twrb.core.booking.BookInfo;
+import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.IDCreator;
 
 import java.util.ArrayList;

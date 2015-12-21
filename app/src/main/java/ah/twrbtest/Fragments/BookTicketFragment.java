@@ -12,7 +12,8 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
-import com.twrb.core.booking.BookInfo;
+import com.twrb.core.book.BookInfo;
+import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.IDCreator;
 
 import java.text.SimpleDateFormat;
@@ -171,13 +172,13 @@ public class BookTicketFragment extends Fragment {
             abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
                 @Override
                 public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-                    Boolean result = (Boolean) notifiableAsyncTask.getResult();
+                    BookResult result = (BookResult) notifiableAsyncTask.getResult();
                     if (result == null)
-                        result = false;
+                        result = BookResult.UNKNOWN;
                     EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
                     EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
                     mProgressDialog.dismiss();
-                    String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+                    String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
                     Snackbar.make(id_editText, s, Snackbar.LENGTH_LONG).show();
                 }
             });

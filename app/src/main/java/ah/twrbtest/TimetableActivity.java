@@ -57,13 +57,13 @@ public class TimetableActivity extends Activity {
         try {
             DateFormat input = new SimpleDateFormat("yyyy/MM/dd");
             DateFormat output = new SimpleDateFormat("yyyy/MM/dd E");
-            date = output.format(input.parse(this.searchInfo.SEARCHDATE));
+            date = output.format(input.parse(this.searchInfo.searchDate));
         } catch (ParseException pe) {
             pe.printStackTrace();
         }
         this.date_textView.setText(date);
-        this.from_textView.setText(TimetableStation.get(this.searchInfo.FROMSTATION).getNameCh());
-        this.to_textView.setText(TimetableStation.get(this.searchInfo.TOSTATION).getNameCh());
+        this.from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
+        this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
 
         this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         this.recyclerView.setAdapter(new TrainInfoAdapter(this, trainInfos));
@@ -84,10 +84,10 @@ public class TimetableActivity extends Activity {
     public void onEvent(TrainInfoAdapter.OnItemClickEvent e) {
         TrainInfo ti = e.getTrainInfo();
         BookInfo bi = new BookInfo();
-        bi.TRAIN_NO = ti.NO;
-        bi.FROM_STATION = TimetableStation.get(this.searchInfo.FROMSTATION).getBookNo();
-        bi.TO_STATION = TimetableStation.get(this.searchInfo.TOSTATION).getBookNo();
-        bi.GETIN_DATE = this.searchInfo.SEARCHDATE;
+        bi.trainNo = ti.no;
+        bi.fromStation = TimetableStation.get(this.searchInfo.fromStation).getBookNo();
+        bi.toStation = TimetableStation.get(this.searchInfo.toStation).getBookNo();
+        bi.getinDate = this.searchInfo.searchDate;
         new QuickBookDialog(this, bi).show();
     }
 

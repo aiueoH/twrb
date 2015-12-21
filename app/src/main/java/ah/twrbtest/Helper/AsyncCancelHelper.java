@@ -30,11 +30,11 @@ public class AsyncCancelHelper extends NotifiableAsyncTask<Long, Integer, Boolea
                 br = Realm.getDefaultInstance().copyToRealm(br);
             }
             if (result)
-                this.bookInfo.CODE = "";
+                this.bookInfo.code = "";
             AdaptHelper.to(this.bookInfo, br);
             br.setIsCancelled(true);
             Realm.getDefaultInstance().commitTransaction();
-            System.out.println(result ? "已退訂" + this.bookInfo.CODE : "退訂失敗");
+            System.out.println(result ? "已退訂" + this.bookInfo.code : "退訂失敗");
         } finally {
             Realm.getDefaultInstance().close();
         }

@@ -44,12 +44,12 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         final TrainInfo ti = this.trainInfos.get(position);
-        holder.trainType_textView.setText(ti.TYPE);
-        holder.trainNo_textView.setText(ti.NO);
-        holder.depatureTime_textView.setText(ti.DEPARTURE_TIME);
-        holder.arrivalTime_textView.setText(ti.ARRIVAL_TIME);
-        holder.trainType_textView.setTextColor(getTrainTypeColor(ti.TYPE));
-        holder.trainNo_textView.setTextColor(getTrainTypeColor(ti.TYPE));
+        holder.trainType_textView.setText(ti.type);
+        holder.trainNo_textView.setText(ti.no);
+        holder.depatureTime_textView.setText(ti.departureTime);
+        holder.arrivalTime_textView.setText(ti.arrivalTime);
+        holder.trainType_textView.setTextColor(getTrainTypeColor(ti.type));
+        holder.trainNo_textView.setTextColor(getTrainTypeColor(ti.type));
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

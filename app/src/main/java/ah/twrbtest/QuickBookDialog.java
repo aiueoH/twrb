@@ -97,8 +97,8 @@ public class QuickBookDialog extends Dialog {
             Snackbar.make(qtu_spinner, "你不要用假的身分證字號好不好", Snackbar.LENGTH_SHORT).show();
             return true;
         }
-        this.bookInfo.PERSON_ID = id;
-        this.bookInfo.ORDER_QTU_STR = String.valueOf(this.qtu_spinner.getSelectedItemPosition() + 1);
+        this.bookInfo.personId = id;
+        this.bookInfo.orderQtuStr = String.valueOf(this.qtu_spinner.getSelectedItemPosition() + 1);
         return false;
     }
 

@@ -100,12 +100,12 @@ public class SearchFragment extends Fragment {
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
         SearchInfo si = SearchInfo.createExpressClass();
-        si.FROMSTATION = ((TimetableStation) this.from_spinner.getSelectedItem()).getNo();
-        si.FROMCITY = ((TimetableStation) this.from_spinner.getSelectedItem()).getCityNo();
-        si.TOCITY = ((TimetableStation) this.to_spinner.getSelectedItem()).getCityNo();
-        si.TOSTATION = ((TimetableStation) this.to_spinner.getSelectedItem()).getNo();
+        si.fromStation = ((TimetableStation) this.from_spinner.getSelectedItem()).getNo();
+        si.fromCity = ((TimetableStation) this.from_spinner.getSelectedItem()).getCityNo();
+        si.toCity = ((TimetableStation) this.to_spinner.getSelectedItem()).getCityNo();
+        si.toStation = ((TimetableStation) this.to_spinner.getSelectedItem()).getNo();
         si.setDateTime((Date) (this.date_spinner.getSelectedItem()));
-        if (si.FROMSTATION.equals(si.TOSTATION)) {
+        if (si.fromStation.equals(si.toStation)) {
             Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
                     .setAction("我知道錯了", new View.OnClickListener() {
                         @Override

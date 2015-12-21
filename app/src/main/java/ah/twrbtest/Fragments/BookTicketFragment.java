@@ -150,12 +150,12 @@ public class BookTicketFragment extends Fragment {
     private BookInfo getBookingInfo() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         BookInfo info = new BookInfo();
-        info.PERSON_ID = this.id_editText.getText().toString();
-        info.TRAIN_NO = this.no_editText.getText().toString();
-        info.GETIN_DATE = dateFormat.format((Date) this.date_spinner.getSelectedItem());
-        info.FROM_STATION = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_from)).getSelectedItem()).getNo();
-        info.TO_STATION = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_to)).getSelectedItem()).getNo();
-        info.ORDER_QTU_STR = "" + (((Spinner) getView().findViewById(R.id.spinner_qtu)).getSelectedItemPosition() + 1);
+        info.personId = this.id_editText.getText().toString();
+        info.trainNo = this.no_editText.getText().toString();
+        info.getinDate = dateFormat.format((Date) this.date_spinner.getSelectedItem());
+        info.fromStation = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_from)).getSelectedItem()).getNo();
+        info.toStation = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_to)).getSelectedItem()).getNo();
+        info.orderQtuStr = "" + (((Spinner) getView().findViewById(R.id.spinner_qtu)).getSelectedItemPosition() + 1);
         return info;
     }
 

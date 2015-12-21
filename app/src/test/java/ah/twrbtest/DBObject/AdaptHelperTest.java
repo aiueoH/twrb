@@ -18,7 +18,7 @@ public class AdaptHelperTest {
         BookInfo i = new BookInfo();
         r.setGetInDate(new Date(Date.parse(date)));
         AdaptHelper.to(r, i);
-        assertEquals(date, i.GETIN_DATE);
+        assertEquals(date, i.getinDate);
     }
 
     @Test
@@ -27,7 +27,7 @@ public class AdaptHelperTest {
         BookInfo i = new BookInfo();
         BookRecord r = new BookRecord();
         r.setId(BookRecord.generateId());
-        i.GETIN_DATE = date;
+        i.getinDate = date;
         AdaptHelper.to(i, r);
         assertEquals(date, AdaptHelper.dateToString(r.getGetInDate()));
         assertEquals(2010 - 1900, r.getGetInDate().getYear());

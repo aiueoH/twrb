@@ -36,7 +36,7 @@ public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, BookResu
             }
             AdaptHelper.to(this.bookInfo, br);
             Realm.getDefaultInstance().commitTransaction();
-            System.out.println("訂位代碼:" + this.bookInfo.CODE);
+            System.out.println("訂位代碼:" + this.bookInfo.code);
         } finally {
             Realm.getDefaultInstance().close();
         }

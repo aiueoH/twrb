@@ -56,6 +56,12 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
                 EventBus.getDefault().post(new OnItemClickEvent(ti));
             }
         });
+        String delay = "";
+        if (ti.delay.equals("0"))
+            delay = "準點";
+        else if (!ti.delay.isEmpty())
+            delay = "誤點 " + ti.delay + " 分";
+        holder.delay_textView.setText(delay);
     }
 
     @Override
@@ -77,6 +83,8 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         TextView depatureTime_textView;
         @Bind(R.id.textView_arrivalTime)
         TextView arrivalTime_textView;
+        @Bind(R.id.textView_delay)
+        TextView delay_textView;
         @Bind(R.id.card_view)
         CardView cardView;
 

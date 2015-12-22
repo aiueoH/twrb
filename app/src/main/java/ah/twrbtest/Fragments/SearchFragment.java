@@ -12,8 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Spinner;
 
+import com.twrb.core.timetable.MobileWebTimetableSearcher;
 import com.twrb.core.timetable.SearchInfo;
-import com.twrb.core.timetable.TimetableSearcher;
 import com.twrb.core.timetable.TrainInfo;
 
 import java.io.IOException;
@@ -100,12 +100,12 @@ public class SearchFragment extends Fragment {
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
         SearchInfo si = SearchInfo.createExpressClass();
-        si.FROMSTATION = ((TimetableStation) this.from_spinner.getSelectedItem()).getNo();
-        si.FROMCITY = ((TimetableStation) this.from_spinner.getSelectedItem()).getCityNo();
-        si.TOCITY = ((TimetableStation) this.to_spinner.getSelectedItem()).getCityNo();
-        si.TOSTATION = ((TimetableStation) this.to_spinner.getSelectedItem()).getNo();
+        si.fromStation = ((TimetableStation) this.from_spinner.getSelectedItem()).getNo();
+        si.fromCity = ((TimetableStation) this.from_spinner.getSelectedItem()).getCityNo();
+        si.toCity = ((TimetableStation) this.to_spinner.getSelectedItem()).getCityNo();
+        si.toStation = ((TimetableStation) this.to_spinner.getSelectedItem()).getNo();
         si.setDateTime((Date) (this.date_spinner.getSelectedItem()));
-        if (si.FROMSTATION.equals(si.TOSTATION)) {
+        if (si.fromStation.equals(si.toStation)) {
             Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
                     .setAction("我知道錯了", new View.OnClickListener() {
                         @Override
@@ -117,7 +117,7 @@ public class SearchFragment extends Fragment {
         }
         this.progressDialog = ProgressDialog.show(getActivity(), "", "正在幫您查查");
         this.progressDialog.show();
-        new AsyncSearcher(si).execute(0);
+        new AsyncSearcher(si).execute();
     }
 
     private void buildDateArrayAdapter() {
@@ -153,7 +153,8 @@ public class SearchFragment extends Fragment {
         @Override
         protected Boolean doInBackground(Integer... params) {
             try {
-                this.trainInfos = TimetableSearcher.search(this.searchInfo);
+//                this.trainInfos = TimetableSearcher.search(this.searchInfo);
+                this.trainInfos = MobileWebTimetableSearcher.search(this.searchInfo);
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();

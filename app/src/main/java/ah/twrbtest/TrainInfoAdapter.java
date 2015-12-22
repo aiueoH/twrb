@@ -57,9 +57,7 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
             }
         });
         String delay = "";
-        if (ti.delay.equals("0"))
-            delay = "準點";
-        else if (!ti.delay.isEmpty())
+        if (!ti.delay.isEmpty() && !ti.delay.equals("0"))
             delay = "誤點 " + ti.delay + " 分";
         holder.delay_textView.setText(delay);
     }

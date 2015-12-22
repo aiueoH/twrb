@@ -1,7 +1,7 @@
 package ah.twrbtest.Helper;
 
-import com.twrb.core.booking.BookingInfo;
-import com.twrb.core.helpers.BookingHelper;
+import com.twrb.core.book.BookInfo;
+import com.twrb.core.helpers.BookHelper;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
@@ -9,18 +9,18 @@ import io.realm.Realm;
 
 public class AsyncCancelHelper extends NotifiableAsyncTask<Long, Integer, Boolean> {
     private long bookRecordId;
-    private BookingInfo bookingInfo = new BookingInfo();
+    private BookInfo bookInfo = new BookInfo();
 
     public AsyncCancelHelper(BookRecord bookRecord) {
         this.bookRecordId = bookRecord.getId();
-        AdaptHelper.to(BookRecord.get(this.bookRecordId), this.bookingInfo);
+        AdaptHelper.to(BookRecord.get(this.bookRecordId), this.bookInfo);
     }
 
     @Override
     protected Boolean doInBackground(Long... params) {
         boolean result;
         try {
-            result = BookingHelper.cancel(this.bookingInfo);
+            result = BookHelper.cancel(this.bookInfo);
             Realm.getDefaultInstance().refresh();
             BookRecord br = BookRecord.get(this.bookRecordId);
             Realm.getDefaultInstance().beginTransaction();
@@ -30,11 +30,11 @@ public class AsyncCancelHelper extends NotifiableAsyncTask<Long, Integer, Boolea
                 br = Realm.getDefaultInstance().copyToRealm(br);
             }
             if (result)
-                this.bookingInfo.CODE = "";
-            AdaptHelper.to(this.bookingInfo, br);
+                this.bookInfo.code = "";
+            AdaptHelper.to(this.bookInfo, br);
             br.setIsCancelled(true);
             Realm.getDefaultInstance().commitTransaction();
-            System.out.println(result ? "已退訂" + this.bookingInfo.CODE : "退訂失敗");
+            System.out.println(result ? "已退訂" + this.bookInfo.code : "退訂失敗");
         } finally {
             Realm.getDefaultInstance().close();
         }

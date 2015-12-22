@@ -8,7 +8,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.book.BookInfo;
+import com.twrb.core.book.BookResult;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 
@@ -56,13 +57,13 @@ public class TimetableActivity extends Activity {
         try {
             DateFormat input = new SimpleDateFormat("yyyy/MM/dd");
             DateFormat output = new SimpleDateFormat("yyyy/MM/dd E");
-            date = output.format(input.parse(this.searchInfo.SEARCHDATE));
+            date = output.format(input.parse(this.searchInfo.searchDate));
         } catch (ParseException pe) {
             pe.printStackTrace();
         }
         this.date_textView.setText(date);
-        this.from_textView.setText(TimetableStation.get(this.searchInfo.FROMSTATION).getNameCh());
-        this.to_textView.setText(TimetableStation.get(this.searchInfo.TOSTATION).getNameCh());
+        this.from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
+        this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
 
         this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         this.recyclerView.setAdapter(new TrainInfoAdapter(this, trainInfos));
@@ -82,16 +83,16 @@ public class TimetableActivity extends Activity {
 
     public void onEvent(TrainInfoAdapter.OnItemClickEvent e) {
         TrainInfo ti = e.getTrainInfo();
-        BookingInfo bi = new BookingInfo();
-        bi.TRAIN_NO = ti.NO;
-        bi.FROM_STATION = TimetableStation.get(this.searchInfo.FROMSTATION).getBookNo();
-        bi.TO_STATION = TimetableStation.get(this.searchInfo.TOSTATION).getBookNo();
-        bi.GETIN_DATE = this.searchInfo.SEARCHDATE;
+        BookInfo bi = new BookInfo();
+        bi.trainNo = ti.no;
+        bi.fromStation = TimetableStation.get(this.searchInfo.fromStation).getBookNo();
+        bi.toStation = TimetableStation.get(this.searchInfo.toStation).getBookNo();
+        bi.getinDate = this.searchInfo.searchDate;
         new QuickBookDialog(this, bi).show();
     }
 
     public void onEvent(QuickBookDialog.OnBookingEvent e) {
-        BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookingInfo());
+        BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookInfo());
         if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
             this.mProgressDialog = ProgressDialog.show(this, "", "訂票中");
             AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
@@ -104,7 +105,7 @@ public class TimetableActivity extends Activity {
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
-        long brId = BookRecordFactory.createBookRecord(e.getBookingInfo()).getId();
+        long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
         Snackbar.make(recyclerView, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_SHORT).show();
     }
@@ -118,13 +119,13 @@ public class TimetableActivity extends Activity {
 
         @Override
         public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-            Boolean result = (Boolean) notifiableAsyncTask.getResult();
+            BookResult result = (BookResult) notifiableAsyncTask.getResult();
             if (result == null)
-                result = false;
+                result = BookResult.UNKNOWN;
             EventBus.getDefault().post(new OnBookRecordAddedEvent(this.id));
             EventBus.getDefault().post(new OnBookedEvent(this.id, result));
             mProgressDialog.dismiss();
-            String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+            String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
             Snackbar.make(recyclerView, s, Snackbar.LENGTH_LONG).show();
         }
     }

@@ -12,7 +12,8 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.book.BookInfo;
+import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.IDCreator;
 
 import java.text.SimpleDateFormat;
@@ -146,20 +147,20 @@ public class BookTicketFragment extends Fragment {
         this.bookableStationArrayAdapter = new BookableStationArrayAdapter(getActivity(), R.layout.item_bookablestation, bss);
     }
 
-    private BookingInfo getBookingInfo() {
+    private BookInfo getBookingInfo() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        BookingInfo info = new BookingInfo();
-        info.PERSON_ID = this.id_editText.getText().toString();
-        info.TRAIN_NO = this.no_editText.getText().toString();
-        info.GETIN_DATE = dateFormat.format((Date) this.date_spinner.getSelectedItem());
-        info.FROM_STATION = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_from)).getSelectedItem()).getNo();
-        info.TO_STATION = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_to)).getSelectedItem()).getNo();
-        info.ORDER_QTU_STR = "" + (((Spinner) getView().findViewById(R.id.spinner_qtu)).getSelectedItemPosition() + 1);
+        BookInfo info = new BookInfo();
+        info.personId = this.id_editText.getText().toString();
+        info.trainNo = this.no_editText.getText().toString();
+        info.getinDate = dateFormat.format((Date) this.date_spinner.getSelectedItem());
+        info.fromStation = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_from)).getSelectedItem()).getNo();
+        info.toStation = ((BookableStation) ((Spinner) getView().findViewById(R.id.spinner_to)).getSelectedItem()).getNo();
+        info.orderQtuStr = "" + (((Spinner) getView().findViewById(R.id.spinner_qtu)).getSelectedItemPosition() + 1);
         return info;
     }
 
     public void book() {
-        BookingInfo info = getBookingInfo();
+        BookInfo info = getBookingInfo();
         if (!info.verify()) {
             Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
             return;
@@ -171,13 +172,13 @@ public class BookTicketFragment extends Fragment {
             abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
                 @Override
                 public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-                    Boolean result = (Boolean) notifiableAsyncTask.getResult();
+                    BookResult result = (BookResult) notifiableAsyncTask.getResult();
                     if (result == null)
-                        result = false;
+                        result = BookResult.UNKNOWN;
                     EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
                     EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
                     mProgressDialog.dismiss();
-                    String s = result ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+                    String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
                     Snackbar.make(id_editText, s, Snackbar.LENGTH_LONG).show();
                 }
             });
@@ -189,7 +190,7 @@ public class BookTicketFragment extends Fragment {
     }
 
     public void save() {
-        BookingInfo info = getBookingInfo();
+        BookInfo info = getBookingInfo();
         if (!info.verify()) {
             Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
             return;
@@ -199,7 +200,7 @@ public class BookTicketFragment extends Fragment {
         Snackbar.make(id_editText, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_LONG).show();
     }
 
-    public BookRecord saveToDB(BookingInfo info) {
+    public BookRecord saveToDB(BookInfo info) {
         return BookRecordFactory.createBookRecord(info);
     }
 }

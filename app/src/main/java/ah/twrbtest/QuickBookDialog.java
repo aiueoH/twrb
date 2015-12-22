@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
-import com.twrb.core.booking.BookingInfo;
+import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.IDCreator;
 
 import java.util.ArrayList;
@@ -37,13 +37,13 @@ public class QuickBookDialog extends Dialog {
     Button save_button;
 
     private Context context;
-    private BookingInfo bookingInfo;
+    private BookInfo bookInfo;
     private SimpleAdapter qtuAdapter;
 
-    public QuickBookDialog(Context context, BookingInfo bookingInfo) {
+    public QuickBookDialog(Context context, BookInfo bookInfo) {
         super(context);
         this.context = context;
-        this.bookingInfo = bookingInfo;
+        this.bookInfo = bookInfo;
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.quickbook);
         ButterKnife.bind(this);
@@ -81,14 +81,14 @@ public class QuickBookDialog extends Dialog {
     public void onSaveButtonClick() {
         if (setBookingInfo()) return;
         dismiss();
-        EventBus.getDefault().post(new OnSavingEvent(this.bookingInfo));
+        EventBus.getDefault().post(new OnSavingEvent(this.bookInfo));
     }
 
     @OnClick(R.id.button_book)
     public void onBookButtonClick() {
         if (setBookingInfo()) return;
         dismiss();
-        EventBus.getDefault().post(new OnBookingEvent(this.bookingInfo));
+        EventBus.getDefault().post(new OnBookingEvent(this.bookInfo));
     }
 
     private boolean setBookingInfo() {
@@ -97,8 +97,8 @@ public class QuickBookDialog extends Dialog {
             Snackbar.make(qtu_spinner, "你不要用假的身分證字號好不好", Snackbar.LENGTH_SHORT).show();
             return true;
         }
-        this.bookingInfo.PERSON_ID = id;
-        this.bookingInfo.ORDER_QTU_STR = String.valueOf(this.qtu_spinner.getSelectedItemPosition() + 1);
+        this.bookInfo.personId = id;
+        this.bookInfo.orderQtuStr = String.valueOf(this.qtu_spinner.getSelectedItemPosition() + 1);
         return false;
     }
 
@@ -113,26 +113,26 @@ public class QuickBookDialog extends Dialog {
     }
 
     private static class OnFinishEvent {
-        private BookingInfo bookingInfo;
+        private BookInfo bookInfo;
 
-        public OnFinishEvent(BookingInfo bookingInfo) {
-            this.bookingInfo = bookingInfo;
+        public OnFinishEvent(BookInfo bookInfo) {
+            this.bookInfo = bookInfo;
         }
 
-        public BookingInfo getBookingInfo() {
-            return bookingInfo;
+        public BookInfo getBookInfo() {
+            return bookInfo;
         }
     }
 
     public static class OnSavingEvent extends OnFinishEvent {
-        public OnSavingEvent(BookingInfo bookingInfo) {
-            super(bookingInfo);
+        public OnSavingEvent(BookInfo bookInfo) {
+            super(bookInfo);
         }
     }
 
     public static class OnBookingEvent extends OnFinishEvent {
-        public OnBookingEvent(BookingInfo bookingInfo) {
-            super(bookingInfo);
+        public OnBookingEvent(BookInfo bookInfo) {
+            super(bookInfo);
         }
     }
 }

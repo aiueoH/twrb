@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.NotificationCompat;
 
+import com.twrb.core.book.BookResult;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -97,7 +99,7 @@ public class FrequentlyBookService extends IntentService {
                     continue;
                 AsyncBookHelper abh = new AsyncBookHelper(br);
                 abh.execute();
-                Boolean result = abh.getResult();
+                BookResult result = abh.getResult();
                 if (result != null) {
                     EventBus.getDefault().post(new OnBookedEvent(id, result));
                 }

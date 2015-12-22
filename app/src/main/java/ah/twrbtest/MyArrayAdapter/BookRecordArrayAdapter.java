@@ -9,6 +9,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.twrb.core.book.BookResult;
+
 import java.util.List;
 
 import ah.twrbtest.DBObject.AdaptHelper;
@@ -97,7 +99,7 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
         System.out.println("BookRecordArrayAdapter received OnBookedEvent");
         if (e.getBookRecordId() == this.bookRecordId) {
             this.mProgressDialog.dismiss();
-            Toast.makeText(getContext(), e.isSuccess() ? "訂票成功！" : "訂票失敗，孫中山也是革命十次才成功", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), e.getBookResult().equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，孫中山也是革命十次才成功", Toast.LENGTH_SHORT).show();
         }
     }
 

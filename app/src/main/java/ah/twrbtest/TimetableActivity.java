@@ -1,11 +1,13 @@
 package ah.twrbtest;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.TextView;
 
 import com.twrb.core.book.BookInfo;
@@ -30,7 +32,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 
-public class TimetableActivity extends Activity {
+public class TimetableActivity extends AppCompatActivity {
     @Bind(R.id.recyclerView)
     RecyclerView recyclerView;
     @Bind(R.id.textView_from)
@@ -39,6 +41,8 @@ public class TimetableActivity extends Activity {
     TextView to_textView;
     @Bind(R.id.textView_date)
     TextView date_textView;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
 
     private SearchInfo searchInfo;
     private ProgressDialog mProgressDialog;
@@ -48,6 +52,15 @@ public class TimetableActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_timetable);
         ButterKnife.bind(this);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         OnSearchedEvent e = EventBus.getDefault().getStickyEvent(OnSearchedEvent.class);
         ArrayList<TrainInfo> trainInfos = e.getTrainInfos();

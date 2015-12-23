@@ -203,7 +203,7 @@
                     android:id="@+id/button_submit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/book_ticket_button"
+                    android:background="@drawable/flat_selector"
                     android:text="吉胃拂拭訂，一訂搞定！"
                     android:textColor="#FFFFFF" />
 
@@ -212,7 +212,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dp"
-                    android:background="@drawable/book_ticket_button"
+                    android:background="@drawable/flat_selector"
                     android:text="加入待訂清單"
                     android:textColor="#FFFFFF" />
 

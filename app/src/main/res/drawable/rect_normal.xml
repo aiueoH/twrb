@@ -1,0 +1,19 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/flat_btn_corner_radius" />
+            <solid android:color="@color/colorPrimaryDark" />
+        </shape>
+    </item>
+    <item android:bottom="@dimen/flat_btn_shadow">
+        <shape android:shape="rectangle">
+            <padding
+                android:bottom="@dimen/flat_btn_padding"
+                android:left="@dimen/flat_btn_padding"
+                android:right="@dimen/flat_btn_padding"
+                android:top="@dimen/flat_btn_padding" />
+            <corners android:radius="@dimen/flat_btn_corner_radius" />
+            <solid android:color="@color/colorPrimary" />
+        </shape>
+    </item>
+</layer-list>

@@ -81,7 +81,7 @@
             android:id="@+id/button_book"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/quick_book_button"
+            android:background="@drawable/flat_selector"
             android:text="訂"
             android:textColor="#FFFFFF" />
 
@@ -90,7 +90,7 @@
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="40dp"
-            android:background="@drawable/quick_book_button"
+            android:background="@drawable/flat_selector"
             android:text="儲存"
             android:textColor="#FFFFFF" />
     </LinearLayout>

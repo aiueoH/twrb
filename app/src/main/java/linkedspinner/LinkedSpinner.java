@@ -38,6 +38,7 @@ public class LinkedSpinner {
         for (Item item : items)
             subItems.addAll(item.getSubItems());
         rightItemAdapter = new RightItemAdapter(mContext, subItems);
+        selectedRightItem = subItems.get(0);
     }
 
     public void show() {

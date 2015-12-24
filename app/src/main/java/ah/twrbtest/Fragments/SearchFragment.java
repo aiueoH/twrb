@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.twrb.core.timetable.MobileWebTimetableSearcher;
 import com.twrb.core.timetable.SearchInfo;
@@ -22,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import ah.twrbtest.DBObject.City;
 import ah.twrbtest.DBObject.TimetableStation;
 import ah.twrbtest.Events.OnSearchedEvent;
 import ah.twrbtest.MyArrayAdapter.DateArrayAdapter;
@@ -34,17 +36,25 @@ import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
+import linkedspinner.Item;
+import linkedspinner.LinkedSpinner;
 
 public class SearchFragment extends Fragment {
     @Bind(R.id.spinner_date)
     Spinner date_spinner;
-    @Bind(R.id.spinner_from)
-    Spinner from_spinner;
-    @Bind(R.id.spinner_to)
-    Spinner to_spinner;
+    @Bind(R.id.textView_from)
+    TextView from_textView;
+    @Bind(R.id.textView_to)
+    TextView to_textView;
     private TimetableStationArrayAdapter timetableStationArrayAdapter;
     private DateArrayAdapter dateArrayAdapter;
     private ProgressDialog progressDialog;
+    private LinkedSpinner fromLinkedSpinner;
+    private LinkedSpinner toLinkedSpinner;
+    private String fromCity;
+    private String toCity;
+    private String fromStation;
+    private String toStation;
 
     public static SearchFragment newInstance() {
         return new SearchFragment();
@@ -55,22 +65,26 @@ public class SearchFragment extends Fragment {
         super.onCreate(savedInstanceState);
         buildBookableStationArrayAdapter();
         buildDateArrayAdapter();
+        // setup station linked spinner
+        List<Item> items = new ArrayList<>();
+        RealmResults<City> rr = Realm.getDefaultInstance().allObjects(City.class);
+        for (City c : rr) {
+            Item item = new Item(c.getNo(), c.getNameCh());
+            List<Item> subItems = new ArrayList<>();
+            for (TimetableStation ts : c.getTimetableStations()) {
+                subItems.add(new Item(ts.getNo(), ts.getNameCh(), item));
+            }
+            item.setSubItems(subItems);
+            items.add(item);
+        }
+        fromLinkedSpinner = new LinkedSpinner(getActivity(), items);
+        toLinkedSpinner = new LinkedSpinner(getActivity(), items);
+        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
         EventBus.getDefault().unregister(this);
     }
 
@@ -84,26 +98,43 @@ public class SearchFragment extends Fragment {
         startActivity(intent);
     }
 
+    public void onEvent(LinkedSpinner.OnSelectedEvent e) {
+        fromCity = (String) fromLinkedSpinner.getSelectedItem().getSuperItem().getValue();
+        toCity = (String) toLinkedSpinner.getSelectedItem().getSuperItem().getValue();
+        fromStation = (String) fromLinkedSpinner.getSelectedItem().getValue();
+        toStation = (String) toLinkedSpinner.getSelectedItem().getValue();
+        from_textView.setText((String) fromLinkedSpinner.getSelectedItem().getName());
+        to_textView.setText((String) toLinkedSpinner.getSelectedItem().getName());
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         ButterKnife.bind(this, view);
-        this.from_spinner.setAdapter(this.timetableStationArrayAdapter);
-        this.from_spinner.setSelection(14); // 台北
-        this.to_spinner.setAdapter(this.timetableStationArrayAdapter);
-        this.to_spinner.setSelection(71); // 花蓮
         this.date_spinner.setAdapter(this.dateArrayAdapter);
+        from_textView.setText((String) fromLinkedSpinner.getSelectedItem().getName());
+        to_textView.setText((String) toLinkedSpinner.getSelectedItem().getName());
         return view;
+    }
+
+    @OnClick(R.id.textView_from)
+    public void onFromClick() {
+        fromLinkedSpinner.show();
+    }
+
+    @OnClick(R.id.textView_to)
+    public void onToClick() {
+        toLinkedSpinner.show();
     }
 
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
         SearchInfo si = SearchInfo.createExpressClass();
-        si.fromStation = ((TimetableStation) this.from_spinner.getSelectedItem()).getNo();
-        si.fromCity = ((TimetableStation) this.from_spinner.getSelectedItem()).getCityNo();
-        si.toCity = ((TimetableStation) this.to_spinner.getSelectedItem()).getCityNo();
-        si.toStation = ((TimetableStation) this.to_spinner.getSelectedItem()).getNo();
+        si.fromStation = fromStation;
+        si.fromCity = fromCity;
+        si.toStation = toStation;
+        si.toCity = toCity;
         si.setDateTime((Date) (this.date_spinner.getSelectedItem()));
         if (si.fromStation.equals(si.toStation)) {
             Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)

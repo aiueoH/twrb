@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle"><!--形狀-->
+
+    <!--內容-->
+    <solid android:color="#00000000" />
+
+    <!--邊框-->
+    <stroke
+        android:width="5dp"
+        android:color="#0099CC33" />
+
+    <!--內容物件的距離-->
+    <padding
+        android:bottom="5dp"
+        android:left="5dp"
+        android:right="5dp"
+        android:top="5dp" />
+
+    <!--框角矩形的程度-->
+    <corners android:radius="5dp" />
+</shape>

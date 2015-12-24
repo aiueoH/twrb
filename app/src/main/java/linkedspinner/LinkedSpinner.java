@@ -51,13 +51,13 @@ public class LinkedSpinner {
         return selectedRightItem;
     }
 
+    public void setSelectedSubItem(int index) {
+        setSelectedSubItem(subItems.get(index));
+    }
+
     public void setSelectedSubItem(Item item) {
         selectedRightItem = item;
         updateSuperItem();
-    }
-
-    public void setSelectedSubItem(int index) {
-        setSelectedSubItem(subItems.get(index));
     }
 
     private void updateSuperItem() {
@@ -160,7 +160,7 @@ public class LinkedSpinner {
                 holder.box.setBackgroundColor(Color.parseColor("#FFFFFF"));
                 holder.textView.setTextColor(Color.parseColor("#6d6d6d"));
             }
-            holder.textView.setOnClickListener(new View.OnClickListener() {
+            holder.box.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int lastSelected = selected;
@@ -212,7 +212,7 @@ public class LinkedSpinner {
         public void onBindViewHolder(ViewHolder holder, final int position) {
             Item item = items.get(position);
             holder.textView.setText(item.getName().toString());
-            holder.textView.setOnClickListener(new View.OnClickListener() {
+            holder.box.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     onRightItemClick(position);
@@ -226,6 +226,8 @@ public class LinkedSpinner {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
+            @Bind(R.id.linearLayout_box)
+            LinearLayout box;
             @Bind(R.id.textView)
             TextView textView;
 

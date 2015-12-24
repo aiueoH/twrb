@@ -23,12 +23,14 @@ import ah.twrbtest.AutoBook.DailyBookService;
 import ah.twrbtest.AutoBook.FrequentlyBookService;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
+import ah.twrbtest.DBObject.City;
 import ah.twrbtest.DBObject.TimetableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
 import ah.twrbtest.Events.OnBookableRecordFoundEvent;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmList;
 import io.realm.RealmResults;
 
 public class MyApplication extends Application {
@@ -44,6 +46,7 @@ public class MyApplication extends Application {
         instance = this;
         setupRealm();
         setupTimetableStationIfNotExist();
+        setupCityIfNotExist();
         setupBookableStationIfNotExist();
         setupPronounceSamples();
         EventBus.getDefault().register(this);
@@ -127,6 +130,39 @@ public class MyApplication extends Application {
             System.out.println("Import timetable stations OK.");
         } catch (IOException e) {
             System.out.println("Import timetable stations fail.");
+            e.printStackTrace();
+        }
+    }
+
+    private void setupCityIfNotExist() {
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<City> rr = realm.where(City.class).findAll();
+        if (!rr.isEmpty()) {
+            System.out.println("City already existing, " + rr.size() + " cities.");
+            return;
+        }
+        try {
+            List<String> lines = readAllLines(getAssets().open(getString(R.string.file_city)));
+            ArrayList<City> cs = new ArrayList<>();
+            City c;
+            for (String s : lines) {
+                String[] data = s.split(",");
+                c = new City();
+                cs.add(c);
+                c.setNo(data[0]);
+                c.setNameCh(data[1]);
+                c.setNameEn(data[2]);
+                RealmList<TimetableStation> list = new RealmList<>();
+                for (TimetableStation ts : realm.where(TimetableStation.class).equalTo("cityNo", c.getNo()).findAll())
+                    list.add(ts);
+                c.setTimetableStations(list);
+            }
+            realm.beginTransaction();
+            realm.copyToRealm(cs);
+            realm.commitTransaction();
+            System.out.println("Import cities OK.");
+        } catch (IOException e) {
+            System.out.println("Import cities fail.");
             e.printStackTrace();
         }
     }

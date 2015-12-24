@@ -38,16 +38,31 @@ public class LinkedSpinner {
         for (Item item : items)
             subItems.addAll(item.getSubItems());
         rightItemAdapter = new RightItemAdapter(mContext, subItems);
-        selectedRightItem = subItems.get(0);
+        setSelectedSubItem(0);
     }
 
     public void show() {
+        updateSuperItem();
         myView = new MyView(mContext);
         myView.show();
     }
 
-    public Item getSelectedItem() {
+    public Item getSelectedSubItem() {
         return selectedRightItem;
+    }
+
+    public void setSelectedSubItem(Item item) {
+        selectedRightItem = item;
+        updateSuperItem();
+    }
+
+    public void setSelectedSubItem(int index) {
+        setSelectedSubItem(subItems.get(index));
+    }
+
+    private void updateSuperItem() {
+        int superIndex = items.indexOf(selectedRightItem.getSuperItem());
+        leftItemAdapter.setSelected(superIndex);
     }
 
     private void onLeftItemClick(int position) {
@@ -62,7 +77,7 @@ public class LinkedSpinner {
     }
 
     private void onRightItemClick(int position) {
-        selectedRightItem = subItems.get(position);
+        setSelectedSubItem(position);
         myView.dismiss();
         EventBus.getDefault().post(new OnSelectedEvent(selectedRightItem));
     }
@@ -96,8 +111,16 @@ public class LinkedSpinner {
             ButterKnife.bind(this);
             left_recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
             left_recyclerView.setAdapter(leftItemAdapter);
+            left_recyclerView.scrollToPosition(items.indexOf(selectedRightItem.getSuperItem()));
             right_recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
             right_recyclerView.setAdapter(rightItemAdapter);
+            right_recyclerView.scrollToPosition(subItems.indexOf(selectedRightItem));
+            right_recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                }
+            });
         }
     }
 
@@ -116,7 +139,9 @@ public class LinkedSpinner {
         }
 
         public void setSelected(int selected) {
+            notifyItemChanged(this.selected);
             this.selected = selected;
+            notifyItemChanged(this.selected);
         }
 
         @Override

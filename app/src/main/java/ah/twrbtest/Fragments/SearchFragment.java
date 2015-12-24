@@ -68,18 +68,27 @@ public class SearchFragment extends Fragment {
         // setup station linked spinner
         List<Item> items = new ArrayList<>();
         RealmResults<City> rr = Realm.getDefaultInstance().allObjects(City.class);
+        Item defaultFrom = null, deafultTo = null;
         for (City c : rr) {
             Item item = new Item(c.getNo(), c.getNameCh());
             List<Item> subItems = new ArrayList<>();
             for (TimetableStation ts : c.getTimetableStations()) {
-                subItems.add(new Item(ts.getNo(), ts.getNameCh(), item));
+                Item subItem = new Item(ts.getNo(), ts.getNameCh(), item);
+                subItems.add(subItem);
+                if (subItem.getName().equals("臺北"))
+                    defaultFrom = subItem;
+                if (subItem.getName().equals("花蓮"))
+                    deafultTo = subItem;
             }
             item.setSubItems(subItems);
             items.add(item);
         }
         fromLinkedSpinner = new LinkedSpinner(getActivity(), items);
+        fromLinkedSpinner.setSelectedSubItem(defaultFrom);
         toLinkedSpinner = new LinkedSpinner(getActivity(), items);
+        toLinkedSpinner.setSelectedSubItem(deafultTo);
         EventBus.getDefault().register(this);
+        updateCityAndStation();
     }
 
     @Override
@@ -99,12 +108,20 @@ public class SearchFragment extends Fragment {
     }
 
     public void onEvent(LinkedSpinner.OnSelectedEvent e) {
-        fromCity = (String) fromLinkedSpinner.getSelectedItem().getSuperItem().getValue();
-        toCity = (String) toLinkedSpinner.getSelectedItem().getSuperItem().getValue();
-        fromStation = (String) fromLinkedSpinner.getSelectedItem().getValue();
-        toStation = (String) toLinkedSpinner.getSelectedItem().getValue();
-        from_textView.setText((String) fromLinkedSpinner.getSelectedItem().getName());
-        to_textView.setText((String) toLinkedSpinner.getSelectedItem().getName());
+        updateCityAndStation();
+        updateStationTextView();
+    }
+
+    private void updateCityAndStation() {
+        fromCity = (String) fromLinkedSpinner.getSelectedSubItem().getSuperItem().getValue();
+        toCity = (String) toLinkedSpinner.getSelectedSubItem().getSuperItem().getValue();
+        fromStation = (String) fromLinkedSpinner.getSelectedSubItem().getValue();
+        toStation = (String) toLinkedSpinner.getSelectedSubItem().getValue();
+    }
+
+    private void updateStationTextView() {
+        to_textView.setText((String) toLinkedSpinner.getSelectedSubItem().getName());
+        from_textView.setText((String) fromLinkedSpinner.getSelectedSubItem().getName());
     }
 
     @Nullable
@@ -113,8 +130,7 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         ButterKnife.bind(this, view);
         this.date_spinner.setAdapter(this.dateArrayAdapter);
-        from_textView.setText((String) fromLinkedSpinner.getSelectedItem().getName());
-        to_textView.setText((String) toLinkedSpinner.getSelectedItem().getName());
+        updateStationTextView();
         return view;
     }
 

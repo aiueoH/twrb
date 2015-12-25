@@ -2,13 +2,35 @@ package ah.twrbtest.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.twrb.core.timetable.TrainInfo;
+
+import java.util.Calendar;
+import java.util.List;
+
 import ah.twrbtest.R;
+import ah.twrbtest.TrainInfoAdapter;
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import de.greenrobot.event.EventBus;
 
 public class TimetableFragment extends Fragment {
+
+    @Bind(R.id.recyclerView)
+    RecyclerView recyclerView;
+    private List<TrainInfo> trainInfos;
+    private Calendar searchDate;
+
+    public TimetableFragment() {
+        OnPassingTrainInfoEvent e = EventBus.getDefault().getStickyEvent(OnPassingTrainInfoEvent.class);
+        trainInfos = e.getTrainInfos();
+        searchDate = e.getSearchDate();
+    }
 
     public static TimetableFragment newInstance() {
         return new TimetableFragment();
@@ -21,6 +43,42 @@ public class TimetableFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_timetable, container, false);
+        View view = inflater.inflate(R.layout.fragment_timetable, container, false);
+        ButterKnife.bind(this, view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(new TrainInfoAdapter(getActivity(), trainInfos));
+        scrollToMostNearlyTimeTrain();
+        return view;
+    }
+
+    private void scrollToMostNearlyTimeTrain() {
+        Calendar departureDateTime = (Calendar) searchDate.clone();
+        for (int i = 0; i < trainInfos.size(); i++) {
+            String hm[] = trainInfos.get(i).departureTime.split(":");
+            departureDateTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hm[0]));
+            departureDateTime.set(Calendar.MINUTE, Integer.parseInt(hm[1]));
+            if (Calendar.getInstance().before(departureDateTime)) {
+                this.recyclerView.scrollToPosition(i);
+                break;
+            }
+        }
+    }
+
+    public static class OnPassingTrainInfoEvent {
+        List<TrainInfo> trainInfos;
+        Calendar searchDate;
+
+        public OnPassingTrainInfoEvent(List<TrainInfo> trainInfos, Calendar searchDate) {
+            this.trainInfos = trainInfos;
+            this.searchDate = searchDate;
+        }
+
+        public List<TrainInfo> getTrainInfos() {
+            return trainInfos;
+        }
+
+        public Calendar getSearchDate() {
+            return searchDate;
+        }
     }
 }

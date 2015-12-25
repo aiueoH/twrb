@@ -2,10 +2,14 @@ package ah.twrbtest;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
@@ -19,12 +23,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.TimetableStation;
 import ah.twrbtest.Events.OnBookRecordAddedEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Events.OnSearchedEvent;
+import ah.twrbtest.Fragments.TimetableFragment;
 import ah.twrbtest.Helper.AsyncBookHelper;
 import ah.twrbtest.Helper.NotifiableAsyncTask;
 import butterknife.Bind;
@@ -32,8 +38,12 @@ import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 
 public class TimetableActivity extends AppCompatActivity {
-    @Bind(R.id.recyclerView)
-    RecyclerView recyclerView;
+    //    @Bind(R.id.recyclerView)
+//    RecyclerView recyclerView;
+    @Bind(R.id.tabs)
+    TabLayout tabLayout;
+    @Bind(R.id.container)
+    ViewPager viewPager;
     @Bind(R.id.textView_from)
     TextView from_textView;
     @Bind(R.id.textView_to)
@@ -51,7 +61,7 @@ public class TimetableActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_timetable);
+        setContentView(R.layout.activity_timetable);
         ButterKnife.bind(this);
         setupToolbar();
         OnSearchedEvent e = EventBus.getDefault().getStickyEvent(OnSearchedEvent.class);
@@ -61,9 +71,15 @@ public class TimetableActivity extends AppCompatActivity {
         this.date_textView.setText(formatSearchDate());
         this.from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
         this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        this.recyclerView.setAdapter(new TrainInfoAdapter(this, trainInfos));
-        scrollToMostNearlyTimeTrain();
+
+        ViewPagerAdapter vpa = new ViewPagerAdapter(getSupportFragmentManager());
+        EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(trainInfos, searchDate));
+        vpa.createAllClass();
+        List<TrainInfo> expressTrainInfos = getExpressClassTrainInfos();
+        EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(expressTrainInfos, searchDate));
+        vpa.createExpressClass();
+        viewPager.setAdapter(vpa);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
     private void setupToolbar() {
@@ -91,18 +107,19 @@ public class TimetableActivity extends AppCompatActivity {
         return new SimpleDateFormat("yyyy/MM/dd E").format(searchDate.getTime());
     }
 
-    private void scrollToMostNearlyTimeTrain() {
-        Calendar departureDateTime = (Calendar) searchDate.clone();
-        for (int i = 0; i < trainInfos.size(); i++) {
-            String hm[] = trainInfos.get(i).departureTime.split(":");
-            departureDateTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hm[0]));
-            departureDateTime.set(Calendar.MINUTE, Integer.parseInt(hm[1]));
-            if (Calendar.getInstance().before(departureDateTime)) {
-                this.recyclerView.scrollToPosition(i);
-                break;
-            }
+    @NonNull
+    private List<TrainInfo> getExpressClassTrainInfos() {
+        List<TrainInfo> expressTrainInfos = new ArrayList<>();
+        for (TrainInfo trainInfo : trainInfos) {
+            if (trainInfo.type.equals("自強") ||
+                    trainInfo.type.equals("莒光") ||
+                    trainInfo.type.equals("普悠瑪") ||
+                    trainInfo.type.equals("太魯閣"))
+                expressTrainInfos.add(trainInfo);
         }
+        return expressTrainInfos;
     }
+
 
     @Override
     protected void onResume() {
@@ -135,14 +152,14 @@ public class TimetableActivity extends AppCompatActivity {
             abh.execute();
         } else {
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-            Snackbar.make(recyclerView, "還沒開放訂票，我就自作主張先加入待訂清單了，不用謝", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(viewPager, "還沒開放訂票，我就自作主張先加入待訂清單了，不用謝", Snackbar.LENGTH_LONG).show();
         }
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
         long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
-        Snackbar.make(recyclerView, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(viewPager, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_SHORT).show();
     }
 
     class OnBookedListener implements AsyncBookHelper.OnPostExecuteListener {
@@ -161,7 +178,42 @@ public class TimetableActivity extends AppCompatActivity {
             EventBus.getDefault().post(new OnBookedEvent(this.id, result));
             mProgressDialog.dismiss();
             String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-            Snackbar.make(recyclerView, s, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final String[] titles = new String[]{
+                "所有車種",
+                "對號列車",
+        };
+        private final Fragment[] fragments = new Fragment[2];
+
+        public ViewPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        public void createAllClass() {
+            fragments[0] = TimetableFragment.newInstance();
+        }
+
+        public void createExpressClass() {
+            fragments[1] = TimetableFragment.newInstance();
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return fragments[position];
+        }
+
+        @Override
+        public int getCount() {
+            return fragments.length;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return titles[position];
         }
     }
 }

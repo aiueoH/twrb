@@ -148,7 +148,7 @@ public class SearchFragment extends Fragment {
 
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
-        SearchInfo si = SearchInfo.createExpressClass();
+        SearchInfo si = SearchInfo.createAllClass();
         si.fromStation = fromStation;
         si.fromCity = fromCity;
         si.toStation = toStation;

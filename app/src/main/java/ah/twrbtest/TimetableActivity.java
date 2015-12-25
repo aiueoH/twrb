@@ -15,7 +15,6 @@ import com.twrb.core.book.BookResult;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,7 +43,9 @@ public class TimetableActivity extends AppCompatActivity {
     @Bind(R.id.toolbar)
     Toolbar toolbar;
 
+    private Calendar searchDate;
     private SearchInfo searchInfo;
+    private ArrayList<TrainInfo> trainInfos;
     private ProgressDialog mProgressDialog;
 
     @Override
@@ -52,7 +53,20 @@ public class TimetableActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_timetable);
         ButterKnife.bind(this);
+        setupToolbar();
+        OnSearchedEvent e = EventBus.getDefault().getStickyEvent(OnSearchedEvent.class);
+        this.trainInfos = e.getTrainInfos();
+        this.searchInfo = e.getSearchInfo();
+        this.searchDate = parseSearchDate();
+        this.date_textView.setText(formatSearchDate());
+        this.from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
+        this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
+        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        this.recyclerView.setAdapter(new TrainInfoAdapter(this, trainInfos));
+        scrollToMostNearlyTimeTrain();
+    }
 
+    private void setupToolbar() {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -61,25 +75,33 @@ public class TimetableActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
 
-        OnSearchedEvent e = EventBus.getDefault().getStickyEvent(OnSearchedEvent.class);
-        ArrayList<TrainInfo> trainInfos = e.getTrainInfos();
-        this.searchInfo = e.getSearchInfo();
-
-        String date = "";
+    private Calendar parseSearchDate() {
+        Calendar c = Calendar.getInstance();
         try {
-            DateFormat input = new SimpleDateFormat("yyyy/MM/dd");
-            DateFormat output = new SimpleDateFormat("yyyy/MM/dd E");
-            date = output.format(input.parse(this.searchInfo.searchDate));
-        } catch (ParseException pe) {
-            pe.printStackTrace();
+            c.setTime(new SimpleDateFormat("yyyy/MM/dd").parse(this.searchInfo.searchDate));
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
-        this.date_textView.setText(date);
-        this.from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
-        this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
+        return c;
+    }
 
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        this.recyclerView.setAdapter(new TrainInfoAdapter(this, trainInfos));
+    private String formatSearchDate() {
+        return new SimpleDateFormat("yyyy/MM/dd E").format(searchDate.getTime());
+    }
+
+    private void scrollToMostNearlyTimeTrain() {
+        Calendar departureDateTime = (Calendar) searchDate.clone();
+        for (int i = 0; i < trainInfos.size(); i++) {
+            String hm[] = trainInfos.get(i).departureTime.split(":");
+            departureDateTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hm[0]));
+            departureDateTime.set(Calendar.MINUTE, Integer.parseInt(hm[1]));
+            if (Calendar.getInstance().before(departureDateTime)) {
+                this.recyclerView.scrollToPosition(i);
+                break;
+            }
+        }
     }
 
     @Override

@@ -72,6 +72,8 @@ public class SearchFragment extends Fragment {
         for (City c : rr) {
             Item item = new Item(c.getNo(), c.getNameCh());
             List<Item> subItems = new ArrayList<>();
+            if (c.getTimetableStations().isEmpty())
+                continue;
             for (TimetableStation ts : c.getTimetableStations()) {
                 Item subItem = new Item(ts.getNo(), ts.getNameCh(), item);
                 subItems.add(subItem);
@@ -84,9 +86,9 @@ public class SearchFragment extends Fragment {
             items.add(item);
         }
         fromLinkedSpinner = new LinkedSpinner(getActivity(), items);
-        fromLinkedSpinner.setSelectedSubItem(defaultFrom);
+        fromLinkedSpinner.setRightSelectedItem(defaultFrom);
         toLinkedSpinner = new LinkedSpinner(getActivity(), items);
-        toLinkedSpinner.setSelectedSubItem(deafultTo);
+        toLinkedSpinner.setRightSelectedItem(deafultTo);
         EventBus.getDefault().register(this);
         updateCityAndStation();
     }
@@ -113,15 +115,15 @@ public class SearchFragment extends Fragment {
     }
 
     private void updateCityAndStation() {
-        fromCity = (String) fromLinkedSpinner.getSelectedSubItem().getSuperItem().getValue();
-        toCity = (String) toLinkedSpinner.getSelectedSubItem().getSuperItem().getValue();
-        fromStation = (String) fromLinkedSpinner.getSelectedSubItem().getValue();
-        toStation = (String) toLinkedSpinner.getSelectedSubItem().getValue();
+        fromCity = (String) fromLinkedSpinner.getRightSelectedItem().getSuperItem().getValue();
+        toCity = (String) toLinkedSpinner.getRightSelectedItem().getSuperItem().getValue();
+        fromStation = (String) fromLinkedSpinner.getRightSelectedItem().getValue();
+        toStation = (String) toLinkedSpinner.getRightSelectedItem().getValue();
     }
 
     private void updateStationTextView() {
-        to_textView.setText((String) toLinkedSpinner.getSelectedSubItem().getName());
-        from_textView.setText((String) fromLinkedSpinner.getSelectedSubItem().getName());
+        to_textView.setText((String) toLinkedSpinner.getRightSelectedItem().getName());
+        from_textView.setText((String) fromLinkedSpinner.getRightSelectedItem().getName());
     }
 
     @Nullable

@@ -3,8 +3,11 @@ package linkedspinner;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,64 +25,64 @@ import de.greenrobot.event.EventBus;
 
 public class LinkedSpinner {
     private Context mContext;
-    private List<Item> items;
-    private List<Item> subItems;
+    private List<Item> leftItems;
+    private List<Item> rightItems;
     private LeftItemAdapter leftItemAdapter;
     private RightItemAdapter rightItemAdapter;
     private MyView myView;
 
-    private Item selectedRightItem;
+    private Item rightSelectedItem, leftSelectedItem;
 
-    public LinkedSpinner(Context context, List<Item> items) {
+    public LinkedSpinner(Context context, List<Item> leftItems) {
         this.mContext = context;
-        this.items = items;
-        leftItemAdapter = new LeftItemAdapter(mContext, items);
-        subItems = new ArrayList<>();
-        for (Item item : items)
-            subItems.addAll(item.getSubItems());
-        rightItemAdapter = new RightItemAdapter(mContext, subItems);
-        setSelectedSubItem(0);
+        this.leftItems = leftItems;
+        leftItemAdapter = new LeftItemAdapter(mContext, leftItems);
+        rightItems = new ArrayList<>();
+        for (Item item : leftItems)
+            rightItems.addAll(item.getSubItems());
+        rightItemAdapter = new RightItemAdapter(mContext, rightItems);
+        setRightSelectedItem(0);
     }
 
     public void show() {
-        updateSuperItem();
+        setLeftSelectedItem(rightSelectedItem.getSuperItem());
         myView = new MyView(mContext);
         myView.show();
     }
 
-    public Item getSelectedSubItem() {
-        return selectedRightItem;
+    public Item getRightSelectedItem() {
+        return rightSelectedItem;
     }
 
-    public void setSelectedSubItem(int index) {
-        setSelectedSubItem(subItems.get(index));
+    public void setRightSelectedItem(int index) {
+        setRightSelectedItem(rightItems.get(index));
     }
 
-    public void setSelectedSubItem(Item item) {
-        selectedRightItem = item;
-        updateSuperItem();
+    public void setRightSelectedItem(Item item) {
+        rightSelectedItem = item;
+        setLeftSelectedItem(item.getSuperItem());
     }
 
-    private void updateSuperItem() {
-        int superIndex = items.indexOf(selectedRightItem.getSuperItem());
-        leftItemAdapter.setSelected(superIndex);
+    private void setLeftSelectedItem(Item item) {
+        leftSelectedItem = item;
+        leftItemAdapter.setSelected(leftItems.indexOf(leftSelectedItem));
     }
 
     private void onLeftItemClick(int position) {
-        Item item = items.get(position);
+        Item item = leftItems.get(position);
+        setLeftSelectedItem(item);
         if (item.getSubItems().size() > 0) {
             Item subItem = (Item) item.getSubItems().get(0);
-            int index = subItems.indexOf(subItem);
-            if (index >= 0) {
-                myView.right_recyclerView.scrollToPosition(index);
-            }
+            int index = rightItems.indexOf(subItem);
+            if (index >= 0)
+                myView.rightSmoothScrollToPosition(index);
         }
     }
 
     private void onRightItemClick(int position) {
-        setSelectedSubItem(position);
+        setRightSelectedItem(position);
         myView.dismiss();
-        EventBus.getDefault().post(new OnSelectedEvent(selectedRightItem));
+        EventBus.getDefault().post(new OnSelectedEvent(rightSelectedItem));
     }
 
     public static class OnSelectedEvent {
@@ -100,8 +103,27 @@ public class LinkedSpinner {
         @Bind(R.id.recyclerView_right)
         RecyclerView right_recyclerView;
 
+        private boolean isAutoScrolling = false;
+        private LinearLayoutManagerWithSmoothScroller leftLayoutManager, rightLayoutManager;
+
         public MyView(Context context) {
             super(context, R.style.linkedSpinner);
+            leftLayoutManager = new LinearLayoutManagerWithSmoothScroller(context);
+            rightLayoutManager = new LinearLayoutManagerWithSmoothScroller(context);
+            rightLayoutManager.setOnStartHook(new Runnable() {
+                @Override
+                public void run() {
+                    isAutoScrolling = true;
+                }
+            });
+        }
+
+        public void leftSmoothScrollToPosition(int position, int snapTo) {
+            leftLayoutManager.smoothScrollToPosition(left_recyclerView, null, position, snapTo);
+        }
+
+        public void rightSmoothScrollToPosition(int position) {
+            rightLayoutManager.smoothScrollToPosition(right_recyclerView, null, position);
         }
 
         @Override
@@ -109,18 +131,133 @@ public class LinkedSpinner {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.linkedspinner);
             ButterKnife.bind(this);
-            left_recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+            left_recyclerView.setLayoutManager(leftLayoutManager);
             left_recyclerView.setAdapter(leftItemAdapter);
-            left_recyclerView.scrollToPosition(items.indexOf(selectedRightItem.getSuperItem()));
-            right_recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+            left_recyclerView.scrollToPosition(leftItems.indexOf(rightSelectedItem.getSuperItem()));
+            right_recyclerView.setLayoutManager(rightLayoutManager);
             right_recyclerView.setAdapter(rightItemAdapter);
-            right_recyclerView.scrollToPosition(subItems.indexOf(selectedRightItem));
-            right_recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
+            right_recyclerView.scrollToPosition(rightItems.indexOf(rightSelectedItem));
+            right_recyclerView.addOnScrollListener(new MyOnScrollListener());
+        }
+
+        class MyOnScrollListener extends RecyclerView.OnScrollListener {
+            private int scrollState = RecyclerView.SCROLL_STATE_IDLE;
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                scrollState = newState;
+                System.out.println(newState);
+                if (isAutoScrolling && newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    isAutoScrolling = false;
+                } else if (!isAutoScrolling && scrollState == RecyclerView.SCROLL_STATE_IDLE) {
+                    int rightFirstIndex = rightLayoutManager.findFirstCompletelyVisibleItemPosition();
+                    int rightLastIndex = rightLayoutManager.findLastCompletelyVisibleItemPosition();
+                    Item newLeftItem = getLeftItemOfFocusRightItem(rightFirstIndex, rightLastIndex);
+                    setLeftSelectedItem(newLeftItem);
+                    scrollToLeftItemIfInvisible();
                 }
-            });
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                int rightFirstIndex = rightLayoutManager.findFirstCompletelyVisibleItemPosition();
+                int rightLastIndex = rightLayoutManager.findLastCompletelyVisibleItemPosition();
+                if (isAutoScrolling) {
+                    Item firstSubItem = (Item) leftSelectedItem.getSubItems().get(0);
+                    if (firstSubItem != null && rightItems.indexOf(firstSubItem) == rightFirstIndex)
+                        isAutoScrolling = false;
+                }
+                if (!isAutoScrolling && scrollState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    Item newLeftItem = getLeftItemOfFocusRightItem(rightFirstIndex, rightLastIndex);
+                    setLeftSelectedItem(newLeftItem);
+                    scrollToLeftItemIfInvisible();
+                }
+            }
+
+            @NonNull
+            private Item getLeftItemOfFocusRightItem(int rightFirstIndex, int rightLastIndex) {
+                if (rightLastIndex == rightItems.size() - 1)
+                    return rightItems.get(rightLastIndex).getSuperItem();
+                if (rightFirstIndex == 0)
+                    return rightItems.get(rightFirstIndex).getSuperItem();
+                boolean b = false;
+                for (int i = rightFirstIndex; i <= rightLastIndex; i++)
+                    b = leftSelectedItem == rightItems.get(i).getSuperItem();
+                if (!b)
+                    return rightItems.get(rightFirstIndex).getSuperItem();
+                return leftSelectedItem;
+            }
+
+            private void scrollToLeftItemIfInvisible() {
+                int snapTo = isLeftItemVisible(leftSelectedItem);
+                if (snapTo != 0)
+                    leftSmoothScrollToPosition(leftItems.indexOf(leftSelectedItem), snapTo);
+            }
+
+            private int isLeftItemVisible(Item leftItem) {
+                int f = leftLayoutManager.findFirstCompletelyVisibleItemPosition();
+                int l = leftLayoutManager.findLastCompletelyVisibleItemPosition();
+                int i = leftItems.indexOf(leftItem);
+                if (!(i >= f && i <= l)) {
+                    if (i > f)
+                        return LinearSmoothScroller.SNAP_TO_END;
+                    else
+                        return LinearSmoothScroller.SNAP_TO_START;
+                }
+                return 0;
+            }
+        }
+
+        class LinearLayoutManagerWithSmoothScroller extends LinearLayoutManager {
+            private Runnable onStartHook;
+
+            public LinearLayoutManagerWithSmoothScroller(Context context) {
+                super(context, VERTICAL, false);
+            }
+
+            public void setOnStartHook(Runnable onStartHook) {
+                this.onStartHook = onStartHook;
+            }
+
+            @Override
+            public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
+                smoothScrollToPosition(recyclerView, state, position, LinearSmoothScroller.SNAP_TO_START);
+            }
+
+            public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position, int snapTo) {
+                RecyclerView.SmoothScroller smoothScroller = new TopSnappedSmoothScroller(recyclerView.getContext(), snapTo);
+                smoothScroller.setTargetPosition(position);
+                startSmoothScroll(smoothScroller);
+            }
+
+            private class TopSnappedSmoothScroller extends LinearSmoothScroller {
+                private int snapTo;
+
+                public TopSnappedSmoothScroller(Context context, int snapTo) {
+                    super(context);
+                    this.snapTo = snapTo;
+                }
+
+                @Override
+                public PointF computeScrollVectorForPosition(int targetPosition) {
+                    return LinearLayoutManagerWithSmoothScroller.this
+                            .computeScrollVectorForPosition(targetPosition);
+                }
+
+                @Override
+                protected int getVerticalSnapPreference() {
+                    return snapTo;
+                }
+
+                @Override
+                protected void onStart() {
+                    super.onStart();
+                    if (onStartHook != null)
+                        onStartHook.run();
+                }
+            }
         }
     }
 

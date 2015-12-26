@@ -54,13 +54,13 @@ public class LinkedSpinner {
         return rightSelectedItem;
     }
 
+    public void setRightSelectedItem(int index) {
+        setRightSelectedItem(rightItems.get(index));
+    }
+
     public void setRightSelectedItem(Item item) {
         rightSelectedItem = item;
         setLeftSelectedItem(item.getSuperItem());
-    }
-
-    public void setRightSelectedItem(int index) {
-        setRightSelectedItem(rightItems.get(index));
     }
 
     private void setLeftSelectedItem(Item item) {
@@ -125,11 +125,11 @@ public class LinkedSpinner {
                 return;
             isLeftAutoScrolling = true;
             leftAutoScrollingTarget = position;
-            leftLayoutManager.smoothScrollToPosition(left_recyclerView, null, position, snapTo);
+            leftLayoutManager.smoothScrollToPosition(left_recyclerView, null, position, snapTo, 200);
         }
 
         public void rightSmoothScrollToPosition(int position) {
-            rightLayoutManager.smoothScrollToPosition(right_recyclerView, null, position);
+            rightLayoutManager.smoothScrollToPosition(right_recyclerView, null, position, 300);
         }
 
         @Override
@@ -242,29 +242,55 @@ public class LinkedSpinner {
                 this.onStartHook = onStartHook;
             }
 
-            @Override
-            public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
-                smoothScrollToPosition(recyclerView, state, position, LinearSmoothScroller.SNAP_TO_START);
+            public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position, float duration) {
+                smoothScrollToPosition(recyclerView, state, position, LinearSmoothScroller.SNAP_TO_START, duration);
             }
 
-            public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position, int snapTo) {
-                RecyclerView.SmoothScroller smoothScroller = new TopSnappedSmoothScroller(recyclerView.getContext(), snapTo);
+            public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position, int snapTo, float duration) {
+//                RecyclerView.SmoothScroller smoothScroller = new TopSnappedSmoothScroller(recyclerView.getContext(), snapTo);
+//                smoothScroller.setTargetPosition(position);
+//                startSmoothScroll(smoothScroller);
+
+                View firstVisibleChild = recyclerView.getChildAt(0);
+                int itemHeight = firstVisibleChild.getHeight();
+                int currentPosition = recyclerView.getChildPosition(firstVisibleChild);
+                int distanceInPixels = Math.abs((currentPosition - position) * itemHeight);
+                if (distanceInPixels == 0) {
+                    distanceInPixels = (int) Math.abs(firstVisibleChild.getY());
+                }
+                RecyclerView.SmoothScroller smoothScroller = new TopSnappedSmoothScroller(recyclerView.getContext(), snapTo, distanceInPixels, duration);
                 smoothScroller.setTargetPosition(position);
                 startSmoothScroll(smoothScroller);
             }
 
             private class TopSnappedSmoothScroller extends LinearSmoothScroller {
+                private static final int TARGET_SEEK_SCROLL_DISTANCE_PX = 10000;
+                private final float distanceInPixels;
+                private final float duration;
                 private int snapTo;
 
-                public TopSnappedSmoothScroller(Context context, int snapTo) {
+                public TopSnappedSmoothScroller(Context context, int snapTo, float distanceInPixels, float duration) {
                     super(context);
                     this.snapTo = snapTo;
+                    this.distanceInPixels = distanceInPixels;
+                    float millisPerPx = calculateSpeedPerPixel(context.getResources().getDisplayMetrics());
+//                    this.duration = distanceInPixels < TARGET_SEEK_SCROLL_DISTANCE_PX ? (int) (Math.abs(distanceInPixels) * millisPerPx) : duration;
+                    this.duration = duration;
+                    System.out.println("start scroll. distance:" + distanceInPixels);
                 }
 
                 @Override
                 public PointF computeScrollVectorForPosition(int targetPosition) {
                     return LinearLayoutManagerWithSmoothScroller.this
                             .computeScrollVectorForPosition(targetPosition);
+                }
+
+                @Override
+                protected int calculateTimeForScrolling(int dx) {
+                    float proportion = (float) dx / distanceInPixels;
+                    int time = (int) (duration * proportion);
+                    System.out.println("scroll dx:" + dx + " time:" + time);
+                    return time;
                 }
 
                 @Override

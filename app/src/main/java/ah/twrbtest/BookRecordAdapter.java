@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.twrb.core.book.BookResult;
+
 import java.util.List;
 
 import ah.twrbtest.DBObject.AdaptHelper;
@@ -152,11 +154,11 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
             progressDialog.dismiss();
             notifyItemChanged(bookRecords.indexOf(bookRecord));
-            Boolean result = (Boolean) notifiableAsyncTask.getResult();
-            result = result == null ? false : result;
-            String msg = result ? "恭喜您，訂到票了！" : "訂票失敗，你知道孫中山革命了幾次才成功嗎？";
+            BookResult result = (BookResult) notifiableAsyncTask.getResult();
+            result = result == null ? BookResult.UNKNOWN : result;
+            String msg = result.equals(BookResult.OK) ? "恭喜您，訂到票了！" : "訂票失敗，你知道孫中山革命了幾次才成功嗎？";
             Snackbar s = Snackbar.make(parentView, msg, Snackbar.LENGTH_LONG);
-            if (!result)
+            if (!result.equals(BookResult.OK))
                 s.setAction("我知道", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

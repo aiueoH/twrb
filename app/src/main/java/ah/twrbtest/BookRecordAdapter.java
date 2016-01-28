@@ -21,9 +21,7 @@ import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Events.OnBookRecordRemovedEvent;
 import ah.twrbtest.Events.OnBookedEvent;
-import ah.twrbtest.Helper.AsyncCancelHelper;
 import ah.twrbtest.Helper.BookManager;
-import ah.twrbtest.Helper.NotifiableAsyncTask;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
@@ -133,7 +131,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         }
     }
 
-    abstract class OnBtnClickListener implements View.OnClickListener, NotifiableAsyncTask.OnPostExecuteListener {
+    abstract class OnBtnClickListener implements View.OnClickListener {
         protected ProgressDialog progressDialog;
         protected BookRecord bookRecord;
 
@@ -172,10 +170,6 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                 Snackbar.make(parentView, "還沒開放訂票啦！", Snackbar.LENGTH_LONG).show();
             }
         }
-
-        @Override
-        public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-        }
     }
 
     class OnCancelBtnClickListener extends OnBtnClickListener {
@@ -185,20 +179,20 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         @Override
         public void onClick(View v) {
-            progressDialog = ProgressDialog.show(context, "", "退票中");
-            AsyncCancelHelper ach = new AsyncCancelHelper(bookRecord);
-            ach.setOnPostExecuteListener(this);
-            ach.execute();
-        }
-
-        @Override
-        public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-            progressDialog.dismiss();
-            notifyItemChanged(bookRecords.indexOf(bookRecord));
-            String s = "退票成功，酌收手續費 $300";
-            if (!(boolean) notifiableAsyncTask.getResult())
-                s = "退票失敗，再試一次好嗎？";
-            Snackbar.make(parentView, s, Snackbar.LENGTH_SHORT).show();
+            Observable.just(bookRecord.getId())
+                    .map(id -> BookManager.cancel(id))
+                    .subscribeOn(Schedulers.io())
+                    .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", "退票中"))
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(result -> {
+                        progressDialog.dismiss();
+                        notifyItemChanged(bookRecords.indexOf(bookRecord));
+                        String s = "退票成功，酌收手續費 $300";
+                        if (!result)
+                            s = "退票失敗，再試一次好嗎？";
+                        Snackbar.make(parentView, s, Snackbar.LENGTH_SHORT).show();
+                    });
         }
     }
 }

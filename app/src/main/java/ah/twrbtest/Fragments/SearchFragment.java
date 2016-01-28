@@ -156,12 +156,12 @@ public class SearchFragment extends Fragment {
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(trainInfos -> {
+                    progressDialog.dismiss();
                     if (trainInfos == null || trainInfos.isEmpty()) {
                         Snackbar.make(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT).show();
                         return;
                     }
                     EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));
-                    progressDialog.dismiss();
                     Intent intent = new Intent(getActivity(), TimetableActivity.class);
                     startActivity(intent);
                 });

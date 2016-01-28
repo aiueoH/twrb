@@ -31,11 +31,13 @@ import ah.twrbtest.Events.OnBookRecordAddedEvent;
 import ah.twrbtest.Events.OnBookedEvent;
 import ah.twrbtest.Events.OnSearchedEvent;
 import ah.twrbtest.Fragments.TimetableFragment;
-import ah.twrbtest.Helper.AsyncBookHelper;
-import ah.twrbtest.Helper.NotifiableAsyncTask;
+import ah.twrbtest.Helper.BookManager;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class TimetableActivity extends AppCompatActivity {
     //    @Bind(R.id.recyclerView)
@@ -146,10 +148,21 @@ public class TimetableActivity extends AppCompatActivity {
     public void onEvent(QuickBookDialog.OnBookingEvent e) {
         BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookInfo());
         if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
-            this.mProgressDialog = ProgressDialog.show(this, "", "訂票中");
-            AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
-            abh.setOnPostExecuteListener(new OnBookedListener(bookRecord.getId()));
-            abh.execute();
+            Observable.just(bookRecord.getId())
+                    .map(id -> BookManager.book(id))
+                    .subscribeOn(Schedulers.io())
+                    .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", "訂票中"))
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(result -> {
+                        mProgressDialog.dismiss();
+                        if (result == null)
+                            result = BookResult.UNKNOWN;
+                        EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
+                        EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
+                        String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+                        Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
+                    });
         } else {
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
             Snackbar.make(viewPager, "還沒開放訂票，我就自作主張先加入待訂清單了，不用謝", Snackbar.LENGTH_LONG).show();
@@ -160,26 +173,6 @@ public class TimetableActivity extends AppCompatActivity {
         long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
         Snackbar.make(viewPager, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_SHORT).show();
-    }
-
-    class OnBookedListener implements AsyncBookHelper.OnPostExecuteListener {
-        private long id;
-
-        public OnBookedListener(long id) {
-            this.id = id;
-        }
-
-        @Override
-        public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-            BookResult result = (BookResult) notifiableAsyncTask.getResult();
-            if (result == null)
-                result = BookResult.UNKNOWN;
-            EventBus.getDefault().post(new OnBookRecordAddedEvent(this.id));
-            EventBus.getDefault().post(new OnBookedEvent(this.id, result));
-            mProgressDialog.dismiss();
-            String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-            Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
-        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

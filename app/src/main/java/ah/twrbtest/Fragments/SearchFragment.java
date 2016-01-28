@@ -3,6 +3,7 @@ package ah.twrbtest.Fragments;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -39,9 +40,6 @@ import linkedspinner.Item;
 import linkedspinner.LinkedSpinner;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class SearchFragment extends Fragment {
@@ -143,58 +141,59 @@ public class SearchFragment extends Fragment {
 
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
+        final SearchInfo si = createSearchInfo();
+        if (si == null) {
+            Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
+                    .setAction("我知道錯了", v -> {
+                    })
+                    .show();
+            return;
+        }
+        Observable.just(si)
+                .map(searchInfo -> search(searchInfo))
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe(() -> showSearchingProgressDialog())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(trainInfos -> {
+                    if (trainInfos == null || trainInfos.isEmpty()) {
+                        Snackbar.make(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT).show();
+                        return;
+                    }
+                    EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));
+                    progressDialog.dismiss();
+                    Intent intent = new Intent(getActivity(), TimetableActivity.class);
+                    startActivity(intent);
+                });
+    }
+
+    @NonNull
+    private SearchInfo createSearchInfo() {
         final SearchInfo si = SearchInfo.createAllClass();
         si.fromStation = fromStation;
         si.fromCity = fromCity;
         si.toStation = toStation;
         si.toCity = toCity;
         si.setDateTime((Date) (this.date_spinner.getSelectedItem()));
-        if (si.fromStation.equals(si.toStation)) {
-            Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
-                    .setAction("我知道錯了", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                        }
-                    })
-                    .show();
-            return;
+        if (si.fromStation.equals(si.toStation))
+            return null;
+        return si;
+    }
+
+    @Nullable
+    private ArrayList<TrainInfo> search(SearchInfo searchInfo) {
+        ArrayList<TrainInfo> result = null;
+        try {
+            result = MobileWebTimetableSearcher.search(searchInfo);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        Observable.just(si)
-                .map(new Func1<SearchInfo, ArrayList<TrainInfo>>() {
-                    @Override
-                    public ArrayList<TrainInfo> call(SearchInfo searchInfo) {
-                        ArrayList<TrainInfo> result = null;
-                        try {
-                            result = MobileWebTimetableSearcher.search(searchInfo);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        return result;
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(new Action0() {
-                    @Override
-                    public void call() {
-                        progressDialog = ProgressDialog.show(getActivity(), "", "正在幫您查查");
-                        progressDialog.show();
-                    }
-                })
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ArrayList<TrainInfo>>() {
-                    @Override
-                    public void call(ArrayList<TrainInfo> trainInfos) {
-                        if (trainInfos == null || trainInfos.isEmpty()) {
-                            Snackbar.make(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT).show();
-                            return;
-                        }
-                        EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));
-                        progressDialog.dismiss();
-                        Intent intent = new Intent(getActivity(), TimetableActivity.class);
-                        startActivity(intent);
-                    }
-                });
+        return result;
+    }
+
+    private void showSearchingProgressDialog() {
+        progressDialog = ProgressDialog.show(getActivity(), "", "正在幫您查查");
+        progressDialog.show();
     }
 
     private void buildDateArrayAdapter() {

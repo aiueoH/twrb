@@ -10,7 +10,6 @@ import android.support.v4.view.ViewPager;
 import android.view.Window;
 
 import ah.twrbtest.Fragments.BookRecordFragment;
-import ah.twrbtest.Fragments.BookTicketFragment;
 import ah.twrbtest.Fragments.SearchFragment;
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -36,11 +35,12 @@ public class MainActivity extends FragmentActivity {
         private final String[] titles = new String[]{
                 "查詢",
                 "火車票",
-                "訂票"};
+//                "訂票"
+        };
         private final Fragment[] fragments = new Fragment[]{
                 SearchFragment.newInstance(),
                 BookRecordFragment.newInstance(),
-                BookTicketFragment.newInstance()
+//                BookTicketFragment.newInstance()
         };
 
         public ViewPagerAdapter(FragmentManager fm) {

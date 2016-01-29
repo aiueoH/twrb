@@ -195,9 +195,10 @@ public class MyApplication extends Application {
     private void setupPronounceSamples() {
         HashMap<String, int[]> samples = new HashMap<>();
         String path = getString(R.string.default_pronounce_sample_path);
+        String files[] = {"sun", "nueng", "song", "sam", "si", "ha", "hok", "chet", "paet", "kao"};
         for (int i = 0; i < 10; i++) {
             String key = String.valueOf(i);
-            String file = path.replace("[num]", String.valueOf(i));
+            String file = path.replace("[name]", files[i]);
             InputStream stream;
             try {
                 stream = getAssets().open(file);

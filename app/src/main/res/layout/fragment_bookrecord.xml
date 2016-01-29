@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginBottom="70dp"
-            android:text="你沒有任何訂票，好可憐"
+            android:text="你沒有任何的訂票！"
             android:textSize="30dp" />
     </FrameLayout>
 </LinearLayout>

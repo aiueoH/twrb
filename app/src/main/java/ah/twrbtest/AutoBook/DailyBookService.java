@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.NotificationCompat;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookResult;
 
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public class DailyBookService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        System.out.println(this.getClass().getName() + " onHandleIntent.");
+        MyLogger.i(this.getClass().getName() + " onHandleIntent.");
         try {
             startForeground();
             bookUntilEndTimeOrNoBookableRecord();
@@ -117,7 +118,7 @@ public class DailyBookService extends IntentService {
     private void bookUntilEndTimeOrNoBookableRecord() {
         while (checkTime()) {
             if (getAllBookableRecords(Calendar.getInstance()).isEmpty()) {
-                System.out.println("No bookable record, stop DailyBookService.");
+                MyLogger.i("No bookable record, stop DailyBookService.");
                 return;
             }
             book();
@@ -133,7 +134,7 @@ public class DailyBookService extends IntentService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        System.out.println("Not in specific time, stop DailyBookService.");
+        MyLogger.i("Not in specific time, stop DailyBookService.");
     }
 
     private void book() {
@@ -174,7 +175,7 @@ public class DailyBookService extends IntentService {
 
         private void book() {
             if (!checkTime()) {
-                System.out.println(String.format("AutoBooker of BookRecord[%d] out of checking time.", bookRecord.getId()));
+                MyLogger.i(String.format("AutoBooker of BookRecord[%d] out of checking time.", bookRecord.getId()));
                 finish();
                 return;
             }
@@ -189,7 +190,7 @@ public class DailyBookService extends IntentService {
                         book();
                     else {
                         EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                        System.out.println(String.format("AutoBooker of BookRecord[%d] booked success.", bookRecord.getId()));
+                        MyLogger.i(String.format("AutoBooker of BookRecord[%d] booked success.", bookRecord.getId()));
                         finish();
                     }
                 }

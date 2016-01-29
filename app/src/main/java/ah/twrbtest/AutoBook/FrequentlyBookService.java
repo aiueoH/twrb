@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.NotificationCompat;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookResult;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class FrequentlyBookService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        System.out.println(this.getClass().getName() + " onHandleIntent.");
+        MyLogger.i(this.getClass().getName() + " onHandleIntent.");
         try {
             startForeground();
             if (DailyBookService.checkTime() || !checkLastStartTime())
@@ -72,7 +73,7 @@ public class FrequentlyBookService extends IntentService {
 
     private void checkHasBookableRecord() {
         if (getBookableBookRecord(Calendar.getInstance()).isEmpty())
-            System.out.println("No bookable BookRecord, do not register next start.");
+            MyLogger.i("No bookable BookRecord, do not register next start.");
         else
             EventBus.getDefault().post(new OnBookableRecordFoundEvent());
     }
@@ -107,7 +108,7 @@ public class FrequentlyBookService extends IntentService {
                     return;
                 try {
                     long interval = getRandomBookInterval();
-                    System.out.println(this.getClass().getName() + " book break " + interval + " ns.");
+                    MyLogger.i(this.getClass().getName() + " book break " + interval + " ns.");
                     Thread.sleep(getRandomBookInterval());
                     break;
                 } catch (InterruptedException e) {
@@ -130,7 +131,7 @@ public class FrequentlyBookService extends IntentService {
         SharedPreferences sp = getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
         long lastTime = sp.getLong("lastFrequentlyBookServiceFinishTime", 0);
         if (Calendar.getInstance().getTimeInMillis() - lastTime < SERVICE_INTERVAL - RANDOM_BOOK_INTERVAL_FACTOR) {
-            System.out.println(this.getClass().getName() + " start interval too short.");
+            MyLogger.i(this.getClass().getName() + " start interval too short.");
             return false;
         }
         return true;

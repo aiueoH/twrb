@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.helpers.DefaultSequenceRecognizerCreator;
 import com.twrb.core.util.MulawReader;
 
@@ -44,6 +45,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        setLogger();
         setupRealm();
         setupTimetableStationIfNotExist();
         setupCityIfNotExist();
@@ -54,15 +56,21 @@ public class MyApplication extends Application {
         registerServiceAlarm(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
     }
 
+    private void setLogger() {
+        MyPrinter mp = new MyPrinter();
+        mp.setEnable(true);
+        MyLogger.setPrinter(mp);
+    }
+
     public void onEvent(OnBookRecordAddedEvent e) {
-        System.out.println("MyApplication received OnBookRecordAddedEvent.");
+        MyLogger.i("MyApplication received OnBookRecordAddedEvent.");
         BookRecord br = BookRecord.get(e.getBookRecordId());
         if (br != null && BookRecord.isBookable(br, Calendar.getInstance()))
             EventBus.getDefault().post(new OnBookableRecordFoundEvent());
     }
 
     public void onEvent(OnBookableRecordFoundEvent e) {
-        System.out.println("MyApplication received OnBookableRecordFoundEvent.");
+        MyLogger.i("MyApplication received OnBookableRecordFoundEvent.");
         long dailyBookServiceStartTime = DailyBookService.checkTime() ? 0 : DailyBookService.getNextStartTimeInterval(Calendar.getInstance()) + System.currentTimeMillis();
         registerServiceAlarm(DailyBookService.class, dailyBookServiceStartTime);
         registerServiceAlarm(FrequentlyBookService.class, FrequentlyBookService.getNextStartTimeInterval() + System.currentTimeMillis());
@@ -75,7 +83,7 @@ public class MyApplication extends Application {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(startTime);
         String s = c.getTime().toString();
-        System.out.println(cls.getName() + " will start at " + s + ".");
+        MyLogger.i(cls.getName() + " will start at " + s + ".");
     }
 
     public void cancelPendingIntentService(Class<? extends IntentService> cls) {
@@ -106,7 +114,7 @@ public class MyApplication extends Application {
         Realm realm = Realm.getDefaultInstance();
         RealmResults<TimetableStation> rr = realm.where(TimetableStation.class).findAll();
         if (!rr.isEmpty()) {
-            System.out.println("Timetable stations already existing, " + rr.size() + " stations.");
+            MyLogger.i("Timetable stations already existing, " + rr.size() + " stations.");
             return;
         }
         try {
@@ -127,9 +135,9 @@ public class MyApplication extends Application {
             realm.beginTransaction();
             realm.copyToRealm(tss);
             realm.commitTransaction();
-            System.out.println("Import timetable stations OK.");
+            MyLogger.i("Import timetable stations OK.");
         } catch (IOException e) {
-            System.out.println("Import timetable stations fail.");
+            MyLogger.i("Import timetable stations fail.");
             e.printStackTrace();
         }
     }
@@ -138,7 +146,7 @@ public class MyApplication extends Application {
         Realm realm = Realm.getDefaultInstance();
         RealmResults<City> rr = realm.where(City.class).findAll();
         if (!rr.isEmpty()) {
-            System.out.println("City already existing, " + rr.size() + " cities.");
+            MyLogger.i("City already existing, " + rr.size() + " cities.");
             return;
         }
         try {
@@ -160,9 +168,9 @@ public class MyApplication extends Application {
             realm.beginTransaction();
             realm.copyToRealm(cs);
             realm.commitTransaction();
-            System.out.println("Import cities OK.");
+            MyLogger.i("Import cities OK.");
         } catch (IOException e) {
-            System.out.println("Import cities fail.");
+            MyLogger.i("Import cities fail.");
             e.printStackTrace();
         }
     }
@@ -182,22 +190,23 @@ public class MyApplication extends Application {
                     bs.setName(data[1]);
                 }
                 realm.commitTransaction();
-                System.out.println("Import bookable stations OK.");
+                MyLogger.i("Import bookable stations OK.");
             } catch (IOException e) {
-                System.out.println("Import bookable stations fail.");
+                MyLogger.i("Import bookable stations fail.");
                 e.printStackTrace();
             }
         } else {
-            System.out.println("Bookable stations already existing, " + results.size() + " stations.");
+            MyLogger.i("Bookable stations already existing, " + results.size() + " stations.");
         }
     }
 
     private void setupPronounceSamples() {
         HashMap<String, int[]> samples = new HashMap<>();
         String path = getString(R.string.default_pronounce_sample_path);
+        String files[] = {"sun", "nueng", "song", "sam", "si", "ha", "hok", "chet", "paet", "kao"};
         for (int i = 0; i < 10; i++) {
             String key = String.valueOf(i);
-            String file = path.replace("[num]", String.valueOf(i));
+            String file = path.replace("[name]", files[i]);
             InputStream stream;
             try {
                 stream = getAssets().open(file);
@@ -205,9 +214,9 @@ public class MyApplication extends Application {
                 stream.read(bytes);
                 int[] pcm = new MulawReader(bytes).getPCMData();
                 samples.put(key, pcm);
-                System.out.println("Load and decode " + file + " OK. Sample length:" + pcm.length);
+                MyLogger.i("Load and decode " + file + " OK. Sample length:" + pcm.length);
             } catch (IOException e) {
-                System.out.println("Load and decode " + file + " fail.");
+                MyLogger.i("Load and decode " + file + " fail.");
                 e.printStackTrace();
             }
         }

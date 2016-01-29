@@ -54,13 +54,13 @@ public class LinkedSpinner {
         return rightSelectedItem;
     }
 
-    public void setRightSelectedItem(int index) {
-        setRightSelectedItem(rightItems.get(index));
-    }
-
     public void setRightSelectedItem(Item item) {
         rightSelectedItem = item;
         setLeftSelectedItem(item.getSuperItem());
+    }
+
+    public void setRightSelectedItem(int index) {
+        setRightSelectedItem(rightItems.get(index));
     }
 
     private void setLeftSelectedItem(Item item) {
@@ -276,7 +276,6 @@ public class LinkedSpinner {
                     float millisPerPx = calculateSpeedPerPixel(context.getResources().getDisplayMetrics());
 //                    this.duration = distanceInPixels < TARGET_SEEK_SCROLL_DISTANCE_PX ? (int) (Math.abs(distanceInPixels) * millisPerPx) : duration;
                     this.duration = duration;
-                    System.out.println("start scroll. distance:" + distanceInPixels);
                 }
 
                 @Override
@@ -289,7 +288,6 @@ public class LinkedSpinner {
                 protected int calculateTimeForScrolling(int dx) {
                     float proportion = (float) dx / distanceInPixels;
                     int time = (int) (duration * proportion);
-                    System.out.println("scroll dx:" + dx + " time:" + time);
                     return time;
                 }
 

@@ -1,5 +1,6 @@
 package ah.twrbtest.Helper;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.BookHelper;
@@ -23,7 +24,7 @@ public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, BookResu
         try {
             result = BookHelper.book(this.bookInfo);
             if (!result.equals(BookResult.OK)) {
-                System.out.println("訂票失敗");
+                MyLogger.i("訂票失敗");
                 return result;
             }
             Realm.getDefaultInstance().refresh();
@@ -36,7 +37,7 @@ public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, BookResu
             }
             AdaptHelper.to(this.bookInfo, br);
             Realm.getDefaultInstance().commitTransaction();
-            System.out.println("訂位代碼:" + this.bookInfo.code);
+            MyLogger.i("訂位代碼:" + this.bookInfo.code);
         } finally {
             Realm.getDefaultInstance().close();
         }

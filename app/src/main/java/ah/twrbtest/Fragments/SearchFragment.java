@@ -2,8 +2,8 @@ package ah.twrbtest.Fragments;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -38,6 +38,9 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import linkedspinner.Item;
 import linkedspinner.LinkedSpinner;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class SearchFragment extends Fragment {
     @Bind(R.id.spinner_date)
@@ -99,16 +102,6 @@ public class SearchFragment extends Fragment {
         EventBus.getDefault().unregister(this);
     }
 
-    public void onEvent(OnSearchedEvent e) {
-        this.progressDialog.dismiss();
-        if (e.getTrainInfos() == null || e.getTrainInfos().isEmpty()) {
-            Snackbar.make(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT).show();
-            return;
-        }
-        Intent intent = new Intent(getActivity(), TimetableActivity.class);
-        startActivity(intent);
-    }
-
     public void onEvent(LinkedSpinner.OnSelectedEvent e) {
         updateCityAndStation();
         updateStationTextView();
@@ -148,25 +141,59 @@ public class SearchFragment extends Fragment {
 
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
-        SearchInfo si = SearchInfo.createAllClass();
+        final SearchInfo si = createSearchInfo();
+        if (si == null) {
+            Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
+                    .setAction("我知道錯了", v -> {
+                    })
+                    .show();
+            return;
+        }
+        Observable.just(si)
+                .map(searchInfo -> search(searchInfo))
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe(() -> showSearchingProgressDialog())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(trainInfos -> {
+                    progressDialog.dismiss();
+                    if (trainInfos == null || trainInfos.isEmpty()) {
+                        Snackbar.make(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT).show();
+                        return;
+                    }
+                    EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));
+                    Intent intent = new Intent(getActivity(), TimetableActivity.class);
+                    startActivity(intent);
+                });
+    }
+
+    @NonNull
+    private SearchInfo createSearchInfo() {
+        final SearchInfo si = SearchInfo.createAllClass();
         si.fromStation = fromStation;
         si.fromCity = fromCity;
         si.toStation = toStation;
         si.toCity = toCity;
         si.setDateTime((Date) (this.date_spinner.getSelectedItem()));
-        if (si.fromStation.equals(si.toStation)) {
-            Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
-                    .setAction("我知道錯了", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                        }
-                    })
-                    .show();
-            return;
+        if (si.fromStation.equals(si.toStation))
+            return null;
+        return si;
+    }
+
+    @Nullable
+    private ArrayList<TrainInfo> search(SearchInfo searchInfo) {
+        ArrayList<TrainInfo> result = null;
+        try {
+            result = MobileWebTimetableSearcher.search(searchInfo);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        this.progressDialog = ProgressDialog.show(getActivity(), "", "正在幫您查查");
-        this.progressDialog.show();
-        new AsyncSearcher(si).execute();
+        return result;
+    }
+
+    private void showSearchingProgressDialog() {
+        progressDialog = ProgressDialog.show(getActivity(), "", "正在幫您查查");
+        progressDialog.show();
     }
 
     private void buildDateArrayAdapter() {
@@ -189,32 +216,5 @@ public class SearchFragment extends Fragment {
         for (TimetableStation ts : rr)
             tss.add(ts);
         this.timetableStationArrayAdapter = new TimetableStationArrayAdapter(getActivity(), R.layout.item_bookablestation, tss);
-    }
-
-    class AsyncSearcher extends AsyncTask<Integer, Integer, Boolean> {
-        private SearchInfo searchInfo;
-        private ArrayList<TrainInfo> trainInfos;
-
-        public AsyncSearcher(SearchInfo searchInfo) {
-            this.searchInfo = searchInfo;
-        }
-
-        @Override
-        protected Boolean doInBackground(Integer... params) {
-            try {
-//                this.trainInfos = TimetableSearcher.search(this.searchInfo);
-                this.trainInfos = MobileWebTimetableSearcher.search(this.searchInfo);
-                return true;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
-            EventBus.getDefault().postSticky(new OnSearchedEvent(this.searchInfo, this.trainInfos));
-        }
     }
 }

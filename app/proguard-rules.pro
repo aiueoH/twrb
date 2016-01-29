@@ -21,6 +21,7 @@
 -keep @io.realm.internal.Keep class *
 -dontwarn javax.**
 -dontwarn io.realm.**
+-dontwarn java.lang.invoke.*
 
 -keep class butterknife.** { *; }
 -dontwarn butterknife.internal.**

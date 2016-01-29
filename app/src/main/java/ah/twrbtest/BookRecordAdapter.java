@@ -13,19 +13,22 @@ import android.widget.TextView;
 
 import com.twrb.core.book.BookResult;
 
+import java.util.Calendar;
 import java.util.List;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import ah.twrbtest.DBObject.BookableStation;
 import ah.twrbtest.Events.OnBookRecordRemovedEvent;
-import ah.twrbtest.Helper.AsyncBookHelper;
-import ah.twrbtest.Helper.AsyncCancelHelper;
-import ah.twrbtest.Helper.NotifiableAsyncTask;
+import ah.twrbtest.Events.OnBookedEvent;
+import ah.twrbtest.Helper.BookManager;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.MyViewHolder> {
     private Context context;
@@ -128,7 +131,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         }
     }
 
-    abstract class OnBtnClickListener implements View.OnClickListener, NotifiableAsyncTask.OnPostExecuteListener {
+    abstract class OnBtnClickListener implements View.OnClickListener {
         protected ProgressDialog progressDialog;
         protected BookRecord bookRecord;
 
@@ -144,27 +147,28 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         @Override
         public void onClick(View v) {
-            progressDialog = ProgressDialog.show(context, "", "訂票中");
-            AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
-            abh.setOnPostExecuteListener(this);
-            abh.execute();
-        }
-
-        @Override
-        public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-            progressDialog.dismiss();
-            notifyItemChanged(bookRecords.indexOf(bookRecord));
-            BookResult result = (BookResult) notifiableAsyncTask.getResult();
-            result = result == null ? BookResult.UNKNOWN : result;
-            String msg = result.equals(BookResult.OK) ? "恭喜您，訂到票了！" : "訂票失敗，你知道孫中山革命了幾次才成功嗎？";
-            Snackbar s = Snackbar.make(parentView, msg, Snackbar.LENGTH_LONG);
-            if (!result.equals(BookResult.OK))
-                s.setAction("我知道", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                    }
-                });
-            s.show();
+            if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
+                Observable.just(bookRecord.getId())
+                        .map(id -> BookManager.book(id))
+                        .subscribeOn(Schedulers.io())
+                        .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", "訂票中"))
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            progressDialog.dismiss();
+                            if (result == null)
+                                result = BookResult.UNKNOWN;
+                            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
+                            String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，你知道孫中山革命了幾次才成功嗎？";
+                            Snackbar snackbar = Snackbar.make(parentView, s, Snackbar.LENGTH_LONG);
+                            if (!result.equals(BookResult.OK))
+                                snackbar.setAction("我知道", view -> {
+                                });
+                            snackbar.show();
+                        });
+            } else {
+                Snackbar.make(parentView, "還沒開放訂票啦！", Snackbar.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -175,20 +179,20 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         @Override
         public void onClick(View v) {
-            progressDialog = ProgressDialog.show(context, "", "退票中");
-            AsyncCancelHelper ach = new AsyncCancelHelper(bookRecord);
-            ach.setOnPostExecuteListener(this);
-            ach.execute();
-        }
-
-        @Override
-        public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-            progressDialog.dismiss();
-            notifyItemChanged(bookRecords.indexOf(bookRecord));
-            String s = "退票成功，酌收手續費 $300";
-            if (!(boolean) notifiableAsyncTask.getResult())
-                s = "退票失敗，再試一次好嗎？";
-            Snackbar.make(parentView, s, Snackbar.LENGTH_SHORT).show();
+            Observable.just(bookRecord.getId())
+                    .map(id -> BookManager.cancel(id))
+                    .subscribeOn(Schedulers.io())
+                    .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", "退票中"))
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(result -> {
+                        progressDialog.dismiss();
+                        notifyItemChanged(bookRecords.indexOf(bookRecord));
+                        String s = "退票成功，酌收手續費 $300";
+                        if (!result)
+                            s = "退票失敗，再試一次好嗎？";
+                        Snackbar.make(parentView, s, Snackbar.LENGTH_SHORT).show();
+                    });
         }
     }
 }

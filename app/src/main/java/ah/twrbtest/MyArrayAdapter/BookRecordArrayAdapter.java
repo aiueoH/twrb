@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookResult;
 
 import java.util.List;
@@ -87,7 +88,7 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
 
     public void onEvent(OnCancelledEvent e) {
         notifyDataSetChanged();
-        System.out.println("BookRecordArrayAdapter received OnCancelledEvent");
+        MyLogger.i("BookRecordArrayAdapter received OnCancelledEvent");
         if (e.getBookRecordId() == this.bookRecordId) {
             this.mProgressDialog.dismiss();
             Toast.makeText(getContext(), e.isSuccess() ? "取消成功！" : "取消失敗，不介意的話再試一次看看吧！", Toast.LENGTH_SHORT).show();
@@ -96,7 +97,7 @@ public class BookRecordArrayAdapter extends MyArrayAdapter<BookRecord> {
 
     public void onEvent(OnBookedEvent e) {
         notifyDataSetChanged();
-        System.out.println("BookRecordArrayAdapter received OnBookedEvent");
+        MyLogger.i("BookRecordArrayAdapter received OnBookedEvent");
         if (e.getBookRecordId() == this.bookRecordId) {
             this.mProgressDialog.dismiss();
             Toast.makeText(getContext(), e.getBookResult().equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，孫中山也是革命十次才成功", Toast.LENGTH_SHORT).show();

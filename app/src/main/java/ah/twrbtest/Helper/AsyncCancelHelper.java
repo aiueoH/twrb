@@ -1,5 +1,6 @@
 package ah.twrbtest.Helper;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.BookHelper;
 
@@ -34,7 +35,7 @@ public class AsyncCancelHelper extends NotifiableAsyncTask<Long, Integer, Boolea
             AdaptHelper.to(this.bookInfo, br);
             br.setIsCancelled(true);
             Realm.getDefaultInstance().commitTransaction();
-            System.out.println(result ? "已退訂" + this.bookInfo.code : "退訂失敗");
+            MyLogger.i(result ? "已退訂" + this.bookInfo.code : "退訂失敗");
         } finally {
             Realm.getDefaultInstance().close();
         }

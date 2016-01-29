@@ -1,5 +1,6 @@
 package ah.twrbtest;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 
 import ah.twrbtest.DBObject.AdaptHelper;
@@ -14,14 +15,14 @@ public class BookRecordFactory {
         Realm.getDefaultInstance().beginTransaction();
         Realm.getDefaultInstance().copyToRealm(br);
         Realm.getDefaultInstance().commitTransaction();
-        System.out.println("------------------------------------");
-        System.out.println("------- New BookRecord Added -------");
-        System.out.println("------------------------------------");
-        System.out.println("Id:" + br.getId());
-        System.out.println("GetInDate:" + br.getGetInDate());
-        System.out.println("PersonId:" + br.getPersonId());
-        System.out.println("FromStation:" + br.getFromStation());
-        System.out.println("ToStation:" + br.getToStation());
+        MyLogger.i("------------------------------------");
+        MyLogger.i("------- New BookRecord Added -------");
+        MyLogger.i("------------------------------------");
+        MyLogger.i("Id:" + br.getId());
+        MyLogger.i("GetInDate:" + br.getGetInDate());
+        MyLogger.i("PersonId:" + br.getPersonId());
+        MyLogger.i("FromStation:" + br.getFromStation());
+        MyLogger.i("ToStation:" + br.getToStation());
         return br;
     }
 }

@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.IDCreator;
@@ -70,13 +71,13 @@ public class BookTicketFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        System.out.println("BookTicketFragment onResume");
+        MyLogger.i("BookTicketFragment onResume");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        System.out.println("BookTicketFragment onPause");
+        MyLogger.i("BookTicketFragment onPause");
     }
 
     @Override

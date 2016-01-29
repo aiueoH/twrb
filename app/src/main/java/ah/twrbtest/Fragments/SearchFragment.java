@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.timetable.MobileWebTimetableSearcher;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
@@ -141,6 +142,7 @@ public class SearchFragment extends Fragment {
 
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
+        MyLogger.v("QQQQQQQQQQQQQQQQQ");
         final SearchInfo si = createSearchInfo();
         if (si == null) {
             Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)

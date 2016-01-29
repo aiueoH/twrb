@@ -1,5 +1,6 @@
 package ah.twrbtest.Helper;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.BookHelper;
@@ -18,13 +19,13 @@ public class BookManager {
             AdaptHelper.to(bookRecord, bookInfo);
             result = BookHelper.book(bookInfo);
             if (!result.equals(BookResult.OK)) {
-                System.out.println("訂票失敗");
+                MyLogger.i("訂票失敗");
                 return result;
             }
             Realm.getDefaultInstance().beginTransaction();
             AdaptHelper.to(bookInfo, bookRecord);
             Realm.getDefaultInstance().commitTransaction();
-            System.out.println("訂位代碼:" + bookInfo.code);
+            MyLogger.i("訂位代碼:" + bookInfo.code);
         } finally {
             Realm.getDefaultInstance().close();
         }
@@ -45,7 +46,7 @@ public class BookManager {
                 AdaptHelper.to(bookInfo, bookRecord);
                 bookRecord.setIsCancelled(true);
                 Realm.getDefaultInstance().commitTransaction();
-                System.out.println(result ? "已退訂" : "退訂失敗");
+                MyLogger.i(result ? "已退訂" : "退訂失敗");
             }
         } finally {
             Realm.getDefaultInstance().close();

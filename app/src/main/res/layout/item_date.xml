@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="6dp">
+    android:padding="10dp">
 
     <TextView
         android:id="@+id/textView"
@@ -11,5 +11,5 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="2012/12/21"
-        android:textSize="20dp" />
+        android:textSize="30dp" />
 </LinearLayout>

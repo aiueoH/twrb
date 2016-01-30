@@ -87,6 +87,32 @@ public class BookRecord extends RealmObject {
         return id;
     }
 
+    public static boolean isBookable(Calendar departure, Calendar now) {
+        Calendar before1Hour = (Calendar) departure.clone();
+        before1Hour.add(Calendar.HOUR_OF_DAY, -1);
+        if (!now.before(before1Hour))
+            return false;
+        Calendar today = (Calendar) now.clone();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        Calendar getInDate = (Calendar) departure.clone();
+        getInDate.set(Calendar.HOUR_OF_DAY, 0);
+        getInDate.set(Calendar.MINUTE, 0);
+        getInDate.set(Calendar.SECOND, 0);
+        getInDate.set(Calendar.MILLISECOND, 0);
+        Calendar bookableDate = (Calendar) getInDate.clone();
+        if (SPECIAL_DATE.containsKey(getInDate)) {
+            bookableDate = SPECIAL_DATE.get(getInDate);
+        } else
+            bookableDate.add(Calendar.DATE, -14);
+        if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
+            bookableDate.add(Calendar.DATE, -1);
+        return (today.before(getInDate) || today.equals(getInDate)) &&
+            (today.after(bookableDate) || today.equals(bookableDate));
+    }
+
     public static boolean isBookable(BookRecord bookRecord, Calendar now) {
         Calendar today = (Calendar) now.clone();
         today.set(Calendar.HOUR_OF_DAY, 0);

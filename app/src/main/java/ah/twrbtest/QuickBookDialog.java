@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ah.twrbtest.Helper.BookManager;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -86,7 +87,14 @@ public class QuickBookDialog extends Dialog {
 
     @OnClick(R.id.button_book)
     public void onBookButtonClick() {
-        if (setBookingInfo()) return;
+        if (setBookingInfo())
+            return;
+        int remainCDTime = BookManager.getBookCDTime(context);
+        if (remainCDTime > 0) {
+            Snackbar.make(qtu_spinner, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT)
+                .show();
+            return;
+        }
         dismiss();
         EventBus.getDefault().post(new OnBookingEvent(this.bookInfo));
     }

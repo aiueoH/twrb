@@ -147,9 +147,15 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         @Override
         public void onClick(View v) {
+            int remainCDTime = BookManager.getBookCDTime(context);
+            if (remainCDTime > 0) {
+                Snackbar.make(parentView, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT)
+                    .show();
+                return;
+            }
             if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
                 Observable.just(bookRecord.getId())
-                        .map(id -> BookManager.book(id))
+                    .map(id -> BookManager.book(context, id))
                         .subscribeOn(Schedulers.io())
                         .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", "訂票中"))
                         .subscribeOn(AndroidSchedulers.mainThread())

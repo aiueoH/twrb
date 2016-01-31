@@ -14,4 +14,12 @@
 
     <color name="blue_pressed">@android:color/holo_blue_dark</color>
     <color name="blue_normal">@android:color/holo_blue_light</color>
+
+    <!--<color name="gray_pressed">#616161</color>-->
+    <!--<color name="gray_normal">#434343</color>-->
+    <color name="gray_pressed">#c9c9c9</color>
+    <color name="gray_normal">#969696</color>
+
+    <color name="yellow_pressed">#FFC107</color>
+    <color name="yellow_normal">#b98c06</color>
 </resources>

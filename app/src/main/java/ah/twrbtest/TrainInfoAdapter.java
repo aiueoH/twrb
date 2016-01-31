@@ -2,18 +2,23 @@ package ah.twrbtest;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.twrb.core.MyLogger;
 import com.twrb.core.timetable.TrainInfo;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
+import ah.twrbtest.DBObject.BookRecord;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
@@ -30,10 +35,12 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
 
     private Context context;
     private List<TrainInfo> trainInfos;
+    private Calendar searchDate;
 
-    public TrainInfoAdapter(Context context, List<TrainInfo> trainInfos) {
+    public TrainInfoAdapter(Context context, List<TrainInfo> trainInfos, Calendar searchDate) {
         this.context = context;
         this.trainInfos = trainInfos;
+        this.searchDate = searchDate;
     }
 
     @Override
@@ -46,20 +53,48 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         final TrainInfo ti = this.trainInfos.get(position);
         holder.trainType_textView.setText(ti.type);
         holder.trainNo_textView.setText(ti.no);
-        holder.depatureTime_textView.setText(ti.departureTime);
+        holder.departureTime_textView.setText(ti.departureTime);
         holder.arrivalTime_textView.setText(ti.arrivalTime);
         holder.trainType_textView.setTextColor(getTrainTypeColor(ti.type));
         holder.trainNo_textView.setTextColor(getTrainTypeColor(ti.type));
-        holder.cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EventBus.getDefault().post(new OnItemClickEvent(ti));
-            }
-        });
-        String delay = "";
-        if (!ti.delay.isEmpty() && !ti.delay.equals("0"))
-            delay = "誤點 " + ti.delay + " 分";
-        holder.delay_textView.setText(delay);
+        if (isBookable(ti)) {
+            holder.book_button.setOnClickListener(v -> EventBus.getDefault().post(new OnItemClickEvent(ti)));
+            holder.book_button.setVisibility(View.VISIBLE);
+        } else
+            holder.book_button.setVisibility(View.INVISIBLE);
+        if (!ti.delay.isEmpty() && !ti.delay.equals("0")) {
+            String delay = "誤點 " + ti.delay + " 分";
+            holder.delay_textView.setVisibility(View.VISIBLE);
+            holder.delay_textView.setText(delay);
+        } else
+            holder.delay_textView.setVisibility(View.INVISIBLE);
+    }
+
+    private Calendar createDepartureDateTime(String departureTime) {
+        Calendar c = Calendar.getInstance();
+        try {
+            c.setTime(new SimpleDateFormat("HH:mm").parse(departureTime));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+        Calendar departureDateTime = (Calendar) searchDate.clone();
+        departureDateTime.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY));
+        departureDateTime.set(Calendar.MINUTE, c.get(Calendar.MINUTE));
+        MyLogger.v("departure " + departureDateTime.getTime().toString());
+        return departureDateTime;
+    }
+
+    private boolean isBookable(TrainInfo trainInfo) {
+        if (trainInfo.type.equals("自強") ||
+            trainInfo.type.equals("莒光") ||
+            trainInfo.type.equals("普悠瑪") ||
+            trainInfo.type.equals("太魯閣")) {
+            Calendar departureDateTime = createDepartureDateTime(trainInfo.departureTime);
+            if (departureDateTime != null && BookRecord.isBookable(departureDateTime, Calendar.getInstance()))
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -78,13 +113,13 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         @Bind(R.id.textView_trainNo)
         TextView trainNo_textView;
         @Bind(R.id.textView_departureTime)
-        TextView depatureTime_textView;
+        TextView departureTime_textView;
         @Bind(R.id.textView_arrivalTime)
         TextView arrivalTime_textView;
         @Bind(R.id.textView_delay)
         TextView delay_textView;
-        @Bind(R.id.card_view)
-        CardView cardView;
+        @Bind(R.id.button_book)
+        Button book_button;
 
         public MyViewHolder(View itemView) {
             super(itemView);

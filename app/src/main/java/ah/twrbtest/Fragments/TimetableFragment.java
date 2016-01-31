@@ -46,7 +46,7 @@ public class TimetableFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_timetable, container, false);
         ButterKnife.bind(this, view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(new TrainInfoAdapter(getActivity(), trainInfos));
+        recyclerView.setAdapter(new TrainInfoAdapter(getActivity(), trainInfos, searchDate));
         scrollToMostNearlyTimeTrain();
         return view;
     }

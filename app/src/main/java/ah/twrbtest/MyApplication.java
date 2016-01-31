@@ -1,10 +1,8 @@
 package ah.twrbtest;
 
-import android.app.AlarmManager;
 import android.app.Application;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 
 import com.twrb.core.MyLogger;
@@ -77,6 +75,8 @@ public class MyApplication extends Application {
     }
 
     public void registerServiceAlarm(Class<? extends IntentService> cls, long startTime) {
+        /*
+        ======= For public edition =======
         Intent intent = new Intent(this, cls);
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, startTime, PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
@@ -84,6 +84,7 @@ public class MyApplication extends Application {
         c.setTimeInMillis(startTime);
         String s = c.getTime().toString();
         MyLogger.i(cls.getName() + " will start at " + s + ".");
+        */
     }
 
     public void cancelPendingIntentService(Class<? extends IntentService> cls) {

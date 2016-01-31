@@ -149,8 +149,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         public void onClick(View v) {
             int remainCDTime = BookManager.getBookCDTime(context);
             if (remainCDTime > 0) {
-                Snackbar.make(parentView, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT)
-                    .show();
+                SnackbarHelper.show(parentView, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT);
                 return;
             }
             if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
@@ -165,15 +164,11 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                             if (result == null)
                                 result = BookResult.UNKNOWN;
                             EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                            String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，你知道孫中山革命了幾次才成功嗎？";
-                            Snackbar snackbar = Snackbar.make(parentView, s, Snackbar.LENGTH_LONG);
-                            if (!result.equals(BookResult.OK))
-                                snackbar.setAction("我知道", view -> {
-                                });
-                            snackbar.show();
+                            String s = result.equals(BookResult.OK) ? "訂票成功！" : "很抱歉，沒有訂到票";
+                            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
                         });
             } else {
-                Snackbar.make(parentView, "還沒開放訂票啦！", Snackbar.LENGTH_LONG).show();
+                SnackbarHelper.show(parentView, "本車次目前非訂票時間", Snackbar.LENGTH_SHORT);
             }
         }
     }
@@ -197,7 +192,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                         String s = "退票成功，酌收手續費 $300";
                         if (!result)
                             s = "退票失敗，再試一次好嗎？";
-                        Snackbar.make(parentView, s, Snackbar.LENGTH_SHORT).show();
+                        SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
                     });
         }
     }

@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.twrb.core.MyLogger;
 import com.twrb.core.timetable.MobileWebTimetableSearcher;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
@@ -30,6 +29,7 @@ import ah.twrbtest.Events.OnSearchedEvent;
 import ah.twrbtest.MyArrayAdapter.DateArrayAdapter;
 import ah.twrbtest.MyArrayAdapter.TimetableStationArrayAdapter;
 import ah.twrbtest.R;
+import ah.twrbtest.SnackbarHelper;
 import ah.twrbtest.TimetableActivity;
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -142,13 +142,9 @@ public class SearchFragment extends Fragment {
 
     @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
-        MyLogger.v("QQQQQQQQQQQQQQQQQ");
         final SearchInfo si = createSearchInfo();
         if (si == null) {
-            Snackbar.make(date_spinner, "三小？", Snackbar.LENGTH_SHORT)
-                    .setAction("我知道錯了", v -> {
-                    })
-                    .show();
+            SnackbarHelper.show(date_spinner, "？？？？？？？", Snackbar.LENGTH_SHORT);
             return;
         }
         Observable.just(si)
@@ -160,7 +156,7 @@ public class SearchFragment extends Fragment {
                 .subscribe(trainInfos -> {
                     progressDialog.dismiss();
                     if (trainInfos == null || trainInfos.isEmpty()) {
-                        Snackbar.make(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT).show();
+                        SnackbarHelper.show(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT);
                         return;
                     }
                     EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));

@@ -83,7 +83,7 @@ public class SearchFragment extends Fragment {
                 subItems.add(subItem);
                 if (subItem.getName().equals("臺北"))
                     defaultFrom = subItem;
-                if (subItem.getName().equals("花蓮"))
+                if (subItem.getName().equals("高雄"))
                     deafultTo = subItem;
             }
             item.setSubItems(subItems);
@@ -144,7 +144,7 @@ public class SearchFragment extends Fragment {
     public void onSearchButtonClick() {
         final SearchInfo si = createSearchInfo();
         if (si == null) {
-            SnackbarHelper.show(date_spinner, "？？？？？？？", Snackbar.LENGTH_SHORT);
+            SnackbarHelper.show(date_spinner, getString(R.string.wtf), Snackbar.LENGTH_SHORT);
             return;
         }
         Observable.just(si)
@@ -156,7 +156,7 @@ public class SearchFragment extends Fragment {
                 .subscribe(trainInfos -> {
                     progressDialog.dismiss();
                     if (trainInfos == null || trainInfos.isEmpty()) {
-                        SnackbarHelper.show(date_spinner, "很遺憾，你輸入的資料查不到任何班次", Snackbar.LENGTH_SHORT);
+                        SnackbarHelper.show(date_spinner, getString(R.string.no_search_result), Snackbar.LENGTH_SHORT);
                         return;
                     }
                     EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));
@@ -190,7 +190,7 @@ public class SearchFragment extends Fragment {
     }
 
     private void showSearchingProgressDialog() {
-        progressDialog = ProgressDialog.show(getActivity(), "", "正在幫您查查");
+        progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string.is_searching));
         progressDialog.show();
     }
 

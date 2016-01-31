@@ -49,7 +49,7 @@ public class QuickBookDialog extends Dialog {
         setContentView(R.layout.quickbook);
         ButterKnife.bind(this);
         buildQtuAdapter();
-        SharedPreferences sp = this.context.getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
+        SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
         String id = sp.getString("personId", "");
         int qtu = sp.getInt("qtu", -1);
         this.id_editText.setText(id);
@@ -59,7 +59,7 @@ public class QuickBookDialog extends Dialog {
 
     @OnItemSelected(R.id.spinner_qtu)
     public void onQtuSpinnerItemSelected(int position) {
-        SharedPreferences sp = this.context.getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
+        SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putInt("qtu", position + 1);
         editor.commit();
@@ -67,7 +67,7 @@ public class QuickBookDialog extends Dialog {
 
     @OnTextChanged(R.id.editText_id)
     public void onIdEditTextChang(CharSequence s) {
-        SharedPreferences sp = this.context.getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
+        SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("personId", s.toString());
         editor.commit();
@@ -91,7 +91,8 @@ public class QuickBookDialog extends Dialog {
             return;
         int remainCDTime = BookManager.getBookCDTime(context);
         if (remainCDTime > 0) {
-            SnackbarHelper.show(qtu_spinner, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT);
+            String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);
+            SnackbarHelper.show(qtu_spinner, s, Snackbar.LENGTH_SHORT);
             return;
         }
         dismiss();
@@ -101,7 +102,7 @@ public class QuickBookDialog extends Dialog {
     private boolean setBookingInfo() {
         String id = this.id_editText.getText().toString();
         if (!IDCreator.check(id)) {
-            SnackbarHelper.show(qtu_spinner, "可以改用正確的身分證字號嗎？", Snackbar.LENGTH_SHORT);
+            SnackbarHelper.show(qtu_spinner, context.getString(R.string.tip_for_wrong_id), Snackbar.LENGTH_SHORT);
             return true;
         }
         this.bookInfo.personId = id;

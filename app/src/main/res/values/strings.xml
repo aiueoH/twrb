@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">哎呀呀專用</string>
+    <string name="app_name">iTrain</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -7,4 +7,25 @@
     <string name="file_timetableStation">station_data/timetable_station</string>
     <string name="file_city">station_data/timetable_city</string>
     <string name="default_pronounce_sample_path">ps/[name].ayaya</string>
+
+    <string name="sp_name">twrb_sp</string>
+
+    <string name="tab_name_all_class">所有車種</string>
+    <string name="tab_name_exp_class">對號列車</string>
+    <string name="tab_name_search">查詢班次</string>
+    <string name="tab_name_ticket">我的車票</string>
+
+    <string name="book_suc">訂票成功，恭喜！快去我的車票查看吧！</string>
+    <string name="book_fale">非常抱歉，沒有訂到票</string>
+    <string name="cancel_suc">已完成退票，太棒啦！</string>
+    <string name="cancel_fale">退票失敗，要不要再試一次？</string>
+    <string name="wtf">？？？？？？？？</string>
+    <string name="no_search_result">這次的查詢沒有結果，我們深表遺憾</string>
+    <string name="is_booking">訂票引擎全速運轉中...</string>
+    <string name="is_searching">查詢中...</string>
+    <string name="tip_for_wrong_id">"可以改用正確的身分證字號嗎？"</string>
+    <string name="cold_down_msg">"訂票引擎冷卻中，請於 %s 秒後再嘗試"</string>
+    <string name="not_time_for_book_and_save">還沒開放訂票，已幫您加入車票清單</string>
+    <string name="not_time_for_book">本車次目前非訂票時間</string>
+    <string name="save_to_book_record">已加入車票清單中，有空去看看吧</string>
 </resources>

@@ -149,14 +149,15 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         public void onClick(View v) {
             int remainCDTime = BookManager.getBookCDTime(context);
             if (remainCDTime > 0) {
-                SnackbarHelper.show(parentView, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT);
+                String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);
+                SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
                 return;
             }
             if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
                 Observable.just(bookRecord.getId())
                     .map(id -> BookManager.book(context, id))
                         .subscribeOn(Schedulers.io())
-                        .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", "訂票中"))
+                    .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", context.getString(R.string.is_booking)))
                         .subscribeOn(AndroidSchedulers.mainThread())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(result -> {
@@ -164,11 +165,11 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                             if (result == null)
                                 result = BookResult.UNKNOWN;
                             EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                            String s = result.equals(BookResult.OK) ? "訂票成功！" : "很抱歉，沒有訂到票";
+                            String s = result.equals(BookResult.OK) ? context.getString(R.string.book_suc) : context.getString(R.string.book_fale);
                             SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
                         });
             } else {
-                SnackbarHelper.show(parentView, "本車次目前非訂票時間", Snackbar.LENGTH_SHORT);
+                SnackbarHelper.show(parentView, context.getString(R.string.not_time_for_book), Snackbar.LENGTH_SHORT);
             }
         }
     }
@@ -189,9 +190,9 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                     .subscribe(result -> {
                         progressDialog.dismiss();
                         notifyItemChanged(bookRecords.indexOf(bookRecord));
-                        String s = "退票成功，酌收手續費 $300";
+                        String s = context.getString(R.string.cancel_suc);
                         if (!result)
-                            s = "退票失敗，再試一次好嗎？";
+                            s = context.getString(R.string.cancel_fale);
                         SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
                     });
         }

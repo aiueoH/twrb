@@ -33,14 +33,12 @@ public class MainActivity extends FragmentActivity {
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final String[] titles = new String[]{
-                "查詢",
-                "火車票",
-//                "訂票"
+            getString(R.string.tab_name_search),
+            getString(R.string.tab_name_ticket),
         };
         private final Fragment[] fragments = new Fragment[]{
                 SearchFragment.newInstance(),
                 BookRecordFragment.newInstance(),
-//                BookTicketFragment.newInstance()
         };
 
         public ViewPagerAdapter(FragmentManager fm) {

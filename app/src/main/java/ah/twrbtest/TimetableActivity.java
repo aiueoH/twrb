@@ -145,7 +145,7 @@ public class TimetableActivity extends AppCompatActivity {
             Observable.just(bookRecord.getId())
                 .map(id -> BookManager.book(this, id))
                     .subscribeOn(Schedulers.io())
-                    .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", "訂票中"))
+                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
                     .subscribeOn(AndroidSchedulers.mainThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(result -> {
@@ -154,25 +154,25 @@ public class TimetableActivity extends AppCompatActivity {
                             result = BookResult.UNKNOWN;
                         EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
                         EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                        String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+                        String s = result.equals(BookResult.OK) ? getString(R.string.book_suc) : getString(R.string.book_fale);
                         Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
                     });
         } else {
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-            Snackbar.make(viewPager, "還沒開放訂票，我就自作主張先加入待訂清單了，不用謝", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(viewPager, getString(R.string.not_time_for_book_and_save), Snackbar.LENGTH_LONG).show();
         }
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
         long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
-        Snackbar.make(viewPager, "已加入待訂清單，手續費三百大洋", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(viewPager, getString(R.string.save_to_book_record), Snackbar.LENGTH_SHORT).show();
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final String[] titles = new String[]{
-                "所有車種",
-                "對號列車",
+            getString(R.string.tab_name_all_class),
+            getString(R.string.tab_name_exp_class),
         };
         private final Fragment[] fragments = new Fragment[2];
 

@@ -31,6 +31,7 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         put("區間快", Color.parseColor("#528999"));
         put("普悠瑪", Color.parseColor("#99028F"));
         put("太魯閣", Color.parseColor("#5E994C"));
+        put("復興", Color.parseColor("#0d5a86"));
     }};
 
     private Context context;
@@ -89,7 +90,8 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         if (trainInfo.type.equals("自強") ||
             trainInfo.type.equals("莒光") ||
             trainInfo.type.equals("普悠瑪") ||
-            trainInfo.type.equals("太魯閣")) {
+            trainInfo.type.equals("太魯閣") ||
+            trainInfo.type.equals("復興")) {
             Calendar departureDateTime = createDepartureDateTime(trainInfo.departureTime);
             if (departureDateTime != null && BookRecord.isBookable(departureDateTime, Calendar.getInstance()))
                 return true;

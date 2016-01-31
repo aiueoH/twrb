@@ -1,16 +1,22 @@
 package ah.twrbtest.Helper;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.BookHelper;
+
+import java.util.Calendar;
 
 import ah.twrbtest.DBObject.AdaptHelper;
 import ah.twrbtest.DBObject.BookRecord;
 import io.realm.Realm;
 
 public class BookManager {
-    public static BookResult book(long bookRecordId) {
+    public static BookResult book(Context context, long bookRecordId) {
         BookResult result = BookResult.UNKNOWN;
         try {
             BookInfo bookInfo = new BookInfo();
@@ -28,6 +34,7 @@ public class BookManager {
             MyLogger.i("訂位代碼:" + bookInfo.code);
         } finally {
             Realm.getDefaultInstance().close();
+            setLastBookTime(context);
         }
         return result;
     }
@@ -52,5 +59,18 @@ public class BookManager {
             Realm.getDefaultInstance().close();
         }
         return result;
+    }
+
+    private static void setLastBookTime(Context context) {
+        SharedPreferences sp = context.getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor e = sp.edit();
+        e.putLong("lastBookTime", Calendar.getInstance().getTimeInMillis());
+        e.commit();
+    }
+
+    public static int getBookCDTime(Context context) {
+        SharedPreferences sp = context.getSharedPreferences("twrbtest", Activity.MODE_PRIVATE);
+        long lastBookTime = sp.getLong("lastBookTime", 0);
+        return 10 - (int) ((Calendar.getInstance().getTimeInMillis() - lastBookTime) / 1000);
     }
 }

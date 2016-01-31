@@ -149,7 +149,7 @@ public class TimetableActivity extends AppCompatActivity {
         BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookInfo());
         if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
             Observable.just(bookRecord.getId())
-                    .map(id -> BookManager.book(id))
+                .map(id -> BookManager.book(this, id))
                     .subscribeOn(Schedulers.io())
                     .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", "訂票中"))
                     .subscribeOn(AndroidSchedulers.mainThread())

@@ -15,10 +15,11 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.dowob.twrb.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import ah.twrbtest.R;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
@@ -54,13 +55,13 @@ public class LinkedSpinner {
         return rightSelectedItem;
     }
 
+    public void setRightSelectedItem(int index) {
+        setRightSelectedItem(rightItems.get(index));
+    }
+
     public void setRightSelectedItem(Item item) {
         rightSelectedItem = item;
         setLeftSelectedItem(item.getSuperItem());
-    }
-
-    public void setRightSelectedItem(int index) {
-        setRightSelectedItem(rightItems.get(index));
     }
 
     private void setLeftSelectedItem(Item item) {

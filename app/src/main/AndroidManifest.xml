@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ah.twrbtest">
+<manifest
+    package="com.dowob.twrb"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- ===== For public edition ===== -->
@@ -8,13 +9,13 @@
 
     <!-- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> -->
     <application
-        android:name=".MyApplication"
+        android:name="com.dowob.twrb.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name="com.dowob.twrb.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,10 +23,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TimetableActivity" />
+        <activity android:name="com.dowob.twrb.TimetableActivity"/>
 
-        <service android:name=".AutoBook.DailyBookService" />
-        <service android:name=".AutoBook.FrequentlyBookService" />
+        <service android:name="com.dowob.twrb.AutoBook.DailyBookService"/>
+        <service android:name="com.dowob.twrb.AutoBook.FrequentlyBookService"/>
 
         <!-- ========= For public edition ========= -->
         <!--<receiver-->

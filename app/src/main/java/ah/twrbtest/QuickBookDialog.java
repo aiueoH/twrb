@@ -91,8 +91,7 @@ public class QuickBookDialog extends Dialog {
             return;
         int remainCDTime = BookManager.getBookCDTime(context);
         if (remainCDTime > 0) {
-            Snackbar.make(qtu_spinner, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT)
-                .show();
+            SnackbarHelper.show(qtu_spinner, "訂票引擎冷卻中，請於 " + remainCDTime + " 秒後再嘗試。", Snackbar.LENGTH_SHORT);
             return;
         }
         dismiss();
@@ -102,7 +101,7 @@ public class QuickBookDialog extends Dialog {
     private boolean setBookingInfo() {
         String id = this.id_editText.getText().toString();
         if (!IDCreator.check(id)) {
-            Snackbar.make(qtu_spinner, "你不要用假的身分證字號好不好", Snackbar.LENGTH_SHORT).show();
+            SnackbarHelper.show(qtu_spinner, "可以改用正確的身分證字號嗎？", Snackbar.LENGTH_SHORT);
             return true;
         }
         this.bookInfo.personId = id;

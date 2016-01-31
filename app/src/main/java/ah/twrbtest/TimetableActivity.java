@@ -11,7 +11,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.widget.TextView;
 
 import com.twrb.core.book.BookInfo;
@@ -75,10 +74,10 @@ public class TimetableActivity extends AppCompatActivity {
         this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
 
         ViewPagerAdapter vpa = new ViewPagerAdapter(getSupportFragmentManager());
-        EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(trainInfos, searchDate));
+        EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(trainInfos, searchDate, searchInfo));
         vpa.createAllClass();
         List<TrainInfo> expressTrainInfos = getExpressClassTrainInfos();
-        EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(expressTrainInfos, searchDate));
+        EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(expressTrainInfos, searchDate, searchInfo));
         vpa.createExpressClass();
         viewPager.setAdapter(vpa);
         tabLayout.setupWithViewPager(viewPager);
@@ -87,12 +86,7 @@ public class TimetableActivity extends AppCompatActivity {
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private Calendar parseSearchDate() {

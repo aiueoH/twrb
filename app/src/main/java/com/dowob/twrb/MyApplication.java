@@ -56,7 +56,7 @@ public class MyApplication extends Application {
 
     private void setLogger() {
         MyPrinter mp = new MyPrinter();
-        mp.setEnable(true);
+        mp.setEnable(false);
         MyLogger.setPrinter(mp);
     }
 

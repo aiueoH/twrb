@@ -145,11 +145,11 @@ public class SearchFragment extends Fragment {
     public void onSearchButtonClick() {
         final SearchInfo si = createSearchInfo();
         if (si == null) {
-            SnackbarHelper.show(date_spinner, getString(R.string.wtf), Snackbar.LENGTH_SHORT);
+            SnackbarHelper.show(date_spinner, getString(R.string.wtf), Snackbar.LENGTH_LONG);
             return;
         }
         if (!NetworkChecker.isConnected(getContext())) {
-            SnackbarHelper.show(date_spinner, getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
+            SnackbarHelper.show(date_spinner, getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
             return;
         }
         Observable.just(si)
@@ -161,7 +161,7 @@ public class SearchFragment extends Fragment {
                 .subscribe(trainInfos -> {
                     progressDialog.dismiss();
                     if (trainInfos == null || trainInfos.isEmpty()) {
-                        SnackbarHelper.show(date_spinner, getString(R.string.no_search_result), Snackbar.LENGTH_SHORT);
+                        SnackbarHelper.show(date_spinner, getString(R.string.no_search_result), Snackbar.LENGTH_LONG);
                         return;
                     }
                     EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));

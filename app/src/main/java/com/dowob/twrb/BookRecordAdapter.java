@@ -148,13 +148,13 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         @Override
         public void onClick(View v) {
             if (!NetworkChecker.isConnected(context)) {
-                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
+                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
                 return;
             }
             int remainCDTime = BookManager.getBookCDTime(context);
             if (remainCDTime > 0) {
                 String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);
-                SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
+                SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
                 return;
             }
             if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
@@ -170,10 +170,10 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                                 result = BookResult.UNKNOWN;
                             EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
                             String s = result.equals(BookResult.OK) ? context.getString(R.string.book_suc) : context.getString(R.string.book_fale);
-                            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
+                            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
                         });
             } else {
-                SnackbarHelper.show(parentView, context.getString(R.string.not_time_for_book), Snackbar.LENGTH_SHORT);
+                SnackbarHelper.show(parentView, context.getString(R.string.not_time_for_book), Snackbar.LENGTH_LONG);
             }
         }
     }
@@ -186,7 +186,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         @Override
         public void onClick(View v) {
             if (!NetworkChecker.isConnected(context)) {
-                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
+                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
                 return;
             }
             Observable.just(bookRecord.getId())
@@ -201,7 +201,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                         String s = context.getString(R.string.cancel_suc);
                         if (!result)
                             s = context.getString(R.string.cancel_fale);
-                        SnackbarHelper.show(parentView, s, Snackbar.LENGTH_SHORT);
+                        SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
                     });
         }
     }

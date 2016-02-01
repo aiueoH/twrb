@@ -88,7 +88,7 @@ public class QuickBookDialog extends Dialog {
     @OnClick(R.id.button_book)
     public void onBookButtonClick() {
         if (!NetworkChecker.isConnected(context)) {
-            SnackbarHelper.show(qtu_spinner, context.getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
+            SnackbarHelper.show(qtu_spinner, context.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
             return;
         }
         if (setBookingInfo())
@@ -97,7 +97,7 @@ public class QuickBookDialog extends Dialog {
         int remainCDTime = BookManager.getBookCDTime(context);
         if (remainCDTime > 0) {
             String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);
-            SnackbarHelper.show(qtu_spinner, s, Snackbar.LENGTH_SHORT);
+            SnackbarHelper.show(qtu_spinner, s, Snackbar.LENGTH_LONG);
             return;
         }
         dismiss();
@@ -107,7 +107,7 @@ public class QuickBookDialog extends Dialog {
     private boolean setBookingInfo() {
         String id = this.id_editText.getText().toString();
         if (!IDCreator.check(id)) {
-            SnackbarHelper.show(qtu_spinner, context.getString(R.string.tip_for_wrong_id), Snackbar.LENGTH_SHORT);
+            SnackbarHelper.show(qtu_spinner, context.getString(R.string.tip_for_wrong_id), Snackbar.LENGTH_LONG);
             return true;
         }
         this.bookInfo.personId = id;

@@ -163,7 +163,7 @@ public class BookTicketFragment extends Fragment {
     public void book() {
         BookInfo info = getBookingInfo();
         if (!info.verify()) {
-            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_LONG).show();
             return;
         }
         final BookRecord bookRecord = saveToDB(info);
@@ -193,7 +193,7 @@ public class BookTicketFragment extends Fragment {
     public void save() {
         BookInfo info = getBookingInfo();
         if (!info.verify()) {
-            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_LONG).show();
             return;
         }
         long id = saveToDB(info).getId();

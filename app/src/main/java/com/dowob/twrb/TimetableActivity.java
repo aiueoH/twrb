@@ -166,7 +166,7 @@ public class TimetableActivity extends AppCompatActivity {
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
         long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
-        Snackbar.make(viewPager, getString(R.string.save_to_book_record), Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(viewPager, getString(R.string.save_to_book_record), Snackbar.LENGTH_LONG).show();
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

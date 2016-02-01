@@ -87,8 +87,13 @@ public class QuickBookDialog extends Dialog {
 
     @OnClick(R.id.button_book)
     public void onBookButtonClick() {
+        if (!NetworkChecker.isConnected(context)) {
+            SnackbarHelper.show(qtu_spinner, context.getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
+            return;
+        }
         if (setBookingInfo())
             return;
+
         int remainCDTime = BookManager.getBookCDTime(context);
         if (remainCDTime > 0) {
             String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);

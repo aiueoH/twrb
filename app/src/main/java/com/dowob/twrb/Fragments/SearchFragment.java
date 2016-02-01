@@ -18,6 +18,7 @@ import com.dowob.twrb.DBObject.TimetableStation;
 import com.dowob.twrb.Events.OnSearchedEvent;
 import com.dowob.twrb.MyArrayAdapter.DateArrayAdapter;
 import com.dowob.twrb.MyArrayAdapter.TimetableStationArrayAdapter;
+import com.dowob.twrb.NetworkChecker;
 import com.dowob.twrb.R;
 import com.dowob.twrb.SnackbarHelper;
 import com.dowob.twrb.TimetableActivity;
@@ -145,6 +146,10 @@ public class SearchFragment extends Fragment {
         final SearchInfo si = createSearchInfo();
         if (si == null) {
             SnackbarHelper.show(date_spinner, getString(R.string.wtf), Snackbar.LENGTH_SHORT);
+            return;
+        }
+        if (!NetworkChecker.isConnected(getContext())) {
+            SnackbarHelper.show(date_spinner, getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
             return;
         }
         Observable.just(si)

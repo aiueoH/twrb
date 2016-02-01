@@ -147,6 +147,10 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         @Override
         public void onClick(View v) {
+            if (!NetworkChecker.isConnected(context)) {
+                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
+                return;
+            }
             int remainCDTime = BookManager.getBookCDTime(context);
             if (remainCDTime > 0) {
                 String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);
@@ -181,6 +185,10 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         @Override
         public void onClick(View v) {
+            if (!NetworkChecker.isConnected(context)) {
+                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_SHORT);
+                return;
+            }
             Observable.just(bookRecord.getId())
                     .map(id -> BookManager.cancel(id))
                     .subscribeOn(Schedulers.io())

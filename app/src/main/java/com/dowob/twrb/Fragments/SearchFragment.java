@@ -1,7 +1,9 @@
 package com.dowob.twrb.Fragments;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -73,7 +75,12 @@ public class SearchFragment extends Fragment {
         // setup station linked spinner
         List<Item> items = new ArrayList<>();
         RealmResults<City> rr = Realm.getDefaultInstance().allObjects(City.class);
-        Item defaultFrom = null, deafultTo = null;
+        Item defaultFromItem = null, defaultToItem = null;
+        String defaultFromString = getLastSearchedFromStation();
+        String defaultToSTring = getLastSearchedToStation();
+        if (defaultFromString == null) defaultFromString = "臺北";
+        if (defaultToSTring == null) defaultToSTring = "高雄";
+        System.out.print(defaultFromString + "," + defaultToSTring);
         for (City c : rr) {
             Item item = new Item(c.getNo(), c.getNameCh());
             List<Item> subItems = new ArrayList<>();
@@ -82,18 +89,18 @@ public class SearchFragment extends Fragment {
             for (TimetableStation ts : c.getTimetableStations()) {
                 Item subItem = new Item(ts.getNo(), ts.getNameCh(), item);
                 subItems.add(subItem);
-                if (subItem.getName().equals("臺北"))
-                    defaultFrom = subItem;
-                if (subItem.getName().equals("高雄"))
-                    deafultTo = subItem;
+                if (subItem.getName().equals(defaultFromString))
+                    defaultFromItem = subItem;
+                if (subItem.getName().equals(defaultToSTring))
+                    defaultToItem = subItem;
             }
             item.setSubItems(subItems);
             items.add(item);
         }
         fromLinkedSpinner = new LinkedSpinner(getActivity(), items);
-        fromLinkedSpinner.setRightSelectedItem(defaultFrom);
+        if (defaultFromItem != null) fromLinkedSpinner.setRightSelectedItem(defaultFromItem);
         toLinkedSpinner = new LinkedSpinner(getActivity(), items);
-        toLinkedSpinner.setRightSelectedItem(deafultTo);
+        if (defaultToItem != null) toLinkedSpinner.setRightSelectedItem(defaultToItem);
         EventBus.getDefault().register(this);
         updateCityAndStation();
     }
@@ -109,6 +116,28 @@ public class SearchFragment extends Fragment {
         updateStationTextView();
     }
 
+    private void setLastSearchedStation(String from, String to) {
+        SharedPreferences sp = getContext().getSharedPreferences(getContext().getString(R.string.sp_name), Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("lastSearchedFromStation", from);
+        editor.putString("lastSearchedToStation", to);
+        editor.commit();
+    }
+
+    private String getLastSearchedFromStation() {
+        return getLastSearchedStation("lastSearchedFromStation");
+    }
+
+    private String getLastSearchedToStation() {
+        return getLastSearchedStation("lastSearchedToStation");
+    }
+
+    private String getLastSearchedStation(String key) {
+        SharedPreferences sp = getContext().getSharedPreferences(getContext().getString(R.string.sp_name), Activity.MODE_PRIVATE);
+        String station = sp.getString(key, "");
+        return station.isEmpty() ? null : station;
+    }
+
     private void updateCityAndStation() {
         fromCity = (String) fromLinkedSpinner.getRightSelectedItem().getSuperItem().getValue();
         toCity = (String) toLinkedSpinner.getRightSelectedItem().getSuperItem().getValue();
@@ -117,8 +146,11 @@ public class SearchFragment extends Fragment {
     }
 
     private void updateStationTextView() {
-        to_textView.setText((String) toLinkedSpinner.getRightSelectedItem().getName());
-        from_textView.setText((String) fromLinkedSpinner.getRightSelectedItem().getName());
+        String from = (String) fromLinkedSpinner.getRightSelectedItem().getName();
+        String to = (String) toLinkedSpinner.getRightSelectedItem().getName();
+        from_textView.setText(from);
+        to_textView.setText(to);
+        setLastSearchedStation(from, to);
     }
 
     @Nullable

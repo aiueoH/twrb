@@ -15,7 +15,6 @@ import com.dowob.twrb.Events.OnBookRecordAddedEvent;
 import com.dowob.twrb.Events.OnBookableRecordFoundEvent;
 import com.twrb.core.MyLogger;
 import com.twrb.core.helpers.DefaultSequenceRecognizerCreator;
-import com.twrb.core.util.MulawReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -202,25 +200,10 @@ public class MyApplication extends Application {
     }
 
     private void setupPronounceSamples() {
-        HashMap<String, int[]> samples = new HashMap<>();
-        String path = getString(R.string.default_pronounce_sample_path);
-        String files[] = {"sun", "nueng", "song", "sam", "si", "ha", "hok", "chet", "paet", "kao"};
-        for (int i = 0; i < 10; i++) {
-            String key = String.valueOf(i);
-            String file = path.replace("[name]", files[i]);
-            InputStream stream;
-            try {
-                stream = getAssets().open(file);
-                byte[] bytes = new byte[stream.available()];
-                stream.read(bytes);
-                int[] pcm = new MulawReader(bytes).getPCMData();
-                samples.put(key, pcm);
-                MyLogger.i("Load and decode " + file + " OK. Sample length:" + pcm.length);
-            } catch (IOException e) {
-                MyLogger.i("Load and decode " + file + " fail.");
-                e.printStackTrace();
-            }
+        try {
+            DefaultSequenceRecognizerCreator.set(getAssets().open(getString(R.string.file_pn)));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        DefaultSequenceRecognizerCreator.DEFAULT_SAMPLES = samples;
     }
 }

@@ -148,6 +148,10 @@ public class SearchFragment extends Fragment {
     private void updateStationTextView() {
         String from = (String) fromLinkedSpinner.getRightSelectedItem().getName();
         String to = (String) toLinkedSpinner.getRightSelectedItem().getName();
+        if (from.equals("侯硐(猴硐)"))
+            from = "侯硐";
+        if (to.equals("侯硐(猴硐)"))
+            to = "侯硐";
         from_textView.setText(from);
         to_textView.setText(to);
         setLastSearchedStation(from, to);
@@ -171,6 +175,16 @@ public class SearchFragment extends Fragment {
     @OnClick(R.id.textView_to)
     public void onToClick() {
         toLinkedSpinner.show();
+    }
+
+    @OnClick(R.id.imageButton_swap)
+    public void onSwapButtonClick() {
+        Item to = toLinkedSpinner.getRightSelectedItem();
+        Item from = fromLinkedSpinner.getRightSelectedItem();
+        toLinkedSpinner.setRightSelectedItem(from);
+        fromLinkedSpinner.setRightSelectedItem(to);
+        updateCityAndStation();
+        updateStationTextView();
     }
 
     @OnClick(R.id.button_search)

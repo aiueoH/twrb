@@ -126,8 +126,12 @@ public class BookRecord extends RealmObject {
         Calendar bookableDate = (Calendar) getInDate.clone();
         if (SPECIAL_DATE.containsKey(getInDate)) {
             bookableDate = SPECIAL_DATE.get(getInDate);
-        } else
-            bookableDate.add(Calendar.DATE, -14);
+        } else {
+            if (today.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY)
+                bookableDate.add(Calendar.DATE, -16);
+            else
+                bookableDate.add(Calendar.DATE, -14);
+        }
         if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
             bookableDate.add(Calendar.DATE, -1);
         return (today.before(getInDate) || today.equals(getInDate)) &&
@@ -135,26 +139,13 @@ public class BookRecord extends RealmObject {
     }
 
     public static boolean isBookable(BookRecord bookRecord, Calendar now) {
-        Calendar today = (Calendar) now.clone();
-        today.set(Calendar.HOUR_OF_DAY, 0);
-        today.set(Calendar.MINUTE, 0);
-        today.set(Calendar.SECOND, 0);
-        today.set(Calendar.MILLISECOND, 0);
         Calendar getInDate = Calendar.getInstance();
         getInDate.setTime(bookRecord.getGetInDate());
         getInDate.set(Calendar.HOUR_OF_DAY, 0);
         getInDate.set(Calendar.MINUTE, 0);
         getInDate.set(Calendar.SECOND, 0);
         getInDate.set(Calendar.MILLISECOND, 0);
-        Calendar bookableDate = (Calendar) getInDate.clone();
-        if (SPECIAL_DATE.containsKey(getInDate)) {
-            bookableDate = SPECIAL_DATE.get(getInDate);
-        } else
-            bookableDate.add(Calendar.DATE, -14);
-        if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
-            bookableDate.add(Calendar.DATE, -1);
-        return (today.before(getInDate) || today.equals(getInDate)) &&
-                (today.after(bookableDate) || today.equals(bookableDate));
+        return isBookable(getInDate, now);
     }
 
     public boolean isCancelled() {

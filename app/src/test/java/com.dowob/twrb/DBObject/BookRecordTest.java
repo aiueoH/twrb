@@ -2,7 +2,10 @@ package com.dowob.twrb.DBObject;
 
 import org.junit.Test;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -39,35 +42,53 @@ public class BookRecordTest {
 
         today.set(2015, 1, 7, 0, 0);
         assertTrue(BookRecord.isBookable(br, today));
+        // saturday and sunday --------------------------------------------------------------------
+        today.set(2016, 2 - 1, 19, 0, 0);
+
+        getInDate.set(2016, 3 - 1, 4);
+        br.setGetInDate(getInDate.getTime());
+        assertTrue(BookRecord.isBookable(br, today));
+
+        getInDate.set(2016, 3 - 1, 5);
+        br.setGetInDate(getInDate.getTime());
+        assertTrue(BookRecord.isBookable(br, today));
+
+        getInDate.set(2016, 3 - 1, 6);
+        br.setGetInDate(getInDate.getTime());
+        assertTrue(BookRecord.isBookable(br, today));
+
+        getInDate.set(2016, 3 - 1, 7);
+        br.setGetInDate(getInDate.getTime());
+        assertFalse(BookRecord.isBookable(br, today));
 
         // special dates ---------------------------------------------------------------------------
-        getInDate.set(2015, 8, 25);
-        today.set(2015, 8, 10, 0, 0);
+        getInDate.set(2016, 6 - 1, 9);
+        today.set(2016, 5 - 1, 24, 0, 0);
         br.setGetInDate(getInDate.getTime());
         assertFalse(BookRecord.isBookable(br, today));
 
-        getInDate.set(2015, 8, 25);
-        today.set(2015, 8, 11, 0, 0);
+        getInDate.set(2016, 6 - 1, 9);
+        today.set(2016, 5 - 1, 25, 0, 0);
         br.setGetInDate(getInDate.getTime());
         assertTrue(BookRecord.isBookable(br, today));
 
-        getInDate.set(2015, 8, 26);
-        today.set(2015, 8, 11, 0, 0);
+        getInDate.set(2016, 6 - 1, 10);
+        today.set(2016, 5 - 1, 25, 0, 0);
         br.setGetInDate(getInDate.getTime());
         assertTrue(BookRecord.isBookable(br, today));
 
-        getInDate.set(2015, 8, 26);
-        today.set(2015, 8, 10, BookRecord.MID_NIGHT_H, BookRecord.MID_NIGHT_M - 1);
+        getInDate.set(2016, 6 - 1, 9);
+        today.set(2016, 5 - 1, 24, BookRecord.MID_NIGHT_H, BookRecord.MID_NIGHT_M - 1);
         br.setGetInDate(getInDate.getTime());
         assertFalse(BookRecord.isBookable(br, today));
 
-        getInDate.set(2015, 8, 26);
-        today.set(2015, 8, 10, BookRecord.MID_NIGHT_H, BookRecord.MID_NIGHT_M);
+        getInDate.set(2016, 6 - 1, 9);
+        today.set(2016, 5 - 1, 24, BookRecord.MID_NIGHT_H, BookRecord.MID_NIGHT_M);
         br.setGetInDate(getInDate.getTime());
         assertTrue(BookRecord.isBookable(br, today));
 
-        getInDate.set(2015, 8, 27);
-        today.set(2015, 8, 11, 0, 0);
+        getInDate.set(2016, 6 - 1, 13);
+        today.set(2016, 5 - 1, 25, 0, 0);
         br.setGetInDate(getInDate.getTime());
         assertTrue(BookRecord.isBookable(br, today));
     }

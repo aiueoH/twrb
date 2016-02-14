@@ -22,21 +22,42 @@ public class BookRecord extends RealmObject {
 
     static {
         String[][] date_pairs = {
-                {"2015/09/25", "2015/09/11"},
-                {"2015/09/26", "2015/09/11"},
-                {"2015/09/27", "2015/09/11"},
-                {"2015/09/28", "2015/09/11"},
-                {"2015/09/29", "2015/09/11"},
-                {"2015/10/08", "2015/09/24"},
-                {"2015/10/09", "2015/09/24"},
-                {"2015/10/10", "2015/09/24"},
-                {"2015/10/11", "2015/09/24"},
-                {"2015/10/12", "2015/09/24"},
-                {"2015/12/31", "2015/12/17"},
-                {"2016/01/01", "2015/12/17"},
-                {"2016/01/02", "2015/12/17"},
-                {"2016/01/03", "2015/12/17"},
-                {"2016/01/04", "2015/12/17"},
+                {"2016/02/27", "2016/02/12"},
+                {"2016/02/28", "2016/02/12"},
+                {"2016/02/29", "2016/02/12"},
+                {"2016/03/01", "2016/02/12"},
+
+                {"2016/04/02", "2016/03/18"},
+                {"2016/04/03", "2016/03/18"},
+                {"2016/04/04", "2016/03/18"},
+                {"2016/04/05", "2016/03/18"},
+                {"2016/04/06", "2016/03/18"},
+
+                {"2016/05/07", "2016/04/22"},
+                {"2016/05/08", "2016/04/22"},
+                {"2016/05/09", "2016/04/22"},
+
+                {"2016/06/09", "2016/05/25"},
+                {"2016/06/10", "2016/05/25"},
+                {"2016/06/11", "2016/05/25"},
+                {"2016/06/12", "2016/05/25"},
+                {"2016/06/13", "2016/05/25"},
+
+                {"2016/09/15", "2016/08/31"},
+                {"2016/09/16", "2016/08/31"},
+                {"2016/09/17", "2016/08/31"},
+                {"2016/09/18", "2016/08/31"},
+                {"2016/09/19", "2016/08/31"},
+
+                {"2016/10/08", "2016/09/23"},
+                {"2016/10/09", "2016/09/23"},
+                {"2016/10/10", "2016/09/23"},
+                {"2016/10/11", "2016/09/23"},
+
+                {"2016/12/31", "2016/12/16"},
+                {"2016/01/01", "2016/12/16"},
+                {"2016/01/02", "2016/12/16"},
+                {"2016/01/03", "2016/12/16"},
         };
         SPECIAL_DATE = new HashMap<>();
         DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
@@ -105,8 +126,12 @@ public class BookRecord extends RealmObject {
         Calendar bookableDate = (Calendar) getInDate.clone();
         if (SPECIAL_DATE.containsKey(getInDate)) {
             bookableDate = SPECIAL_DATE.get(getInDate);
-        } else
-            bookableDate.add(Calendar.DATE, -14);
+        } else {
+            if (today.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY)
+                bookableDate.add(Calendar.DATE, -16);
+            else
+                bookableDate.add(Calendar.DATE, -14);
+        }
         if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
             bookableDate.add(Calendar.DATE, -1);
         return (today.before(getInDate) || today.equals(getInDate)) &&
@@ -114,26 +139,13 @@ public class BookRecord extends RealmObject {
     }
 
     public static boolean isBookable(BookRecord bookRecord, Calendar now) {
-        Calendar today = (Calendar) now.clone();
-        today.set(Calendar.HOUR_OF_DAY, 0);
-        today.set(Calendar.MINUTE, 0);
-        today.set(Calendar.SECOND, 0);
-        today.set(Calendar.MILLISECOND, 0);
         Calendar getInDate = Calendar.getInstance();
         getInDate.setTime(bookRecord.getGetInDate());
         getInDate.set(Calendar.HOUR_OF_DAY, 0);
         getInDate.set(Calendar.MINUTE, 0);
         getInDate.set(Calendar.SECOND, 0);
         getInDate.set(Calendar.MILLISECOND, 0);
-        Calendar bookableDate = (Calendar) getInDate.clone();
-        if (SPECIAL_DATE.containsKey(getInDate)) {
-            bookableDate = SPECIAL_DATE.get(getInDate);
-        } else
-            bookableDate.add(Calendar.DATE, -14);
-        if (now.get(Calendar.HOUR_OF_DAY) >= MID_NIGHT_H && now.get(Calendar.MINUTE) >= MID_NIGHT_M)
-            bookableDate.add(Calendar.DATE, -1);
-        return (today.before(getInDate) || today.equals(getInDate)) &&
-                (today.after(bookableDate) || today.equals(bookableDate));
+        return isBookable(getInDate, now);
     }
 
     public boolean isCancelled() {

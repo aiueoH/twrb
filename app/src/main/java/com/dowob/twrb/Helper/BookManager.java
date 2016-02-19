@@ -3,6 +3,7 @@ package com.dowob.twrb.Helper;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 
 import com.dowob.twrb.DBObject.AdaptHelper;
 import com.dowob.twrb.DBObject.BookRecord;
@@ -11,21 +12,26 @@ import com.twrb.core.book.BookInfo;
 import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.BookHelper;
 
+import java.util.AbstractMap;
 import java.util.Calendar;
+import java.util.List;
 
 import io.realm.Realm;
 
 public class BookManager {
-    public static BookResult book(Context context, long bookRecordId) {
-        BookResult result = BookResult.UNKNOWN;
+    @NonNull
+    public static AbstractMap.SimpleEntry<BookResult, List<String>> book(Context context, long bookRecordId) {
+        AbstractMap.SimpleEntry<BookResult, List<String>> result
+                = new AbstractMap.SimpleEntry<>(BookResult.UNKNOWN, null);
         try {
             BookInfo bookInfo = new BookInfo();
             Realm.getDefaultInstance().refresh();
             BookRecord bookRecord = BookRecord.get(bookRecordId);
             AdaptHelper.to(bookRecord, bookInfo);
             result = BookHelper.book(bookInfo);
-            if (!result.equals(BookResult.OK)) {
-                MyLogger.i("訂票失敗");
+            BookResult bookResult = result.getKey();
+            if (!bookResult.equals(BookResult.OK)) {
+                MyLogger.i("訂票失敗:" + result);
                 return result;
             }
             Realm.getDefaultInstance().beginTransaction();

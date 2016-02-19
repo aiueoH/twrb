@@ -8,12 +8,8 @@ import android.support.v7.app.NotificationCompat;
 
 import com.dowob.twrb.DBObject.BookRecord;
 import com.dowob.twrb.Events.OnBookableRecordFoundEvent;
-import com.dowob.twrb.Events.OnBookedEvent;
-import com.dowob.twrb.Helper.AsyncBookHelper;
-import com.dowob.twrb.Helper.NotifiableAsyncTask;
 import com.dowob.twrb.MyApplication;
 import com.twrb.core.MyLogger;
-import com.twrb.core.book.BookResult;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -174,28 +170,28 @@ public class DailyBookService extends IntentService {
         }
 
         private void book() {
-            if (!checkTime()) {
-                MyLogger.i(String.format("AutoBooker of BookRecord[%d] out of checking time.", bookRecord.getId()));
-                finish();
-                return;
-            }
-            AsyncBookHelper abh = new AsyncBookHelper(this.bookRecord);
-            abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
-                @Override
-                public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-                    BookResult result = (BookResult) notifiableAsyncTask.getResult();
-                    if (result == null)
-                        result = BookResult.UNKNOWN;
-                    if (!result.equals(BookResult.OK))
-                        book();
-                    else {
-                        EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                        MyLogger.i(String.format("AutoBooker of BookRecord[%d] booked success.", bookRecord.getId()));
-                        finish();
-                    }
-                }
-            });
-            abh.execute();
+//            if (!checkTime()) {
+//                MyLogger.i(String.format("AutoBooker of BookRecord[%d] out of checking time.", bookRecord.getId()));
+//                finish();
+//                return;
+//            }
+//            AsyncBookHelper abh = new AsyncBookHelper(this.bookRecord);
+//            abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
+//                @Override
+//                public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
+//                    BookResult result = (BookResult) notifiableAsyncTask.getResult();
+//                    if (result == null)
+//                        result = BookResult.UNKNOWN;
+//                    if (!result.equals(BookResult.OK))
+//                        book();
+//                    else {
+//                        EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
+//                        MyLogger.i(String.format("AutoBooker of BookRecord[%d] booked success.", bookRecord.getId()));
+//                        finish();
+//                    }
+//                }
+//            });
+//            abh.execute();
         }
     }
 }

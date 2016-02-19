@@ -166,10 +166,8 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(result -> {
                             progressDialog.dismiss();
-                            if (result == null)
-                                result = BookResult.UNKNOWN;
-                            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                            String s = result.equals(BookResult.OK) ? context.getString(R.string.book_suc) : context.getString(R.string.book_fale);
+                            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
+                            String s = result.getKey().equals(BookResult.OK) ? context.getString(R.string.book_suc) : context.getString(R.string.book_fale);
                             SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
                         });
             } else {

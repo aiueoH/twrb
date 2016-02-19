@@ -9,14 +9,10 @@ import android.support.v7.app.NotificationCompat;
 
 import com.dowob.twrb.DBObject.BookRecord;
 import com.dowob.twrb.Events.OnBookableRecordFoundEvent;
-import com.dowob.twrb.Events.OnBookedEvent;
-import com.dowob.twrb.Helper.AsyncBookHelper;
 import com.twrb.core.MyLogger;
-import com.twrb.core.book.BookResult;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
@@ -79,45 +75,45 @@ public class FrequentlyBookService extends IntentService {
     }
 
     private void book() {
-        Realm.getDefaultInstance().setAutoRefresh(true);
-        HashSet<Long> allBR = new HashSet<>();
-        ArrayList<BookRecord> rr = getBookableBookRecord(Calendar.getInstance());
-        for (BookRecord br : rr)
-            allBR.add(br.getId());
-        while (true) {
-            rr = getBookableBookRecord(Calendar.getInstance());
-            boolean isExist = false;
-            for (BookRecord br : rr) {
-                long id = 0;
-                try {
-                    id = br.getId();
-                    isExist = allBR.remove(id);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    isExist = false;
-                }
-                if (!isExist)
-                    continue;
-                AsyncBookHelper abh = new AsyncBookHelper(br);
-                abh.execute();
-                BookResult result = abh.getResult();
-                if (result != null) {
-                    EventBus.getDefault().post(new OnBookedEvent(id, result));
-                }
-                if (allBR.isEmpty())
-                    return;
-                try {
-                    long interval = getRandomBookInterval();
-                    MyLogger.i(this.getClass().getName() + " book break " + interval + " ns.");
-                    Thread.sleep(getRandomBookInterval());
-                    break;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (!isExist)
-                return;
-        }
+//        Realm.getDefaultInstance().setAutoRefresh(true);
+//        HashSet<Long> allBR = new HashSet<>();
+//        ArrayList<BookRecord> rr = getBookableBookRecord(Calendar.getInstance());
+//        for (BookRecord br : rr)
+//            allBR.add(br.getId());
+//        while (true) {
+//            rr = getBookableBookRecord(Calendar.getInstance());
+//            boolean isExist = false;
+//            for (BookRecord br : rr) {
+//                long id = 0;
+//                try {
+//                    id = br.getId();
+//                    isExist = allBR.remove(id);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    isExist = false;
+//                }
+//                if (!isExist)
+//                    continue;
+//                AsyncBookHelper abh = new AsyncBookHelper(br);
+//                abh.execute();
+//                BookResult result = abh.getResult();
+//                if (result != null) {
+//                    EventBus.getDefault().post(new OnBookedEvent(id, result));
+//                }
+//                if (allBR.isEmpty())
+//                    return;
+//                try {
+//                    long interval = getRandomBookInterval();
+//                    MyLogger.i(this.getClass().getName() + " book break " + interval + " ns.");
+//                    Thread.sleep(getRandomBookInterval());
+//                    break;
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            if (!isExist)
+//                return;
+//        }
     }
 
     private void setLastFinishTime() {

@@ -16,15 +16,11 @@ import com.dowob.twrb.BookRecordFactory;
 import com.dowob.twrb.DBObject.BookRecord;
 import com.dowob.twrb.DBObject.BookableStation;
 import com.dowob.twrb.Events.OnBookRecordAddedEvent;
-import com.dowob.twrb.Events.OnBookedEvent;
-import com.dowob.twrb.Helper.AsyncBookHelper;
-import com.dowob.twrb.Helper.NotifiableAsyncTask;
 import com.dowob.twrb.MyArrayAdapter.BookableStationArrayAdapter;
 import com.dowob.twrb.MyArrayAdapter.DateArrayAdapter;
 import com.dowob.twrb.R;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
-import com.twrb.core.book.BookResult;
 import com.twrb.core.helpers.IDCreator;
 
 import java.text.SimpleDateFormat;
@@ -161,33 +157,33 @@ public class BookTicketFragment extends Fragment {
     }
 
     public void book() {
-        BookInfo info = getBookingInfo();
-        if (!info.verify()) {
-            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_LONG).show();
-            return;
-        }
-        final BookRecord bookRecord = saveToDB(info);
-        if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
-            this.mProgressDialog = ProgressDialog.show(getActivity(), "", "訂票中");
-            AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
-            abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
-                @Override
-                public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
-                    BookResult result = (BookResult) notifiableAsyncTask.getResult();
-                    if (result == null)
-                        result = BookResult.UNKNOWN;
-                    EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-                    EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                    mProgressDialog.dismiss();
-                    String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
-                    Snackbar.make(id_editText, s, Snackbar.LENGTH_LONG).show();
-                }
-            });
-            abh.execute();
-        } else {
-            EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-            Snackbar.make(id_editText, "還沒開放訂票，我先把他加入待訂清單哦", Snackbar.LENGTH_LONG).show();
-        }
+//        BookInfo info = getBookingInfo();
+//        if (!info.verify()) {
+//            Snackbar.make(id_editText, "檢查一下你的欄位好嗎？", Snackbar.LENGTH_LONG).show();
+//            return;
+//        }
+//        final BookRecord bookRecord = saveToDB(info);
+//        if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
+//            this.mProgressDialog = ProgressDialog.show(getActivity(), "", "訂票中");
+//            AsyncBookHelper abh = new AsyncBookHelper(bookRecord);
+//            abh.setOnPostExecuteListener(new NotifiableAsyncTask.OnPostExecuteListener() {
+//                @Override
+//                public void onPostExecute(NotifiableAsyncTask notifiableAsyncTask) {
+//                    BookResult result = (BookResult) notifiableAsyncTask.getResult();
+//                    if (result == null)
+//                        result = BookResult.UNKNOWN;
+//                    EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
+//                    EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
+//                    mProgressDialog.dismiss();
+//                    String s = result.equals(BookResult.OK) ? "訂票成功！" : "訂票失敗，已加入待訂清單";
+//                    Snackbar.make(id_editText, s, Snackbar.LENGTH_LONG).show();
+//                }
+//            });
+//            abh.execute();
+//        } else {
+//            EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
+//            Snackbar.make(id_editText, "還沒開放訂票，我先把他加入待訂清單哦", Snackbar.LENGTH_LONG).show();
+//        }
     }
 
     public void save() {

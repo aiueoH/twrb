@@ -143,18 +143,16 @@ public class TimetableActivity extends AppCompatActivity {
         BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookInfo());
         if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
             Observable.just(bookRecord.getId())
-                .map(id -> BookManager.book(this, id))
+                    .map(id -> BookManager.book(this, id))
                     .subscribeOn(Schedulers.io())
-                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
+                    .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
                     .subscribeOn(AndroidSchedulers.mainThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(result -> {
                         mProgressDialog.dismiss();
-                        if (result == null)
-                            result = BookResult.UNKNOWN;
                         EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-                        EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result));
-                        String s = result.equals(BookResult.OK) ? getString(R.string.book_suc) : getString(R.string.book_fale);
+                        EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
+                        String s = result.getKey().equals(BookResult.OK) ? getString(R.string.book_suc) : getString(R.string.book_fale);
                         Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
                     });
         } else {
@@ -171,8 +169,8 @@ public class TimetableActivity extends AppCompatActivity {
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final String[] titles = new String[]{
-            getString(R.string.tab_name_all_class),
-            getString(R.string.tab_name_exp_class),
+                getString(R.string.tab_name_all_class),
+                getString(R.string.tab_name_exp_class),
         };
         private final Fragment[] fragments = new Fragment[2];
 

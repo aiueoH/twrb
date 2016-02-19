@@ -12,6 +12,9 @@ import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
 import com.dowob.twrb.Helper.BookManager;
+import com.jakewharton.rxbinding.view.RxView;
+import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.jakewharton.rxbinding.widget.RxTextView;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.IDCreator;
 
@@ -19,12 +22,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnItemSelected;
-import butterknife.OnTextChanged;
 import de.greenrobot.event.EventBus;
 
 public class QuickBookDialog extends Dialog {
@@ -55,9 +56,13 @@ public class QuickBookDialog extends Dialog {
         this.id_editText.setText(id);
         this.qtu_spinner.setAdapter(this.qtuAdapter);
         this.qtu_spinner.setSelection(qtu - 1);
+
+        RxTextView.textChanges(id_editText).throttleLast(500, TimeUnit.MILLISECONDS).subscribe(s -> onIdEditTextChang(s));
+        RxAdapterView.itemSelections(qtu_spinner).subscribe(i -> onQtuSpinnerItemSelected(i));
+        RxView.clicks(save_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onSaveButtonClick());
+        RxView.clicks(book_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onBookButtonClick());
     }
 
-    @OnItemSelected(R.id.spinner_qtu)
     public void onQtuSpinnerItemSelected(int position) {
         SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
@@ -65,27 +70,25 @@ public class QuickBookDialog extends Dialog {
         editor.commit();
     }
 
-    @OnTextChanged(R.id.editText_id)
     public void onIdEditTextChang(CharSequence s) {
         SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("personId", s.toString());
         editor.commit();
+        System.out.println("qq");
     }
 
-    @OnClick(R.id.textView_id)
-    public void onIdTextViewClick() {
-        this.id_editText.setText(IDCreator.create());
-    }
+//    @OnClick(R.id.textView_id)
+//    public void onIdTextViewClick() {
+//        this.id_editText.setText(IDCreator.create());
+//    }
 
-    @OnClick(R.id.button_save)
     public void onSaveButtonClick() {
         if (setBookingInfo()) return;
         dismiss();
         EventBus.getDefault().post(new OnSavingEvent(this.bookInfo));
     }
 
-    @OnClick(R.id.button_book)
     public void onBookButtonClick() {
         if (!NetworkChecker.isConnected(context)) {
             SnackbarHelper.show(qtu_spinner, context.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);

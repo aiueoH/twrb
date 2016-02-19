@@ -17,10 +17,12 @@ import com.dowob.twrb.DBObject.BookableStation;
 import com.dowob.twrb.Events.OnBookRecordRemovedEvent;
 import com.dowob.twrb.Events.OnBookedEvent;
 import com.dowob.twrb.Helper.BookManager;
+import com.jakewharton.rxbinding.view.RxView;
 import com.twrb.core.book.BookResult;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -77,21 +79,20 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         holder.isCancelled_textView.setVisibility(br.isCancelled() ? View.VISIBLE : View.GONE);
         holder.book_button.setOnClickListener(new OnBookBtnClickListener(br));
         holder.cancel_button.setOnClickListener(new OnCancelBtnClickListener(br));
-        holder.delete_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int index = bookRecords.indexOf(br);
-                notifyItemRemoved(index);
-                bookRecords.remove(index);
-                Realm realm = Realm.getDefaultInstance();
-                BookRecord tmp = realm.where(BookRecord.class).equalTo("id", br.getId()).findFirst();
-                if (tmp == null) return;
-                realm.beginTransaction();
-                tmp.removeFromRealm();
-                realm.commitTransaction();
-                EventBus.getDefault().post(new OnBookRecordRemovedEvent());
-            }
-        });
+        RxView.clicks(holder.delete_button)
+                .throttleFirst(500, TimeUnit.MILLISECONDS)
+                .subscribe(v -> {
+                    int index = bookRecords.indexOf(br);
+                    notifyItemRemoved(index);
+                    bookRecords.remove(index);
+                    Realm realm = Realm.getDefaultInstance();
+                    BookRecord tmp = realm.where(BookRecord.class).equalTo("id", br.getId()).findFirst();
+                    if (tmp == null) return;
+                    realm.beginTransaction();
+                    tmp.removeFromRealm();
+                    realm.commitTransaction();
+                    EventBus.getDefault().post(new OnBookRecordRemovedEvent());
+                });
     }
 
     @Override

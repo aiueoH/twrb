@@ -12,6 +12,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -24,6 +26,7 @@ import com.dowob.twrb.NetworkChecker;
 import com.dowob.twrb.R;
 import com.dowob.twrb.SnackbarHelper;
 import com.dowob.twrb.TimetableActivity;
+import com.jakewharton.rxbinding.view.RxView;
 import com.twrb.core.timetable.MobileWebTimetableSearcher;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
@@ -33,10 +36,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -47,12 +50,16 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class SearchFragment extends Fragment {
+    @Bind(R.id.button_search)
+    Button search_button;
     @Bind(R.id.spinner_date)
     Spinner date_spinner;
     @Bind(R.id.textView_from)
     TextView from_textView;
     @Bind(R.id.textView_to)
     TextView to_textView;
+    @Bind(R.id.imageButton_swap)
+    ImageButton swap_imageButton;
     private TimetableStationArrayAdapter timetableStationArrayAdapter;
     private DateArrayAdapter dateArrayAdapter;
     private ProgressDialog progressDialog;
@@ -164,20 +171,13 @@ public class SearchFragment extends Fragment {
         ButterKnife.bind(this, view);
         this.date_spinner.setAdapter(this.dateArrayAdapter);
         updateStationTextView();
+        RxView.clicks(from_textView).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> fromLinkedSpinner.show());
+        RxView.clicks(to_textView).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> toLinkedSpinner.show());
+        RxView.clicks(swap_imageButton).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onSwapButtonClick());
+        RxView.clicks(search_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onSearchButtonClick());
         return view;
     }
 
-    @OnClick(R.id.textView_from)
-    public void onFromClick() {
-        fromLinkedSpinner.show();
-    }
-
-    @OnClick(R.id.textView_to)
-    public void onToClick() {
-        toLinkedSpinner.show();
-    }
-
-    @OnClick(R.id.imageButton_swap)
     public void onSwapButtonClick() {
         Item to = toLinkedSpinner.getRightSelectedItem();
         Item from = fromLinkedSpinner.getRightSelectedItem();
@@ -187,7 +187,6 @@ public class SearchFragment extends Fragment {
         updateStationTextView();
     }
 
-    @OnClick(R.id.button_search)
     public void onSearchButtonClick() {
         final SearchInfo si = createSearchInfo();
         if (si == null) {

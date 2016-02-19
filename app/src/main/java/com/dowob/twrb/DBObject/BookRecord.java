@@ -141,10 +141,10 @@ public class BookRecord extends RealmObject {
     public static boolean isBookable(BookRecord bookRecord, Calendar now) {
         Calendar getInDate = Calendar.getInstance();
         getInDate.setTime(bookRecord.getGetInDate());
-        getInDate.set(Calendar.HOUR_OF_DAY, 0);
-        getInDate.set(Calendar.MINUTE, 0);
-        getInDate.set(Calendar.SECOND, 0);
-        getInDate.set(Calendar.MILLISECOND, 0);
+        getInDate.set(Calendar.HOUR_OF_DAY, 23);
+        getInDate.set(Calendar.MINUTE, 59);
+        getInDate.set(Calendar.SECOND, 59);
+        getInDate.set(Calendar.MILLISECOND, 999);
         return isBookable(getInDate, now);
     }
 

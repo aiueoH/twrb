@@ -42,7 +42,18 @@ public class BookRecordTest {
 
         today.set(2015, 1, 7, 0, 0);
         assertTrue(BookRecord.isBookable(br, today));
-        // saturday and sunday --------------------------------------------------------------------
+        // today -----------------------------------------------------------------------------------
+        today.clear();
+        getInDate.clear();
+
+        today.set(2016, 2 - 1, 19, 0, 0);
+        getInDate.set(2016, 2 - 1, 19, 3, 0);
+        br.setGetInDate(getInDate.getTime());
+        assertTrue(BookRecord.isBookable(br, today));
+
+        // saturday and sunday ---------------------------------------------------------------------
+        today.clear();
+        getInDate.clear();
         today.set(2016, 2 - 1, 19, 0, 0);
 
         getInDate.set(2016, 3 - 1, 4);

@@ -1,12 +1,12 @@
 package com.dowob.twrb.Events;
 
-import com.twrb.core.book.BookResult;
+import com.dowob.twrb.Model.Booker;
 
 public class OnBookedEvent {
     private long bookRecordId;
-    private BookResult result;
+    private Booker.Result result;
 
-    public OnBookedEvent(long bookRecordId, BookResult result) {
+    public OnBookedEvent(long bookRecordId, Booker.Result result) {
         this.bookRecordId = bookRecordId;
         this.result = result;
     }
@@ -15,7 +15,7 @@ public class OnBookedEvent {
         return bookRecordId;
     }
 
-    public BookResult getBookResult() {
+    public Booker.Result getBookResult() {
         return result;
     }
 }

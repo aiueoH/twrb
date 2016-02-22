@@ -18,7 +18,6 @@ import com.dowob.twrb.Events.OnBookRecordRemovedEvent;
 import com.dowob.twrb.Events.OnBookedEvent;
 import com.dowob.twrb.Helper.BookManager;
 import com.jakewharton.rxbinding.view.RxView;
-import com.twrb.core.book.BookResult;
 
 import java.util.Calendar;
 import java.util.List;
@@ -168,7 +167,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                         .subscribe(result -> {
                             progressDialog.dismiss();
                             EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
-                            String s = result.getKey().equals(BookResult.OK) ? context.getString(R.string.book_suc) : context.getString(R.string.book_fale);
+                            String s = BookManager.getResultMsg(context, result.getKey());
                             SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
                         });
             } else {

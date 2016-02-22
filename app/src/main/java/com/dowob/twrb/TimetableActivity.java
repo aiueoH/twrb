@@ -21,7 +21,6 @@ import com.dowob.twrb.Events.OnSearchedEvent;
 import com.dowob.twrb.Fragments.TimetableFragment;
 import com.dowob.twrb.Helper.BookManager;
 import com.twrb.core.book.BookInfo;
-import com.twrb.core.book.BookResult;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 
@@ -56,8 +55,9 @@ public class TimetableActivity extends AppCompatActivity {
 
     private Calendar searchDate;
     private SearchInfo searchInfo;
-    private ArrayList<TrainInfo> trainInfos;
+    private List<TrainInfo> trainInfos;
     private ProgressDialog mProgressDialog;
+    private TrainInfo selectedTrainInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +131,7 @@ public class TimetableActivity extends AppCompatActivity {
 
     public void onEvent(TrainInfoAdapter.OnItemClickEvent e) {
         TrainInfo ti = e.getTrainInfo();
+        selectedTrainInfo = ti;
         BookInfo bi = new BookInfo();
         bi.trainNo = ti.no;
         bi.fromStation = TimetableStation.get(this.searchInfo.fromStation).getBookNo();
@@ -152,7 +153,7 @@ public class TimetableActivity extends AppCompatActivity {
                         mProgressDialog.dismiss();
                         EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
                         EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
-                        String s = result.getKey().equals(BookResult.OK) ? getString(R.string.book_suc) : getString(R.string.book_fale);
+                        String s = BookManager.getResultMsg(this, result.getKey());
                         Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
                     });
         } else {

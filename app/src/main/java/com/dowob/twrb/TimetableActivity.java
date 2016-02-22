@@ -13,10 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
 
-import com.dowob.twrb.DBObject.BookRecord;
 import com.dowob.twrb.DBObject.TimetableStation;
 import com.dowob.twrb.Events.OnBookRecordAddedEvent;
-import com.dowob.twrb.Events.OnBookedEvent;
 import com.dowob.twrb.Events.OnSearchedEvent;
 import com.dowob.twrb.Fragments.TimetableFragment;
 import com.dowob.twrb.Helper.BookManager;
@@ -141,25 +139,31 @@ public class TimetableActivity extends AppCompatActivity {
     }
 
     public void onEvent(QuickBookDialog.OnBookingEvent e) {
-        BookRecord bookRecord = BookRecordFactory.createBookRecord(e.getBookInfo());
-        if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
-            Observable.just(bookRecord.getId())
-                    .map(id -> BookManager.book(this, id))
-                    .subscribeOn(Schedulers.io())
-                    .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
-                    .subscribeOn(AndroidSchedulers.mainThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(result -> {
-                        mProgressDialog.dismiss();
-                        EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-                        EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
-                        String s = BookManager.getResultMsg(this, result.getKey());
-                        Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
-                    });
-        } else {
-            EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
-            Snackbar.make(viewPager, getString(R.string.not_time_for_book_and_save), Snackbar.LENGTH_LONG).show();
+        Calendar getInDateTime = Calendar.getInstance();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/ddHH:mm");
+        try {
+            getInDateTime.setTime(format.parse(e.getBookInfo().getinDate + selectedTrainInfo.departureTime));
+        } catch (ParseException e1) {
+            e1.printStackTrace();
         }
+        Observable.just(e.getBookInfo())
+                .map(bi -> BookManager.book(
+                        this,
+                        bi.fromStation,
+                        bi.toStation,
+                        getInDateTime,
+                        bi.trainNo,
+                        Integer.parseInt(bi.orderQtuStr),
+                        bi.personId))
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    mProgressDialog.dismiss();
+                    String s = BookManager.getResultMsg(this, result.getKey());
+                    Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
+                });
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {

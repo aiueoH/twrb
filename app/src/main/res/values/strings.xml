@@ -39,7 +39,7 @@
     <string name="is_searching">查詢中...</string>
     <string name="tip_for_wrong_id">"可以改用正確的身分證字號嗎？"</string>
     <string name="cold_down_msg">"訂票引擎冷卻中，請於 %s 秒後再嘗試"</string>
-    <string name="not_time_for_book_and_save">還沒開放訂票，已幫您加入車票清單</string>
+    <!--<string name="not_time_for_book_and_save">還沒開放訂票，已幫您加入車票清單</string>-->
     <string name="not_time_for_book">本車次目前非訂票時間</string>
     <string name="save_to_book_record">已加入車票清單中，有空去看看吧</string>
 </resources>

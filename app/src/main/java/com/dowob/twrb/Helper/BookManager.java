@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import com.dowob.twrb.BookRecordFactory;
 import com.dowob.twrb.DBObject.AdaptHelper;
 import com.dowob.twrb.DBObject.BookRecord;
+import com.dowob.twrb.Events.OnBookRecordAddedEvent;
+import com.dowob.twrb.Events.OnBookedEvent;
 import com.dowob.twrb.Model.Booker;
 import com.dowob.twrb.R;
 import com.twrb.core.MyLogger;
@@ -18,6 +20,7 @@ import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.List;
 
+import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
 public class BookManager {
@@ -34,7 +37,10 @@ public class BookManager {
                 = new Booker().book(from, to, getInDate, no, qty, personId);
         if (result.getKey().equals(Booker.Result.OK)) {
             List<String> data = result.getValue();
-            BookRecordFactory.createBookRecord(personId, getInDate, from, to, qty, no, "0", data.get(0));
+            BookRecord bookRecord = BookRecordFactory
+                    .createBookRecord(personId, getInDate, from, to, qty, no, "0", data.get(0));
+            EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
+            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
             MyLogger.i("訂票成功。code:" + data.get(0));
         } else {
             MyLogger.i("訂票失敗。" + result.getKey());
@@ -65,6 +71,7 @@ public class BookManager {
                 Realm.getDefaultInstance().commitTransaction();
                 MyLogger.i("訂票成功。code:" + data.get(0));
             } else {
+                EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
                 MyLogger.i("訂票失敗。" + result.getKey());
             }
         } finally {

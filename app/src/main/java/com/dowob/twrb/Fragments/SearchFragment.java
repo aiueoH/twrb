@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.dowob.twrb.DBObject.City;
 import com.dowob.twrb.DBObject.TimetableStation;
 import com.dowob.twrb.Events.OnSearchedEvent;
+import com.dowob.twrb.Model.TimetableSearcher;
 import com.dowob.twrb.MyArrayAdapter.DateArrayAdapter;
 import com.dowob.twrb.MyArrayAdapter.TimetableStationArrayAdapter;
 import com.dowob.twrb.NetworkChecker;
@@ -27,11 +28,10 @@ import com.dowob.twrb.R;
 import com.dowob.twrb.SnackbarHelper;
 import com.dowob.twrb.TimetableActivity;
 import com.jakewharton.rxbinding.view.RxView;
-import com.twrb.core.timetable.MobileWebTimetableSearcher;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 
-import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -203,15 +203,18 @@ public class SearchFragment extends Fragment {
                 .doOnSubscribe(() -> showSearchingProgressDialog())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(trainInfos -> {
+                .subscribe(result -> {
                     progressDialog.dismiss();
-                    if (trainInfos == null || trainInfos.isEmpty()) {
-                        SnackbarHelper.show(date_spinner, getString(R.string.no_search_result), Snackbar.LENGTH_LONG);
-                        return;
-                    }
-                    EventBus.getDefault().postSticky(new OnSearchedEvent(si, trainInfos));
-                    Intent intent = new Intent(getActivity(), TimetableActivity.class);
-                    startActivity(intent);
+                    if (result.getKey().equals(TimetableSearcher.Result.OK)) {
+                        if (result.getValue().isEmpty())
+                            SnackbarHelper.show(date_spinner, getString(R.string.no_search_result), Snackbar.LENGTH_LONG);
+                        else {
+                            EventBus.getDefault().postSticky(new OnSearchedEvent(si, result.getValue()));
+                            Intent intent = new Intent(getActivity(), TimetableActivity.class);
+                            startActivity(intent);
+                        }
+                    } else
+                        SnackbarHelper.show(date_spinner, getString(R.string.search_error), Snackbar.LENGTH_LONG);
                 });
     }
 
@@ -229,13 +232,9 @@ public class SearchFragment extends Fragment {
     }
 
     @Nullable
-    private ArrayList<TrainInfo> search(SearchInfo searchInfo) {
-        ArrayList<TrainInfo> result = null;
-        try {
-            result = MobileWebTimetableSearcher.search(searchInfo);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private AbstractMap.SimpleEntry<TimetableSearcher.Result, List<TrainInfo>> search(SearchInfo searchInfo) {
+        AbstractMap.SimpleEntry<TimetableSearcher.Result, List<TrainInfo>> result;
+        result = new TimetableSearcher().search(searchInfo);
         return result;
     }
 

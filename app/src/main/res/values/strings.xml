@@ -18,15 +18,29 @@
     <string name="network_not_connected">目前沒有連上網路，很抱歉這樣我沒辦法運作</string>
     <string name="book_suc">訂票成功，恭喜！快去我的車票查看吧！</string>
     <string name="book_fale">非常抱歉，沒有訂到票</string>
+
+    <string name="book_no_seat">訂票失敗，該車次剩餘座位不足</string>
+    <string name="book_out_time">訂票失敗，該車次可訂票的時間已經過了</string>
+    <string name="book_wrong_randinput">訂票失敗，驗證碼錯誤</string>
+    <string name="book_wrong_station">訂票失敗，車站資料有誤，請確認</string>
+    <string name="book_wrong_data">訂票失敗，電子資料有誤，再試一次看看吧</string>
+    <string name="book_wrong_no">訂票失敗，車次號碼錯誤，請確認</string>
+    <string name="book_over_quota">訂票失敗，您是否訂超過六張票了呢？</string>
+    <string name="book_full_up">訂票失敗，本車次已訂票額滿</string>
+    <string name="book_not_yet">訂票失敗，本車次車票尚未開賣哦</string>
+    <string name="book_io_exception">訂票失敗，網路好像不太通，再試試看吧</string>
+    <string name="book_unknown">訂票失敗，好像出了點什麼問題，再多試幾次看看吧</string>
+
     <string name="cancel_suc">已完成退票，太棒啦！</string>
     <string name="cancel_fale">退票失敗，要不要再試一次？</string>
     <string name="wtf">？？？？？？？？</string>
-    <string name="no_search_result">這次的查詢沒有結果，我們深表遺憾</string>
+    <string name="no_search_result">查詢不到任何班次，我們深表遺憾</string>
+    <string name="search_error">網路不通耶，再試一次看看吧！</string>
     <string name="is_booking">訂票引擎全速運轉中...</string>
     <string name="is_searching">查詢中...</string>
     <string name="tip_for_wrong_id">"可以改用正確的身分證字號嗎？"</string>
     <string name="cold_down_msg">"訂票引擎冷卻中，請於 %s 秒後再嘗試"</string>
-    <string name="not_time_for_book_and_save">還沒開放訂票，已幫您加入車票清單</string>
+    <!--<string name="not_time_for_book_and_save">還沒開放訂票，已幫您加入車票清單</string>-->
     <string name="not_time_for_book">本車次目前非訂票時間</string>
     <string name="save_to_book_record">已加入車票清單中，有空去看看吧</string>
 </resources>

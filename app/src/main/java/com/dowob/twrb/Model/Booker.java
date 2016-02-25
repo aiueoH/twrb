@@ -1,14 +1,18 @@
 package com.dowob.twrb.Model;
 
+import com.twrb.core.NonAutoBooker;
 import com.twrb.core.URLConnectionBooker;
 import com.twrb.core.book.BookResult;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.List;
 
 public class Booker {
+    private NonAutoBooker mNonAutoBooker;
+
     /**
      * @param from
      * @param to
@@ -29,6 +33,26 @@ public class Booker {
         }
     }
 
+    public ByteArrayOutputStream step1(String from, String to, Calendar date, String no, int qty, String personId) {
+        mNonAutoBooker = new NonAutoBooker();
+        try {
+            return mNonAutoBooker.step1(from, to, date, no, qty, personId);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public AbstractMap.SimpleEntry<Result, List<String>> step2(String randInput) {
+        try {
+            AbstractMap.SimpleEntry<BookResult, List<String>> result = mNonAutoBooker.step2(randInput);
+            return new AbstractMap.SimpleEntry<>(bookResultToResult(result.getKey()), result.getValue());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new AbstractMap.SimpleEntry<>(Result.IO_EXCEPTION, null);
+        }
+    }
+
     private Result bookResultToResult(BookResult bookResult) {
         if (bookResult.equals(BookResult.OK)) return Result.OK;
         if (bookResult.equals(BookResult.NO_SEAT)) return Result.NO_SEAT;
@@ -41,6 +65,7 @@ public class Booker {
         if (bookResult.equals(BookResult.FULL_UP)) return Result.FULL_UP;
         if (bookResult.equals(BookResult.IO_EXCEPTION)) return Result.IO_EXCEPTION;
         if (bookResult.equals(BookResult.CANNOT_GET_PRONOUNCE)) return Result.CANNOT_GET_PRONOUNCE;
+        if (bookResult.equals(BookResult.WRONG_RANDINPUT)) return Result.WRONG_RANDINPUT;
         return Result.UNKNOWN;
     }
 
@@ -56,6 +81,7 @@ public class Booker {
         OVER_QUOTA,
         FULL_UP,
         IO_EXCEPTION,
-        CANNOT_GET_PRONOUNCE
+        CANNOT_GET_PRONOUNCE,
+        WRONG_RANDINPUT,
     }
 }

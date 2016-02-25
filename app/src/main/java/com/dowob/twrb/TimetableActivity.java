@@ -1,6 +1,8 @@
 package com.dowob.twrb;
 
 import android.app.ProgressDialog;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -50,7 +52,7 @@ public class TimetableActivity extends AppCompatActivity {
     TextView date_textView;
     @Bind(R.id.toolbar)
     Toolbar toolbar;
-
+    BookManager bookManager;
     private Calendar searchDate;
     private SearchInfo searchInfo;
     private List<TrainInfo> trainInfos;
@@ -114,7 +116,6 @@ public class TimetableActivity extends AppCompatActivity {
         return expressTrainInfos;
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -146,9 +147,9 @@ public class TimetableActivity extends AppCompatActivity {
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
+        bookManager = new BookManager();
         Observable.just(e.getBookInfo())
-                .map(bi -> BookManager.book(
-                        this,
+                .map(bi -> bookManager.step1(
                         bi.fromStation,
                         bi.toStation,
                         getInDateTime,
@@ -159,10 +160,25 @@ public class TimetableActivity extends AppCompatActivity {
                 .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(captcha_stream -> {
+                    mProgressDialog.dismiss();
+                    Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha_stream.toByteArray(), 0, captcha_stream.size());
+                    RandInputDialog randInputDialog = new RandInputDialog(this, captcha_bitmap);
+                    randInputDialog.show();
+                });
+    }
+
+    public void onEvent(RandInputDialog.OnSubmitEvent e) {
+        Observable.just(e.getRandInput())
+                .map(randInput -> bookManager.step2(randInput))
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", this.getString(R.string.is_booking)))
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     mProgressDialog.dismiss();
                     String s = BookManager.getResultMsg(this, result.getKey());
-                    Snackbar.make(viewPager, s, Snackbar.LENGTH_LONG).show();
+                    SnackbarHelper.show(tabLayout, s, Snackbar.LENGTH_LONG);
                 });
     }
 

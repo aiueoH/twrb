@@ -1,5 +1,8 @@
 package com.dowob.twrb.Fragments;
 
+import android.app.ProgressDialog;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -16,7 +19,10 @@ import com.dowob.twrb.DBObject.BookRecord;
 import com.dowob.twrb.Events.OnBookRecordAddedEvent;
 import com.dowob.twrb.Events.OnBookRecordRemovedEvent;
 import com.dowob.twrb.Events.OnBookedEvent;
+import com.dowob.twrb.Helper.BookManager;
 import com.dowob.twrb.R;
+import com.dowob.twrb.RandInputDialog;
+import com.dowob.twrb.SnackbarHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +32,9 @@ import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class BookRecordFragment extends Fragment {
     @Bind(R.id.textView_emptyMsg)
@@ -34,6 +43,10 @@ public class BookRecordFragment extends Fragment {
     RecyclerView recyclerView;
     private BookRecordAdapter bookRecordAdapter;
     private List<BookRecord> bookRecords;
+
+    private ProgressDialog mProgressDialog;
+    private BookManager bookManager;
+    private long bookingRecordId;
 
     public static BookRecordFragment newInstance() {
         return new BookRecordFragment();
@@ -69,13 +82,42 @@ public class BookRecordFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
+        bookManager = null;
+    }
+
+    public void onEvent(BookRecordAdapter.OnBookEvent e) {
+        bookingRecordId = e.getId();
+        bookManager = new BookManager();
+        Observable.just(e.getId())
+                .map(id -> bookManager.step1(getContext(), id))
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(getContext(), "", getContext().getString(R.string.is_booking)))
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(captcha_stream -> {
+                    mProgressDialog.dismiss();
+                    Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha_stream.toByteArray(), 0, captcha_stream.size());
+                    RandInputDialog randInputDialog = new RandInputDialog(getContext(), captcha_bitmap);
+                    randInputDialog.show();
+                });
+    }
+
+    public void onEvent(RandInputDialog.OnSubmitEvent e) {
+        if (bookManager == null)
+            return;
+        Observable.just(e.getRandInput())
+                .map(randInput -> bookManager.step2(bookingRecordId, randInput))
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(getContext(), "", getContext().getString(R.string.is_booking)))
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    mProgressDialog.dismiss();
+                    String s = BookManager.getResultMsg(getContext(), result.getKey());
+                    SnackbarHelper.show(recyclerView, s, Snackbar.LENGTH_LONG);
+                });
     }
 
     public void onEventMainThread(OnBookedEvent e) {

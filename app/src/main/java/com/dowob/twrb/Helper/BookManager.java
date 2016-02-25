@@ -16,6 +16,7 @@ import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.BookHelper;
 
+import java.io.ByteArrayOutputStream;
 import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.List;
@@ -24,6 +25,11 @@ import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
 public class BookManager {
+    String from, to, no, personId;
+    Calendar getInDate;
+    int qty;
+    private Booker mBooker;
+
     @NonNull
     public static AbstractMap.SimpleEntry<Booker.Result, List<String>> book
             (Context context,
@@ -55,6 +61,7 @@ public class BookManager {
                 = new AbstractMap.SimpleEntry<>(Booker.Result.UNKNOWN, null);
         try {
             Realm.getDefaultInstance().refresh();
+
             BookRecord bookRecord = BookRecord.get(bookRecordId);
             String from = bookRecord.getFromStation();
             String to = bookRecord.getToStation();
@@ -63,6 +70,7 @@ public class BookManager {
             String no = bookRecord.getTrainNo();
             int qty = Integer.parseInt(bookRecord.getOrderQtuStr());
             String personId = bookRecord.getPersonId();
+
             result = new Booker().book(from, to, getInDate, no, qty, personId);
             if (result.getKey().equals(Booker.Result.OK)) {
                 Realm.getDefaultInstance().beginTransaction();
@@ -133,8 +141,71 @@ public class BookManager {
                 return context.getString(R.string.book_full_up);
             case IO_EXCEPTION:
                 return context.getString(R.string.book_io_exception);
+            case WRONG_RANDINPUT:
+                return context.getString(R.string.book_wrong_randinput);
             default:
                 return context.getString(R.string.book_unknown);
         }
+    }
+
+    // For book by timetable.
+    public ByteArrayOutputStream step1(String from, String to, Calendar getInDate, String no, int qty, String personId) {
+        mBooker = new Booker();
+        this.from = from;
+        this.to = to;
+        this.getInDate = getInDate;
+        this.no = no;
+        this.qty = qty;
+        this.personId = personId;
+        return mBooker.step1(from, to, getInDate, no, qty, personId);
+    }
+
+    // For book by timetable.
+    public AbstractMap.SimpleEntry<Booker.Result, List<String>> step2(String randInput) {
+        AbstractMap.SimpleEntry<Booker.Result, List<String>> result = mBooker.step2(randInput);
+        if (result.getKey().equals(Booker.Result.OK)) {
+            List<String> data = result.getValue();
+            BookRecord bookRecord = BookRecordFactory
+                    .createBookRecord(personId, getInDate, from, to, qty, no, "0", data.get(0));
+            EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
+            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
+            MyLogger.i("訂票成功。code:" + data.get(0));
+        } else {
+            MyLogger.i("訂票失敗。" + result.getKey());
+        }
+        return result;
+    }
+
+    // For book by my ticket.
+    public ByteArrayOutputStream step1(Context context, long bookRecordId) {
+        Realm.getDefaultInstance().refresh();
+        BookRecord bookRecord = BookRecord.get(bookRecordId);
+        String from = bookRecord.getFromStation();
+        String to = bookRecord.getToStation();
+        Calendar getInDate = Calendar.getInstance();
+        getInDate.setTime(bookRecord.getGetInDate());
+        String no = bookRecord.getTrainNo();
+        int qty = Integer.parseInt(bookRecord.getOrderQtuStr());
+        String personId = bookRecord.getPersonId();
+        return step1(from, to, getInDate, no, qty, personId);
+    }
+
+    // For book by my ticket.
+    public AbstractMap.SimpleEntry<Booker.Result, List<String>> step2(long id, String randInput) {
+        AbstractMap.SimpleEntry<Booker.Result, List<String>> result = mBooker.step2(randInput);
+        Realm.getDefaultInstance().refresh();
+        BookRecord bookRecord = BookRecord.get(id);
+        if (result.getKey().equals(Booker.Result.OK)) {
+            Realm.getDefaultInstance().beginTransaction();
+            List<String> data = result.getValue();
+            bookRecord.setCode(data.get(0));
+            Realm.getDefaultInstance().commitTransaction();
+            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
+            MyLogger.i("訂票成功。code:" + data.get(0));
+        } else {
+            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
+            MyLogger.i("訂票失敗。" + result.getKey());
+        }
+        return result;
     }
 }

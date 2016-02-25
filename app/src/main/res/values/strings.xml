@@ -21,6 +21,7 @@
 
     <string name="book_no_seat">訂票失敗，該車次剩餘座位不足</string>
     <string name="book_out_time">訂票失敗，該車次可訂票的時間已經過了</string>
+    <string name="book_wrong_randinput">訂票失敗，驗證碼錯誤</string>
     <string name="book_wrong_station">訂票失敗，車站資料有誤，請確認</string>
     <string name="book_wrong_data">訂票失敗，電子資料有誤，再試一次看看吧</string>
     <string name="book_wrong_no">訂票失敗，車次號碼錯誤，請確認</string>

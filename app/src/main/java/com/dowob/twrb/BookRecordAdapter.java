@@ -15,7 +15,6 @@ import com.dowob.twrb.DBObject.AdaptHelper;
 import com.dowob.twrb.DBObject.BookRecord;
 import com.dowob.twrb.DBObject.BookableStation;
 import com.dowob.twrb.Events.OnBookRecordRemovedEvent;
-import com.dowob.twrb.Events.OnBookedEvent;
 import com.dowob.twrb.Helper.BookManager;
 import com.jakewharton.rxbinding.view.RxView;
 
@@ -131,6 +130,18 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         }
     }
 
+    public static class OnBookEvent {
+        long id;
+
+        public OnBookEvent(long id) {
+            this.id = id;
+        }
+
+        public long getId() {
+            return id;
+        }
+    }
+
     abstract class OnBtnClickListener implements View.OnClickListener {
         protected ProgressDialog progressDialog;
         protected BookRecord bookRecord;
@@ -151,25 +162,8 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
                 SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
                 return;
             }
-            int remainCDTime = BookManager.getBookCDTime(context);
-            if (remainCDTime > 0) {
-                String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);
-                SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
-                return;
-            }
             if (BookRecord.isBookable(bookRecord, Calendar.getInstance())) {
-                Observable.just(bookRecord.getId())
-                    .map(id -> BookManager.book(context, id))
-                        .subscribeOn(Schedulers.io())
-                    .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", context.getString(R.string.is_booking)))
-                        .subscribeOn(AndroidSchedulers.mainThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(result -> {
-                            progressDialog.dismiss();
-                            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
-                            String s = BookManager.getResultMsg(context, result.getKey());
-                            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
-                        });
+                EventBus.getDefault().post(new OnBookEvent(bookRecord.getId()));
             } else {
                 SnackbarHelper.show(parentView, context.getString(R.string.not_time_for_book), Snackbar.LENGTH_LONG);
             }

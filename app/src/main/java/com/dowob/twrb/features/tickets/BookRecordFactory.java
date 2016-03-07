@@ -1,7 +1,6 @@
 package com.dowob.twrb.features.tickets;
 
-import com.dowob.twrb.DBObject.AdaptHelper;
-import com.dowob.twrb.DBObject.BookRecord;
+import com.dowob.twrb.database.BookRecord;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 

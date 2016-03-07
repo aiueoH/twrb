@@ -1,6 +1,6 @@
-package com.dowob.twrb.Events;
+package com.dowob.twrb.events;
 
-import com.dowob.twrb.Model.Booker;
+import com.dowob.twrb.features.tickets.book.Booker;
 
 public class OnBookedEvent {
     private long bookRecordId;

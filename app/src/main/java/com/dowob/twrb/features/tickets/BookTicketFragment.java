@@ -12,13 +12,12 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
-import com.dowob.twrb.BookRecordFactory;
-import com.dowob.twrb.DBObject.BookRecord;
-import com.dowob.twrb.DBObject.BookableStation;
-import com.dowob.twrb.Events.OnBookRecordAddedEvent;
-import com.dowob.twrb.features.timetable.BookableStationArrayAdapter;
-import com.dowob.twrb.MyArrayAdapter.DateArrayAdapter;
 import com.dowob.twrb.R;
+import com.dowob.twrb.database.BookRecord;
+import com.dowob.twrb.database.BookableStation;
+import com.dowob.twrb.events.OnBookRecordAddedEvent;
+import com.dowob.twrb.features.shared.DateArrayAdapter;
+import com.dowob.twrb.features.timetable.BookableStationArrayAdapter;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.IDCreator;

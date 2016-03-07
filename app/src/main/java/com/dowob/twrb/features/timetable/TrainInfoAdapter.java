@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.dowob.twrb.DBObject.BookRecord;
 import com.dowob.twrb.R;
+import com.dowob.twrb.database.BookRecord;
 import com.twrb.core.MyLogger;
 import com.twrb.core.timetable.TrainInfo;
 

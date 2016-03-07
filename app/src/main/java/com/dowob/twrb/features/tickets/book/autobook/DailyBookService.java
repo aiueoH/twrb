@@ -6,9 +6,9 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.NotificationCompat;
 
+import com.dowob.twrb.app.MyApplication;
 import com.dowob.twrb.database.BookRecord;
-import com.dowob.twrb.Events.OnBookableRecordFoundEvent;
-import com.dowob.twrb.MyApplication;
+import com.dowob.twrb.events.OnBookableRecordFoundEvent;
 import com.twrb.core.MyLogger;
 
 import java.util.ArrayList;

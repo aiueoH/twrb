@@ -1,4 +1,4 @@
-package com.dowob.twrb.Events;
+package com.dowob.twrb.events;
 
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;

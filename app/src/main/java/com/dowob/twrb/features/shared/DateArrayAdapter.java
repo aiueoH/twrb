@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.dowob.twrb.R;
-import com.dowob.twrb.utils.MyArrayAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

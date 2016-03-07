@@ -17,15 +17,14 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.dowob.twrb.DBObject.City;
-import com.dowob.twrb.DBObject.TimetableStation;
-import com.dowob.twrb.Events.OnSearchedEvent;
-import com.dowob.twrb.Model.TimetableSearcher;
-import com.dowob.twrb.MyArrayAdapter.DateArrayAdapter;
-import com.dowob.twrb.MyArrayAdapter.TimetableStationArrayAdapter;
-import com.dowob.twrb.NetworkChecker;
 import com.dowob.twrb.R;
-import com.dowob.twrb.SnackbarHelper;
+import com.dowob.twrb.database.City;
+import com.dowob.twrb.database.TimetableStation;
+import com.dowob.twrb.events.OnSearchedEvent;
+import com.dowob.twrb.features.shared.DateArrayAdapter;
+import com.dowob.twrb.features.shared.NetworkChecker;
+import com.dowob.twrb.features.shared.SnackbarHelper;
+import com.dowob.twrb.utils.Config;
 import com.jakewharton.rxbinding.view.RxView;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
@@ -59,6 +58,7 @@ public class SearchFragment extends Fragment {
     TextView to_textView;
     @Bind(R.id.imageButton_swap)
     ImageButton swap_imageButton;
+    View snackBarParentView;
     private TimetableStationArrayAdapter timetableStationArrayAdapter;
     private DateArrayAdapter dateArrayAdapter;
     private ProgressDialog progressDialog;
@@ -78,15 +78,19 @@ public class SearchFragment extends Fragment {
         super.onCreate(savedInstanceState);
         buildBookableStationArrayAdapter();
         buildDateArrayAdapter();
-        // setup station linked spinner
+        setupStationLinkedSpinner();
+        EventBus.getDefault().register(this);
+        updateCityAndStation();
+    }
+
+    private void setupStationLinkedSpinner() {
         List<Item> items = new ArrayList<>();
         RealmResults<City> rr = Realm.getDefaultInstance().allObjects(City.class);
         Item defaultFromItem = null, defaultToItem = null;
         String defaultFromString = getLastSearchedFromStation();
-        String defaultToSTring = getLastSearchedToStation();
-        if (defaultFromString == null) defaultFromString = "臺北";
-        if (defaultToSTring == null) defaultToSTring = "高雄";
-        System.out.print(defaultFromString + "," + defaultToSTring);
+        String defaultToString = getLastSearchedToStation();
+        if (defaultFromString == null) defaultFromString = Config.DEFAULT_FS;
+        if (defaultToString == null) defaultToString = Config.DEFAULT_TS;
         for (City c : rr) {
             Item item = new Item(c.getNo(), c.getNameCh());
             List<Item> subItems = new ArrayList<>();
@@ -97,18 +101,18 @@ public class SearchFragment extends Fragment {
                 subItems.add(subItem);
                 if (subItem.getName().equals(defaultFromString))
                     defaultFromItem = subItem;
-                if (subItem.getName().equals(defaultToSTring))
+                if (subItem.getName().equals(defaultToString))
                     defaultToItem = subItem;
             }
             item.setSubItems(subItems);
             items.add(item);
         }
         fromLinkedSpinner = new LinkedSpinner(getActivity(), items);
-        if (defaultFromItem != null) fromLinkedSpinner.setRightSelectedItem(defaultFromItem);
+        if (defaultFromItem != null)
+            fromLinkedSpinner.setRightSelectedItem(defaultFromItem);
         toLinkedSpinner = new LinkedSpinner(getActivity(), items);
-        if (defaultToItem != null) toLinkedSpinner.setRightSelectedItem(defaultToItem);
-        EventBus.getDefault().register(this);
-        updateCityAndStation();
+        if (defaultToItem != null)
+            toLinkedSpinner.setRightSelectedItem(defaultToItem);
     }
 
     @Override
@@ -125,17 +129,17 @@ public class SearchFragment extends Fragment {
     private void setLastSearchedStation(String from, String to) {
         SharedPreferences sp = getContext().getSharedPreferences(getContext().getString(R.string.sp_name), Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString("lastSearchedFromStation", from);
-        editor.putString("lastSearchedToStation", to);
+        editor.putString(Config.LAST_SEARCHED_FS, from);
+        editor.putString(Config.LAST_SEARCHED_TS, to);
         editor.commit();
     }
 
     private String getLastSearchedFromStation() {
-        return getLastSearchedStation("lastSearchedFromStation");
+        return getLastSearchedStation(Config.LAST_SEARCHED_FS);
     }
 
     private String getLastSearchedToStation() {
-        return getLastSearchedStation("lastSearchedToStation");
+        return getLastSearchedStation(Config.LAST_SEARCHED_TS);
     }
 
     private String getLastSearchedStation(String key) {
@@ -154,13 +158,17 @@ public class SearchFragment extends Fragment {
     private void updateStationTextView() {
         String from = (String) fromLinkedSpinner.getRightSelectedItem().getName();
         String to = (String) toLinkedSpinner.getRightSelectedItem().getName();
-        if (from.equals("侯硐(猴硐)"))
-            from = "侯硐";
-        if (to.equals("侯硐(猴硐)"))
-            to = "侯硐";
+        from = normalize(from);
+        to = normalize(to);
         from_textView.setText(from);
         to_textView.setText(to);
         setLastSearchedStation(from, to);
+    }
+
+    private String normalize(String name) {
+        if (name.equals(Config.HOUTONG_LONG))
+            return Config.HOUTONG_SHORT;
+        return name;
     }
 
     @Nullable
@@ -170,11 +178,24 @@ public class SearchFragment extends Fragment {
         ButterKnife.bind(this, view);
         this.date_spinner.setAdapter(this.dateArrayAdapter);
         updateStationTextView();
-        RxView.clicks(from_textView).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> fromLinkedSpinner.show());
-        RxView.clicks(to_textView).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> toLinkedSpinner.show());
-        RxView.clicks(swap_imageButton).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onSwapButtonClick());
-        RxView.clicks(search_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onSearchButtonClick());
+        setClickListeners();
+        setSnackBarParentView();
         return view;
+    }
+
+    private void setSnackBarParentView() {
+        snackBarParentView = search_button;
+    }
+
+    private void setClickListeners() {
+        RxView.clicks(from_textView).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+                .subscribe(v -> fromLinkedSpinner.show());
+        RxView.clicks(to_textView).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+                .subscribe(v -> toLinkedSpinner.show());
+        RxView.clicks(swap_imageButton).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+                .subscribe(v -> onSwapButtonClick());
+        RxView.clicks(search_button).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+                .subscribe(v -> onSearchButtonClick());
     }
 
     public void onSwapButtonClick() {
@@ -189,32 +210,40 @@ public class SearchFragment extends Fragment {
     public void onSearchButtonClick() {
         final SearchInfo si = createSearchInfo();
         if (si == null) {
-            SnackbarHelper.show(date_spinner, getString(R.string.wtf), Snackbar.LENGTH_LONG);
+            SnackbarHelper.show(snackBarParentView, getString(R.string.wtf), Snackbar.LENGTH_LONG);
             return;
         }
         if (!NetworkChecker.isConnected(getContext())) {
-            SnackbarHelper.show(date_spinner, getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
+            SnackbarHelper.show(snackBarParentView, getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
             return;
         }
-        Observable.just(si)
-                .map(searchInfo -> search(searchInfo))
+        Observable.just(search(si))
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(() -> showSearchingProgressDialog())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> {
-                    progressDialog.dismiss();
-                    if (result.getKey().equals(TimetableSearcher.Result.OK)) {
-                        if (result.getValue().isEmpty())
-                            SnackbarHelper.show(date_spinner, getString(R.string.no_search_result), Snackbar.LENGTH_LONG);
-                        else {
-                            EventBus.getDefault().postSticky(new OnSearchedEvent(si, result.getValue()));
-                            Intent intent = new Intent(getActivity(), TimetableActivity.class);
-                            startActivity(intent);
-                        }
-                    } else
-                        SnackbarHelper.show(date_spinner, getString(R.string.search_error), Snackbar.LENGTH_LONG);
-                });
+                .subscribe(result -> onSearched(si, result));
+    }
+
+    private void dismissProgressDialog() {
+        progressDialog.dismiss();
+    }
+
+    private void onSearched(SearchInfo si, AbstractMap.SimpleEntry<TimetableSearcher.Result, List<TrainInfo>> result) {
+        dismissProgressDialog();
+        if (result.getKey().equals(TimetableSearcher.Result.OK)) {
+            if (result.getValue().isEmpty())
+                SnackbarHelper.show(snackBarParentView, getString(R.string.no_search_result), Snackbar.LENGTH_LONG);
+            else
+                startTimetableActivity(si, result);
+        } else
+            SnackbarHelper.show(snackBarParentView, getString(R.string.search_error), Snackbar.LENGTH_LONG);
+    }
+
+    private void startTimetableActivity(SearchInfo si, AbstractMap.SimpleEntry<TimetableSearcher.Result, List<TrainInfo>> result) {
+        EventBus.getDefault().postSticky(new OnSearchedEvent(si, result.getValue()));
+        Intent intent = new Intent(getActivity(), TimetableActivity.class);
+        startActivity(intent);
     }
 
     @NonNull

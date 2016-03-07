@@ -1,4 +1,4 @@
-package com.dowob.twrb.Events;
+package com.dowob.twrb.events;
 
 public class OnBookRecordAddedEvent {
     private long bookRecordId;

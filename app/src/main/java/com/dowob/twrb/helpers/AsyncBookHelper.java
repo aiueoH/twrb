@@ -1,7 +1,7 @@
 package com.dowob.twrb.helpers;
 
-import com.dowob.twrb.features.tickets.AdaptHelper;
 import com.dowob.twrb.database.BookRecord;
+import com.dowob.twrb.features.tickets.AdaptHelper;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.book.BookResult;
 

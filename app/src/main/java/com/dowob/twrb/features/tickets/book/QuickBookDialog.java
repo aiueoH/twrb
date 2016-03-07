@@ -11,10 +11,9 @@ import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 
-import com.dowob.twrb.Helper.BookManager;
-import com.dowob.twrb.NetworkChecker;
 import com.dowob.twrb.R;
-import com.dowob.twrb.SnackbarHelper;
+import com.dowob.twrb.features.shared.NetworkChecker;
+import com.dowob.twrb.features.shared.SnackbarHelper;
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxAdapterView;
 import com.jakewharton.rxbinding.widget.RxTextView;

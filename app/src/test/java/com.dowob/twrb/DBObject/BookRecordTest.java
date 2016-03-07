@@ -1,11 +1,10 @@
 package com.dowob.twrb.DBObject;
 
+import com.dowob.twrb.database.BookRecord;
+
 import org.junit.Test;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
 
 import static org.junit.Assert.*;
 

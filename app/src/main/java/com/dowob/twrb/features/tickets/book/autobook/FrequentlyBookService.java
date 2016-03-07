@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
 import android.support.v7.app.NotificationCompat;
 
 import com.dowob.twrb.database.BookRecord;
-import com.dowob.twrb.Events.OnBookableRecordFoundEvent;
+import com.dowob.twrb.events.OnBookableRecordFoundEvent;
 import com.twrb.core.MyLogger;
 
 import java.util.ArrayList;

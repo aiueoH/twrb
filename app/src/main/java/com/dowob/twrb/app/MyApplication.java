@@ -6,15 +6,14 @@ import android.app.PendingIntent;
 import android.content.Intent;
 
 import com.dowob.twrb.R;
-import com.dowob.twrb.features.tickets.book.autobook.DailyBookService;
-import com.dowob.twrb.features.tickets.book.autobook.FrequentlyBookService;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
 import com.dowob.twrb.database.City;
 import com.dowob.twrb.database.TimetableStation;
-import com.dowob.twrb.Events.OnBookRecordAddedEvent;
-import com.dowob.twrb.Events.OnBookableRecordFoundEvent;
-import com.dowob.twrb.utils.MyPrinter;
+import com.dowob.twrb.events.OnBookRecordAddedEvent;
+import com.dowob.twrb.events.OnBookableRecordFoundEvent;
+import com.dowob.twrb.features.tickets.book.autobook.DailyBookService;
+import com.dowob.twrb.features.tickets.book.autobook.FrequentlyBookService;
 import com.twrb.core.MyLogger;
 import com.twrb.core.helpers.DefaultSequenceRecognizerCreator;
 

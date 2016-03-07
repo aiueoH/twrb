@@ -9,8 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.dowob.twrb.DBObject.TimetableStation;
 import com.dowob.twrb.R;
+import com.dowob.twrb.database.TimetableStation;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 

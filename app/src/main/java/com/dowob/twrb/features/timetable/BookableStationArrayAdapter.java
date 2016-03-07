@@ -5,9 +5,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.dowob.twrb.DBObject.BookableStation;
-import com.dowob.twrb.MyArrayAdapter.MyArrayAdapter;
 import com.dowob.twrb.R;
+import com.dowob.twrb.database.BookableStation;
+import com.dowob.twrb.features.shared.MyArrayAdapter;
 
 import java.util.List;
 

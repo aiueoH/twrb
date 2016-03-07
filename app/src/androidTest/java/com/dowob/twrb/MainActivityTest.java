@@ -2,7 +2,8 @@ package com.dowob.twrb;
 
 import android.test.ActivityInstrumentationTestCase2;
 
-import com.dowob.twrb.DBObject.BookRecord;
+import com.dowob.twrb.app.MainActivity;
+import com.dowob.twrb.database.BookRecord;
 
 import org.junit.After;
 import org.junit.Before;

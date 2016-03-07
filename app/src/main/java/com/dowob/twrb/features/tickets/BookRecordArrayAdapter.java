@@ -9,14 +9,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dowob.twrb.MyArrayAdapter.MyArrayAdapter;
+import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
-import com.dowob.twrb.Events.OnBookedEvent;
-import com.dowob.twrb.Events.OnCancelledEvent;
-import com.dowob.twrb.Helper.AsyncBookHelper;
-import com.dowob.twrb.Helper.AsyncCancelHelper;
-import com.dowob.twrb.R;
+import com.dowob.twrb.events.OnBookedEvent;
+import com.dowob.twrb.events.OnCancelledEvent;
+import com.dowob.twrb.features.shared.MyArrayAdapter;
+import com.dowob.twrb.helpers.AsyncBookHelper;
+import com.dowob.twrb.helpers.AsyncCancelHelper;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookResult;
 

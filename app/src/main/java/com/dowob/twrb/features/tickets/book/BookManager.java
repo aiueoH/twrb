@@ -5,13 +5,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
-import com.dowob.twrb.features.tickets.BookRecordFactory;
-import com.dowob.twrb.DBObject.AdaptHelper;
-import com.dowob.twrb.DBObject.BookRecord;
-import com.dowob.twrb.Events.OnBookRecordAddedEvent;
-import com.dowob.twrb.Events.OnBookedEvent;
-import com.dowob.twrb.features.tickets.book.Booker;
 import com.dowob.twrb.R;
+import com.dowob.twrb.database.BookRecord;
+import com.dowob.twrb.events.OnBookRecordAddedEvent;
+import com.dowob.twrb.events.OnBookedEvent;
+import com.dowob.twrb.features.tickets.AdaptHelper;
+import com.dowob.twrb.features.tickets.BookRecordFactory;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.BookHelper;

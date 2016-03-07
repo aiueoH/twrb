@@ -14,15 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.dowob.twrb.BookRecordAdapter;
-import com.dowob.twrb.DBObject.BookRecord;
-import com.dowob.twrb.Events.OnBookRecordAddedEvent;
-import com.dowob.twrb.Events.OnBookRecordRemovedEvent;
-import com.dowob.twrb.Events.OnBookedEvent;
-import com.dowob.twrb.Helper.BookManager;
 import com.dowob.twrb.R;
-import com.dowob.twrb.RandInputDialog;
-import com.dowob.twrb.SnackbarHelper;
+import com.dowob.twrb.database.BookRecord;
+import com.dowob.twrb.events.OnBookRecordAddedEvent;
+import com.dowob.twrb.events.OnBookRecordRemovedEvent;
+import com.dowob.twrb.events.OnBookedEvent;
+import com.dowob.twrb.features.shared.SnackbarHelper;
+import com.dowob.twrb.features.tickets.book.BookManager;
+import com.dowob.twrb.features.tickets.book.RandInputDialog;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -59,7 +59,6 @@ public class SearchFragment extends Fragment {
     @Bind(R.id.imageButton_swap)
     ImageButton swap_imageButton;
     View snackBarParentView;
-    private TimetableStationArrayAdapter timetableStationArrayAdapter;
     private DateArrayAdapter dateArrayAdapter;
     private ProgressDialog progressDialog;
     private LinkedSpinner fromLinkedSpinner;
@@ -76,7 +75,6 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        buildBookableStationArrayAdapter();
         buildDateArrayAdapter();
         setupStationLinkedSpinner();
         EventBus.getDefault().register(this);
@@ -134,14 +132,17 @@ public class SearchFragment extends Fragment {
         editor.commit();
     }
 
+    @NonNull
     private String getLastSearchedFromStation() {
         return getLastSearchedStation(Config.LAST_SEARCHED_FS);
     }
 
+    @NonNull
     private String getLastSearchedToStation() {
         return getLastSearchedStation(Config.LAST_SEARCHED_TS);
     }
 
+    @NonNull
     private String getLastSearchedStation(String key) {
         SharedPreferences sp = getContext().getSharedPreferences(getContext().getString(R.string.sp_name), Activity.MODE_PRIVATE);
         String station = sp.getString(key, "");
@@ -165,6 +166,7 @@ public class SearchFragment extends Fragment {
         setLastSearchedStation(from, to);
     }
 
+    @NonNull
     private String normalize(String name) {
         if (name.equals(Config.HOUTONG_LONG))
             return Config.HOUTONG_SHORT;
@@ -283,13 +285,5 @@ public class SearchFragment extends Fragment {
             dates.add(c.getTime());
         }
         this.dateArrayAdapter = new DateArrayAdapter(getActivity(), R.layout.item_date, dates);
-    }
-
-    private void buildBookableStationArrayAdapter() {
-        RealmResults<TimetableStation> rr = Realm.getDefaultInstance().where(TimetableStation.class).equalTo("isBookable", true).findAll();
-        List<TimetableStation> tss = new ArrayList<>();
-        for (TimetableStation ts : rr)
-            tss.add(ts);
-        this.timetableStationArrayAdapter = new TimetableStationArrayAdapter(getActivity(), R.layout.item_bookablestation, tss);
     }
 }

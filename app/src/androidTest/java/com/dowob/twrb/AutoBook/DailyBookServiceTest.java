@@ -4,7 +4,8 @@ import android.content.Intent;
 import android.test.ServiceTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import com.dowob.twrb.DBObject.BookRecord;
+import com.dowob.twrb.database.BookRecord;
+import com.dowob.twrb.features.tickets.book.autobook.DailyBookService;
 
 import org.junit.After;
 import org.junit.Before;

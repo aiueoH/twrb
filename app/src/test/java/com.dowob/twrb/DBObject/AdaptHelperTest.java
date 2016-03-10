@@ -1,5 +1,7 @@
 package com.dowob.twrb.DBObject;
 
+import com.dowob.twrb.database.BookRecord;
+import com.dowob.twrb.features.tickets.AdaptHelper;
 import com.twrb.core.book.BookInfo;
 
 import org.junit.Test;

@@ -219,7 +219,8 @@ public class SearchFragment extends Fragment {
             SnackbarHelper.show(snackBarParentView, getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
             return;
         }
-        Observable.just(search(si))
+        Observable.just(si)
+                .map(info -> search(si))
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(() -> showSearchingProgressDialog())
                 .subscribeOn(AndroidSchedulers.mainThread())

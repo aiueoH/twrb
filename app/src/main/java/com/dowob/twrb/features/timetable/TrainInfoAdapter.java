@@ -2,11 +2,12 @@ package com.dowob.twrb.features.timetable;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -62,20 +63,15 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         holder.trainNo_textView.setTextColor(getTrainTypeColor(ti.type));
         holder.fare_textView.setText("$" + ti.fares);
         if (ti.isBookableNow) {
-            holder.book_button.setOnClickListener(v -> EventBus.getDefault().post(new OnItemClickEvent(ti)));
-            holder.book_button.setText("按此訂票");
-            holder.book_button.setEnabled(true);
-            holder.book_button.setTextColor(context.getResources().getColor(R.color.colorPrimaryDark));
             holder.book_textView.setText("按此訂票");
-            holder.book_textView.setTextColor(context.getResources().getColor(R.color.colorPrimaryDark));
+            holder.book_textView.setTextColor(getColor(R.color.colorPrimaryDark));
             holder.book_linearLayout.setOnClickListener(v -> EventBus.getDefault().post(new OnItemClickEvent(ti)));
+            setBookBg(holder.book_linearLayout, getDrawable(R.drawable.book_bg));
         } else {
-            holder.book_button.setText("無法訂票");
-            holder.book_button.setEnabled(false);
-            holder.book_button.setTextColor(context.getResources().getColor(R.color.gray_normal));
             holder.book_textView.setText("無法訂票");
-            holder.book_textView.setTextColor(context.getResources().getColor(R.color.gray_normal));
+            holder.book_textView.setTextColor(getColor(R.color.gray_normal));
             holder.book_linearLayout.setOnClickListener(null);
+            setBookBg(holder.book_linearLayout, null);
         }
         if (ti.delay != null && !ti.delay.isEmpty() && !ti.delay.equals("0")) {
             String delay = "誤點 " + ti.delay + " 分";
@@ -83,6 +79,25 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
             holder.delay_textView.setText(delay);
         } else
             holder.delay_textView.setVisibility(View.INVISIBLE);
+    }
+
+    private Drawable getDrawable(int id) {
+        if (Build.VERSION.SDK_INT >= 21)
+            return context.getDrawable(id);
+        return context.getResources().getDrawable(id);
+    }
+
+    private int getColor(int id) {
+        if (Build.VERSION.SDK_INT >= 23)
+            return context.getColor(id);
+        return context.getResources().getColor(id);
+    }
+
+    private void setBookBg(View view, Drawable drawable) {
+        if (Build.VERSION.SDK_INT >= 16)
+            view.setBackground(drawable);
+        else
+            view.setBackgroundDrawable(drawable);
     }
 
     private Calendar createDepartureDateTime(String departureTime) {
@@ -136,8 +151,6 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         TextView delay_textView;
         @Bind(R.id.textView_fare)
         TextView fare_textView;
-        @Bind(R.id.button_book)
-        Button book_button;
         @Bind(R.id.textView_book)
         TextView book_textView;
         @Bind(R.id.linearLayout_book)

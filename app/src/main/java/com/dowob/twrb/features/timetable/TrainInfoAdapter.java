@@ -2,11 +2,13 @@ package com.dowob.twrb.features.timetable;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.dowob.twrb.R;
@@ -26,11 +28,11 @@ import de.greenrobot.event.EventBus;
 
 public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyViewHolder> {
     private static HashMap<String, Integer> TRAINTYPE_COLOR = new HashMap<String, Integer>() {{
-        put("自強", Color.parseColor("#990D00"));
+        put("自強", Color.parseColor("#81433D"));
         put("莒光", Color.parseColor("#99684D"));
         put("區間車", Color.parseColor("#545399"));
         put("區間快", Color.parseColor("#528999"));
-        put("普悠瑪", Color.parseColor("#99028F"));
+        put("普悠瑪", Color.parseColor("#9C6798"));
         put("太魯閣", Color.parseColor("#5E994C"));
         put("復興", Color.parseColor("#0d5a86"));
     }};
@@ -59,17 +61,43 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         holder.arrivalTime_textView.setText(ti.arrivalTime);
         holder.trainType_textView.setTextColor(getTrainTypeColor(ti.type));
         holder.trainNo_textView.setTextColor(getTrainTypeColor(ti.type));
-        if (isBookable(ti)) {
-            holder.book_button.setOnClickListener(v -> EventBus.getDefault().post(new OnItemClickEvent(ti)));
-            holder.book_button.setVisibility(View.VISIBLE);
-        } else
-            holder.book_button.setVisibility(View.INVISIBLE);
-        if (!ti.delay.isEmpty() && !ti.delay.equals("0")) {
+        holder.fare_textView.setText("$" + ti.fares);
+        if (ti.isBookableNow) {
+            holder.book_textView.setText("按此訂票");
+            holder.book_textView.setTextColor(getColor(R.color.colorPrimaryDark));
+            holder.book_linearLayout.setOnClickListener(v -> EventBus.getDefault().post(new OnItemClickEvent(ti)));
+            setBookBg(holder.book_linearLayout, getDrawable(R.drawable.book_bg));
+        } else {
+            holder.book_textView.setText("無法訂票");
+            holder.book_textView.setTextColor(getColor(R.color.gray_normal));
+            holder.book_linearLayout.setOnClickListener(null);
+            setBookBg(holder.book_linearLayout, null);
+        }
+        if (ti.delay != null && !ti.delay.isEmpty() && !ti.delay.equals("0")) {
             String delay = "誤點 " + ti.delay + " 分";
             holder.delay_textView.setVisibility(View.VISIBLE);
             holder.delay_textView.setText(delay);
         } else
             holder.delay_textView.setVisibility(View.INVISIBLE);
+    }
+
+    private Drawable getDrawable(int id) {
+        if (Build.VERSION.SDK_INT >= 21)
+            return context.getDrawable(id);
+        return context.getResources().getDrawable(id);
+    }
+
+    private int getColor(int id) {
+        if (Build.VERSION.SDK_INT >= 23)
+            return context.getColor(id);
+        return context.getResources().getColor(id);
+    }
+
+    private void setBookBg(View view, Drawable drawable) {
+        if (Build.VERSION.SDK_INT >= 16)
+            view.setBackground(drawable);
+        else
+            view.setBackgroundDrawable(drawable);
     }
 
     private Calendar createDepartureDateTime(String departureTime) {
@@ -121,8 +149,12 @@ public class TrainInfoAdapter extends RecyclerView.Adapter<TrainInfoAdapter.MyVi
         TextView arrivalTime_textView;
         @Bind(R.id.textView_delay)
         TextView delay_textView;
-        @Bind(R.id.button_book)
-        Button book_button;
+        @Bind(R.id.textView_fare)
+        TextView fare_textView;
+        @Bind(R.id.textView_book)
+        TextView book_textView;
+        @Bind(R.id.linearLayout_book)
+        LinearLayout book_linearLayout;
 
         public MyViewHolder(View itemView) {
             super(itemView);

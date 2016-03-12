@@ -54,8 +54,8 @@ public class QuickBookDialog extends Dialog {
         ButterKnife.bind(this);
         buildQtuAdapter();
         SharedPreferences sp = this.context.getSharedPreferences(Config.SHARE_PREFERENCE, Activity.MODE_PRIVATE);
-        String id = sp.getString(Config.PREFERENCE_QTU, "");
-        int qtu = sp.getInt(Config.PREFERENCE_PERSONID, -1);
+        String id = sp.getString(Config.PREFERENCE_PERSONID, "");
+        int qtu = sp.getInt(Config.PREFERENCE_QTU, -1);
         this.id_editText.setText(id);
         this.qtu_spinner.setAdapter(this.qtuAdapter);
         this.qtu_spinner.setSelection(qtu - 1);

@@ -5,6 +5,7 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 
+import com.dowob.twrb.BuildConfig;
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
@@ -54,9 +55,11 @@ public class MyApplication extends Application {
     }
 
     private void setLogger() {
-        MyPrinter mp = new MyPrinter();
-        mp.setEnable(false);
-        MyLogger.setPrinter(mp);
+        if (BuildConfig.DEBUG) {
+            MyPrinter mp = new MyPrinter();
+            mp.setEnable(true);
+            MyLogger.setPrinter(mp);
+        }
     }
 
     public void onEvent(OnBookRecordAddedEvent e) {

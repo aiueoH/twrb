@@ -87,8 +87,6 @@ public class SearchFragment extends Fragment {
         Item defaultFromItem = null, defaultToItem = null;
         String defaultFromString = getLastSearchedFromStation();
         String defaultToString = getLastSearchedToStation();
-        if (defaultFromString == null) defaultFromString = Config.DEFAULT_FS;
-        if (defaultToString == null) defaultToString = Config.DEFAULT_TS;
         for (City c : rr) {
             Item item = new Item(c.getNo(), c.getNameCh());
             List<Item> subItems = new ArrayList<>();
@@ -125,28 +123,23 @@ public class SearchFragment extends Fragment {
     }
 
     private void setLastSearchedStation(String from, String to) {
-        SharedPreferences sp = getContext().getSharedPreferences(getContext().getString(R.string.sp_name), Activity.MODE_PRIVATE);
+        SharedPreferences sp = getContext().getSharedPreferences(Config.SHARE_PREFERENCE, Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString(Config.LAST_SEARCHED_FS, from);
-        editor.putString(Config.LAST_SEARCHED_TS, to);
+        editor.putString(Config.PREFERENCE_LAST_SEARCHED_FS, from);
+        editor.putString(Config.PREFERENCE_LAST_SEARCHED_TS, to);
         editor.commit();
     }
 
     @NonNull
     private String getLastSearchedFromStation() {
-        return getLastSearchedStation(Config.LAST_SEARCHED_FS);
+        SharedPreferences sp = getContext().getSharedPreferences(Config.SHARE_PREFERENCE, Activity.MODE_PRIVATE);
+        return sp.getString(Config.PREFERENCE_LAST_SEARCHED_FS, Config.DEFAULT_FS);
     }
 
     @NonNull
     private String getLastSearchedToStation() {
-        return getLastSearchedStation(Config.LAST_SEARCHED_TS);
-    }
-
-    @NonNull
-    private String getLastSearchedStation(String key) {
-        SharedPreferences sp = getContext().getSharedPreferences(getContext().getString(R.string.sp_name), Activity.MODE_PRIVATE);
-        String station = sp.getString(key, "");
-        return station.isEmpty() ? null : station;
+        SharedPreferences sp = getContext().getSharedPreferences(Config.SHARE_PREFERENCE, Activity.MODE_PRIVATE);
+        return sp.getString(Config.PREFERENCE_LAST_SEARCHED_TS, Config.DEFAULT_TS);
     }
 
     private void updateCityAndStation() {
@@ -222,7 +215,7 @@ public class SearchFragment extends Fragment {
         Observable.just(si)
                 .map(info -> search(si))
                 .subscribeOn(Schedulers.io())
-                .doOnSubscribe(() -> showSearchingProgressDialog())
+                .doOnSubscribe(this::showSearchingProgressDialog)
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> onSearched(si, result));
@@ -249,7 +242,6 @@ public class SearchFragment extends Fragment {
         startActivity(intent);
     }
 
-    @NonNull
     private SearchInfo createSearchInfo() {
         final SearchInfo si = SearchInfo.createAllClass();
         si.fromStation = fromStation;

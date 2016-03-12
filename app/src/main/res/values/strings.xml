@@ -8,8 +8,6 @@
     <string name="file_city">station_data/timetable_city</string>
     <string name="file_pn">pn</string>
 
-    <string name="sp_name">twrb_sp</string>
-
     <string name="tab_name_all_class">所有車種</string>
     <string name="tab_name_exp_class">對號列車</string>
     <string name="tab_name_search">查詢班次</string>

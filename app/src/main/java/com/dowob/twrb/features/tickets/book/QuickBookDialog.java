@@ -14,6 +14,7 @@ import android.widget.Spinner;
 import com.dowob.twrb.R;
 import com.dowob.twrb.features.shared.NetworkChecker;
 import com.dowob.twrb.features.shared.SnackbarHelper;
+import com.dowob.twrb.utils.Config;
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxAdapterView;
 import com.jakewharton.rxbinding.widget.RxTextView;
@@ -52,32 +53,31 @@ public class QuickBookDialog extends Dialog {
         setContentView(R.layout.quickbook);
         ButterKnife.bind(this);
         buildQtuAdapter();
-        SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
-        String id = sp.getString("personId", "");
-        int qtu = sp.getInt("qtu", -1);
+        SharedPreferences sp = this.context.getSharedPreferences(Config.SHARE_PREFERENCE, Activity.MODE_PRIVATE);
+        String id = sp.getString(Config.PREFERENCE_QTU, "");
+        int qtu = sp.getInt(Config.PREFERENCE_PERSONID, -1);
         this.id_editText.setText(id);
         this.qtu_spinner.setAdapter(this.qtuAdapter);
         this.qtu_spinner.setSelection(qtu - 1);
 
-        RxTextView.textChanges(id_editText).throttleLast(500, TimeUnit.MILLISECONDS).subscribe(s -> onIdEditTextChang(s));
-        RxAdapterView.itemSelections(qtu_spinner).subscribe(i -> onQtuSpinnerItemSelected(i));
+        RxTextView.textChanges(id_editText).throttleLast(500, TimeUnit.MILLISECONDS).subscribe(this::onIdEditTextChang);
+        RxAdapterView.itemSelections(qtu_spinner).subscribe(this::onQtuSpinnerItemSelected);
         RxView.clicks(save_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onSaveButtonClick());
         RxView.clicks(book_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onBookButtonClick());
     }
 
     public void onQtuSpinnerItemSelected(int position) {
-        SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
+        SharedPreferences sp = this.context.getSharedPreferences(Config.SHARE_PREFERENCE, Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putInt("qtu", position + 1);
+        editor.putInt(Config.PREFERENCE_QTU, position + 1);
         editor.commit();
     }
 
     public void onIdEditTextChang(CharSequence s) {
-        SharedPreferences sp = this.context.getSharedPreferences(context.getString(R.string.sp_name), Activity.MODE_PRIVATE);
+        SharedPreferences sp = this.context.getSharedPreferences(Config.SHARE_PREFERENCE, Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString("personId", s.toString());
+        editor.putString(Config.PREFERENCE_PERSONID, s.toString());
         editor.commit();
-        System.out.println("qq");
     }
 
 //    @OnClick(R.id.textView_id)
@@ -122,12 +122,13 @@ public class QuickBookDialog extends Dialog {
 
     private void buildQtuAdapter() {
         List<Map<String, Object>> items = new ArrayList<>();
+        String itemName = "qtu";
         for (int i = 1; i <= 6; i++) {
             Map<String, Object> item = new HashMap<>();
-            item.put("qtu", i);
+            item.put(itemName, i);
             items.add(item);
         }
-        this.qtuAdapter = new SimpleAdapter(this.context, items, R.layout.item_qtu, new String[]{"qtu"}, new int[]{R.id.textView});
+        this.qtuAdapter = new SimpleAdapter(this.context, items, R.layout.item_qtu, new String[]{itemName}, new int[]{R.id.textView});
     }
 
     private static class OnFinishEvent {

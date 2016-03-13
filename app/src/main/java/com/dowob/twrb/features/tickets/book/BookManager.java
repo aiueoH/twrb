@@ -10,10 +10,10 @@ import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.events.OnBookRecordAddedEvent;
 import com.dowob.twrb.events.OnBookedEvent;
 import com.dowob.twrb.features.tickets.AdaptHelper;
-import com.dowob.twrb.features.tickets.BookRecordFactory;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.BookHelper;
+import com.twrb.core.timetable.TrainInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.util.AbstractMap;
@@ -24,9 +24,10 @@ import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
 public class BookManager {
-    String from, to, no, personId;
-    Calendar getInDate;
-    int qty;
+    private String from, to, no, personId;
+    private Calendar getInDate;
+    private int qty;
+    private TrainInfo trainInfo;
     private Booker mBooker;
 
     @NonNull
@@ -37,13 +38,14 @@ public class BookManager {
              Calendar getInDate,
              String no,
              int qty,
-             String personId) {
+             String personId,
+             TrainInfo trainInfo) {
         AbstractMap.SimpleEntry<Booker.Result, List<String>> result
                 = new Booker().book(from, to, getInDate, no, qty, personId);
         if (result.getKey().equals(Booker.Result.OK)) {
             List<String> data = result.getValue();
             BookRecord bookRecord = BookRecordFactory
-                    .createBookRecord(personId, getInDate, from, to, qty, no, "0", data.get(0));
+                    .createBookRecord(personId, getInDate, from, to, qty, no, "0", data.get(0), trainInfo);
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
             EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
             MyLogger.i("訂票成功。code:" + data.get(0));
@@ -67,7 +69,7 @@ public class BookManager {
             Calendar getInDate = Calendar.getInstance();
             getInDate.setTime(bookRecord.getGetInDate());
             String no = bookRecord.getTrainNo();
-            int qty = Integer.parseInt(bookRecord.getOrderQtuStr());
+            int qty = bookRecord.getOrderQtu();
             String personId = bookRecord.getPersonId();
 
             result = new Booker().book(from, to, getInDate, no, qty, personId);
@@ -102,8 +104,8 @@ public class BookManager {
                 AdaptHelper.to(bookInfo, bookRecord);
                 bookRecord.setIsCancelled(true);
                 Realm.getDefaultInstance().commitTransaction();
-                MyLogger.i(result ? "已退訂" : "退訂失敗");
             }
+            MyLogger.i(result ? "已退訂" : "退訂失敗");
         } finally {
             Realm.getDefaultInstance().close();
         }
@@ -148,7 +150,13 @@ public class BookManager {
     }
 
     // For book by timetable.
-    public ByteArrayOutputStream step1(String from, String to, Calendar getInDate, String no, int qty, String personId) {
+    public ByteArrayOutputStream step1(String from, String to, Calendar getInDate, String no, int qty, String personId, TrainInfo trainInfo) {
+        mBooker = new Booker();
+        this.trainInfo = trainInfo;
+        return step1(from, to, getInDate, no, qty, personId);
+    }
+
+    private ByteArrayOutputStream step1(String from, String to, Calendar getInDate, String no, int qty, String personId) {
         mBooker = new Booker();
         this.from = from;
         this.to = to;
@@ -165,7 +173,7 @@ public class BookManager {
         if (result.getKey().equals(Booker.Result.OK)) {
             List<String> data = result.getValue();
             BookRecord bookRecord = BookRecordFactory
-                    .createBookRecord(personId, getInDate, from, to, qty, no, "0", data.get(0));
+                    .createBookRecord(personId, getInDate, from, to, qty, no, "0", data.get(0), trainInfo);
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
             EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
             MyLogger.i("訂票成功。code:" + data.get(0));
@@ -184,7 +192,7 @@ public class BookManager {
         Calendar getInDate = Calendar.getInstance();
         getInDate.setTime(bookRecord.getGetInDate());
         String no = bookRecord.getTrainNo();
-        int qty = Integer.parseInt(bookRecord.getOrderQtuStr());
+        int qty = bookRecord.getOrderQtu();
         String personId = bookRecord.getPersonId();
         return step1(from, to, getInDate, no, qty, personId);
     }
@@ -206,5 +214,11 @@ public class BookManager {
             MyLogger.i("訂票失敗。" + result.getKey());
         }
         return result;
+    }
+
+    public long save(BookInfo bookInfo, TrainInfo trainInfo) {
+        long id = BookRecordFactory.createBookRecord(bookInfo, trainInfo).getId();
+        EventBus.getDefault().post(new OnBookRecordAddedEvent(id));
+        return id;
     }
 }

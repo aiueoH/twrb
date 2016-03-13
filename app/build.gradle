@@ -64,7 +64,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:7.0.1'
 //    compile 'com.jakewharton:butterknife:8.0.0-SNAPSHOT'
 //    apt 'com.jakewharton:butterknife-compiler:8.0.0-SNAPSHOT'
-    compile 'io.realm:realm-android:0.84.1'
+    compile 'io.realm:realm-android:0.87.5'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'io.reactivex:rxandroid:1.1.0'
     compile 'io.reactivex:rxjava:1.1.0'

@@ -20,6 +20,7 @@ import com.dowob.twrb.features.shared.SnackbarHelper;
 import com.dowob.twrb.features.tickets.book.BookManager;
 import com.jakewharton.rxbinding.view.RxView;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +71,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         holder.no_textView_no.setText(br.getTrainNo());
         holder.from_textView.setText(BookableStation.getNameByNo(br.getFromStation()));
         holder.to_textView.setText(BookableStation.getNameByNo(br.getToStation()));
-        holder.qtu_textView.setText(br.getOrderQtuStr());
+        holder.qtu_textView.setText(Integer.toString(br.getOrderQtu()));
         holder.personId_textView.setText(br.getPersonId());
         holder.code_textView.setText(br.getCode());
         holder.code_linearLayout.setVisibility(br.getCode().isEmpty() ? View.GONE : View.VISIBLE);
@@ -79,20 +80,59 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         holder.isCancelled_textView.setVisibility(br.isCancelled() ? View.VISIBLE : View.GONE);
         holder.book_button.setOnClickListener(new OnBookBtnClickListener(br));
         holder.cancel_button.setOnClickListener(new OnCancelBtnClickListener(br));
+        setDeleteButton(holder, br);
+        setDepartureTime(holder, br);
+        setArrivalTime(holder, br);
+        setFareAndTotalPrice(holder, br);
+    }
+
+    private void setDeleteButton(MyViewHolder holder, BookRecord bookRecord) {
         RxView.clicks(holder.delete_button)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(v -> {
-                    int index = bookRecords.indexOf(br);
+                    int index = bookRecords.indexOf(bookRecord);
                     notifyItemRemoved(index);
                     bookRecords.remove(index);
                     Realm realm = Realm.getDefaultInstance();
-                    BookRecord tmp = realm.where(BookRecord.class).equalTo("id", br.getId()).findFirst();
+                    BookRecord tmp = realm.where(BookRecord.class).equalTo("id", bookRecord.getId()).findFirst();
                     if (tmp == null) return;
                     realm.beginTransaction();
                     tmp.removeFromRealm();
                     realm.commitTransaction();
                     EventBus.getDefault().post(new OnBookRecordRemovedEvent());
                 });
+    }
+
+    private void setFareAndTotalPrice(MyViewHolder holder, BookRecord br) {
+        if (br.getFares() != 0) {
+            holder.fare_linearLayout.setVisibility(View.VISIBLE);
+            holder.fare_textView.setText(Integer.toString(br.getFares()));
+            holder.totalPrice_linearLayout.setVisibility(View.VISIBLE);
+            holder.totalPrice_textView.setText(Integer.toString(br.getFares() * br.getOrderQtu()));
+        } else {
+            holder.fare_linearLayout.setVisibility(View.GONE);
+            holder.totalPrice_linearLayout.setVisibility(View.GONE);
+        }
+    }
+
+    private void setArrivalTime(MyViewHolder holder, BookRecord bookRecord) {
+        if (bookRecord.getArrivalDateTime() != null) {
+            String time = new SimpleDateFormat("HH:mm").format(bookRecord.getArrivalDateTime());
+            holder.arrival_textView.setVisibility(View.VISIBLE);
+            holder.arrival_textView.setText(time);
+        } else {
+            holder.arrival_textView.setVisibility(View.GONE);
+        }
+    }
+
+    private void setDepartureTime(MyViewHolder holder, BookRecord bookRecord) {
+        if (bookRecord.getDepartureDateTime() != null) {
+            String time = new SimpleDateFormat("HH:mm").format(bookRecord.getDepartureDateTime());
+            holder.departureTime_textView.setVisibility(View.VISIBLE);
+            holder.departureTime_textView.setText(time);
+        } else {
+            holder.departureTime_textView.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -125,6 +165,18 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         Button delete_button;
         @Bind(R.id.button_book)
         Button book_button;
+        @Bind(R.id.textView_arrivalTime)
+        TextView arrival_textView;
+        @Bind(R.id.textView_departureTime)
+        TextView departureTime_textView;
+        @Bind(R.id.textView_fare)
+        TextView fare_textView;
+        @Bind(R.id.textView_totalPrice)
+        TextView totalPrice_textView;
+        @Bind(R.id.linearLayout_fare)
+        LinearLayout fare_linearLayout;
+        @Bind(R.id.linearLayout_totalPrice)
+        LinearLayout totalPrice_linearLayout;
 
         public MyViewHolder(View itemView) {
             super(itemView);

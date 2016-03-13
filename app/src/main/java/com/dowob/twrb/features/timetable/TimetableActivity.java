@@ -17,10 +17,8 @@ import android.widget.TextView;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.TimetableStation;
-import com.dowob.twrb.events.OnBookRecordAddedEvent;
 import com.dowob.twrb.events.OnSearchedEvent;
 import com.dowob.twrb.features.shared.SnackbarHelper;
-import com.dowob.twrb.features.tickets.BookRecordFactory;
 import com.dowob.twrb.features.tickets.book.BookManager;
 import com.dowob.twrb.features.tickets.book.QuickBookDialog;
 import com.dowob.twrb.features.tickets.book.RandInputDialog;
@@ -159,7 +157,8 @@ public class TimetableActivity extends AppCompatActivity {
                         getInDateTime,
                         bi.trainNo,
                         Integer.parseInt(bi.orderQtuStr),
-                        bi.personId))
+                        bi.personId,
+                        selectedTrainInfo))
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
                 .subscribeOn(AndroidSchedulers.mainThread())
@@ -187,8 +186,7 @@ public class TimetableActivity extends AppCompatActivity {
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
-        long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
-        EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
+        new BookManager().save(e.getBookInfo(), selectedTrainInfo);
         Snackbar.make(viewPager, getString(R.string.save_to_book_record), Snackbar.LENGTH_LONG).show();
     }
 

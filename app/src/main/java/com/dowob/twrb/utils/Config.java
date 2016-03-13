@@ -3,6 +3,8 @@ package com.dowob.twrb.utils;
 public class Config {
     public static final int BUTTON_THROTTLE = 500;
 
+    public static final long REALM_SCHEMA_VERSION = 1;
+
     public static final String SHARE_PREFERENCE = "twrb_sp";
     public static final String PREFERENCE_QTU = "qtu";
     public static final String PREFERENCE_PERSONID = "personId";

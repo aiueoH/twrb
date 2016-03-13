@@ -10,7 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
+import com.dowob.twrb.BuildConfig;
 import com.dowob.twrb.R;
 import com.dowob.twrb.features.shared.NetworkChecker;
 import com.dowob.twrb.features.shared.SnackbarHelper;
@@ -40,6 +42,8 @@ public class QuickBookDialog extends Dialog {
     Button book_button;
     @Bind(R.id.button_save)
     Button save_button;
+    @Bind(R.id.textView_id)
+    TextView id_textView;
 
     private Context context;
     private BookInfo bookInfo;
@@ -64,6 +68,8 @@ public class QuickBookDialog extends Dialog {
         RxAdapterView.itemSelections(qtu_spinner).subscribe(this::onQtuSpinnerItemSelected);
         RxView.clicks(save_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onSaveButtonClick());
         RxView.clicks(book_button).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> onBookButtonClick());
+        if (BuildConfig.DEBUG)
+            RxView.clicks(id_textView).throttleFirst(500, TimeUnit.MILLISECONDS).subscribe(v -> this.id_editText.setText(IDCreator.create()));
     }
 
     public void onQtuSpinnerItemSelected(int position) {
@@ -79,11 +85,6 @@ public class QuickBookDialog extends Dialog {
         editor.putString(Config.PREFERENCE_PERSONID, s.toString());
         editor.commit();
     }
-
-//    @OnClick(R.id.textView_id)
-//    public void onIdTextViewClick() {
-//        this.id_editText.setText(IDCreator.create());
-//    }
 
     public void onSaveButtonClick() {
         if (setBookingInfo()) return;

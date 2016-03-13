@@ -18,7 +18,7 @@ public class AdaptHelper {
         bookInfo.getinDate = DATE_FORMAT.format(bookRecord.getGetInDate());
         bookInfo.fromStation = bookRecord.getFromStation();
         bookInfo.toStation = bookRecord.getToStation();
-        bookInfo.orderQtuStr = bookRecord.getOrderQtuStr();
+        bookInfo.orderQtuStr = Integer.toString(bookRecord.getOrderQtu());
         bookInfo.trainNo = bookRecord.getTrainNo();
         bookInfo.returnTicket = bookRecord.getReturnTicket();
         bookInfo.code = bookRecord.getCode();
@@ -29,7 +29,7 @@ public class AdaptHelper {
         bookRecord.setGetInDate(new Date(Date.parse(bookInfo.getinDate)));
         bookRecord.setFromStation(bookInfo.fromStation);
         bookRecord.setToStation(bookInfo.toStation);
-        bookRecord.setOrderQtuStr(bookInfo.orderQtuStr);
+        bookRecord.setOrderQtu(Integer.parseInt(bookInfo.orderQtuStr));
         bookRecord.setTrainNo(bookInfo.trainNo);
         bookRecord.setReturnTicket(bookInfo.returnTicket);
         bookRecord.setCode(bookInfo.code);

@@ -31,6 +31,7 @@ import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
+import io.realm.Sort;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -56,7 +57,7 @@ public class BookRecordFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Realm.getDefaultInstance().refresh();
         RealmResults<BookRecord> rrs = Realm.getDefaultInstance().where(BookRecord.class).findAll();
-        rrs.sort("id", RealmResults.SORT_ORDER_DESCENDING);
+        rrs.sort("id", Sort.DESCENDING);
         this.bookRecords = new ArrayList<>();
         this.bookRecords.addAll(rrs);
         this.bookRecordAdapter = new BookRecordAdapter(getActivity(), this.bookRecords);

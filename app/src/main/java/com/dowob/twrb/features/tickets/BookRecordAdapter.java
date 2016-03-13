@@ -77,9 +77,10 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         holder.code_linearLayout.setVisibility(br.getCode().isEmpty() ? View.GONE : View.VISIBLE);
         holder.book_button.setVisibility(!br.getCode().isEmpty() || br.isCancelled() ? View.GONE : View.VISIBLE);
         holder.cancel_button.setVisibility(br.getCode().isEmpty() || br.isCancelled() ? View.GONE : View.VISIBLE);
-        holder.isCancelled_textView.setVisibility(br.isCancelled() ? View.VISIBLE : View.GONE);
         holder.book_button.setOnClickListener(new OnBookBtnClickListener(br));
         holder.cancel_button.setOnClickListener(new OnCancelBtnClickListener(br));
+        holder.isBooked_linearLayout.setVisibility(br.getCode().isEmpty() || br.isCancelled() ? View.GONE : View.VISIBLE);
+        holder.isCancelled_linearLayout.setVisibility(br.isCancelled() ? View.VISIBLE : View.GONE);
         setDeleteButton(holder, br);
         setDepartureTime(holder, br);
         setArrivalTime(holder, br);
@@ -177,6 +178,10 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         LinearLayout fare_linearLayout;
         @Bind(R.id.linearLayout_totalPrice)
         LinearLayout totalPrice_linearLayout;
+        @Bind(R.id.linearLayout_isBooked)
+        LinearLayout isBooked_linearLayout;
+        @Bind(R.id.linearLayout_isCancelled)
+        LinearLayout isCancelled_linearLayout;
 
         public MyViewHolder(View itemView) {
             super(itemView);

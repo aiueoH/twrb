@@ -19,7 +19,7 @@ import com.dowob.twrb.R;
 import com.dowob.twrb.database.TimetableStation;
 import com.dowob.twrb.events.OnSearchedEvent;
 import com.dowob.twrb.features.shared.SnackbarHelper;
-import com.dowob.twrb.features.tickets.book.BookManager;
+import com.dowob.twrb.features.tickets.BookManager;
 import com.dowob.twrb.features.tickets.book.QuickBookDialog;
 import com.dowob.twrb.features.tickets.book.RandInputDialog;
 import com.twrb.core.book.BookInfo;
@@ -165,6 +165,10 @@ public class TimetableActivity extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(captcha_stream -> {
                     mProgressDialog.dismiss();
+                    if (captcha_stream == null) {
+                        SnackbarHelper.show(tabLayout, "網路有些問題，再試一次看看", Snackbar.LENGTH_LONG);
+                        return;
+                    }
                     Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha_stream.toByteArray(), 0, captcha_stream.size());
                     RandInputDialog randInputDialog = new RandInputDialog(this, captcha_bitmap);
                     randInputDialog.show();

@@ -6,7 +6,9 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="1dp"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:layout_marginTop="20dp"
     card_view:cardElevation="8dp">
 
     <LinearLayout
@@ -14,77 +16,33 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingTop="10dp"
         >
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:baselineAligned="false"
-            android:contextClickable="false"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/linearLayout_dateAndNo"
+        <LinearLayout
+            android:id="@+id/linearLayout_mainSpace"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorSecondaryText"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:transitionName="mainSpace">
+
+            <TextView
+                android:id="@+id/textView_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:transitionName="linearLayout_dateAndNo">
-
-                <TextView
-                    android:id="@+id/textView_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2012/12/21"
-                    />
-
-            </LinearLayout>
+                android:text="2012/12/21"
+                android:textColor="#ffffff"/>
 
             <Space
-                android:layout_width="5dp"
-                android:layout_height="5dp"
-                />
+                android:layout_width="wrap_content"
+                android:layout_height="10dp"/>
 
             <RelativeLayout
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
+                android:layout_height="fill_parent"
                 >
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_horizontal"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/textView_trainType"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_toRightOf="@+id/linearLayout_fromAndTo"
-                            android:text="自強"
-                            android:textSize="20dp"/>
-
-                        <TextView
-                            android:id="@+id/textView_no"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="689"
-                            />
-
-                    </LinearLayout>
-
-                </LinearLayout>
 
                 <TextView
                     android:id="@+id/textView_arrow"
@@ -92,57 +50,138 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:text=">"
+                    android:textColor="#ffffff"
                     android:textSize="20dp"/>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/textView_arrow"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    >
-
-                    <TextView
-                        android:id="@+id/textView_to"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="波多黎各"
-                        android:textSize="20dp"/>
-
-                    <TextView
-                        android:id="@+id/textView_arrivalTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="13:00"
-                        />
-
-                </LinearLayout>
-
-                <LinearLayout
+                <TextView
+                    android:id="@+id/textView_from"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="10dp"
                     android:layout_toLeftOf="@+id/textView_arrow"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    >
+                    android:text="大美國"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"/>
+
+                <TextView
+                    android:id="@+id/textView_departureTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView_from"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@+id/textView_arrow"
+                    android:text="13:00"
+                    android:textColor="#ffffff"/>
+
+                <TextView
+                    android:id="@+id/textView_to"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/textView_arrow"
+                    android:text="波多黎各"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"/>
+
+                <TextView
+                    android:id="@+id/textView_arrivalTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView_to"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/textView_arrow"
+                    android:text="13:00"
+                    android:textColor="#ffffff"/>
+            </RelativeLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:contextClickable="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/linearLayout_dateAndNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:transitionName="linearLayout_dateAndNo">
+
+                <LinearLayout
+                    android:id="@+id/layout_trainType"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/textView_from"
+                        android:id="@+id/textView_trainType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="大美國"
-                        android:textSize="20dp"/>
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@+id/linearLayout_fromAndTo"
+                        android:text="勝利號"
+                        android:textIsSelectable="false"/>
+
+                    <Space
+                        android:layout_width="10dp"
+                        android:layout_height="wrap_content"
+                        />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textView_no"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="689"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="車次"
+                    />
+
+                <Space
+                    android:layout_width="10dp"
+                    android:layout_height="wrap_content"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/textView_departureTime"
+                        android:id="@+id/textView_qty"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="13:00"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="3"
                         />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="位"
+                        />
                 </LinearLayout>
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                >
 
                 <LinearLayout
                     android:id="@+id/linearLayout_book"
@@ -153,33 +192,7 @@
                     android:background="@drawable/book_bg"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:paddingBottom="10dp"
-                    android:paddingRight="10dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/textView_qty"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:text="3"
-                            android:textSize="20dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:text="位"
-                            android:textSize="20dp"/>
-                    </LinearLayout>
+                    >
 
                     <RelativeLayout
                         android:layout_width="wrap_content"
@@ -187,7 +200,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentRight="true"
                         android:layout_centerVertical="true"
-                        >
+                        android:padding="20dp">
 
                         <TextView
                             android:id="@+id/textView_book"
@@ -211,7 +224,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="已訂到"
-                                android:textColor="#81bf70"
+                                android:textColor="#5aa047"
                                 />
                         </LinearLayout>
 

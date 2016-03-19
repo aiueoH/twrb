@@ -77,6 +77,7 @@ public class BookRecordFactory {
         br.setDepartureDateTime(parseTime(trainInfo.departureTime));
         br.setArrivalDateTime(parseTime(trainInfo.arrivalTime));
         br.setFares(Integer.parseInt(trainInfo.fares));
+        br.setTrainType(trainInfo.type);
     }
 
     @Nullable

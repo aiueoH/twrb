@@ -1,8 +1,15 @@
 package com.dowob.twrb.features.tickets;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,10 +21,8 @@ import android.widget.TextView;
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
-import com.dowob.twrb.events.OnBookRecordRemovedEvent;
 import com.dowob.twrb.features.shared.NetworkChecker;
 import com.dowob.twrb.features.shared.SnackbarHelper;
-import com.dowob.twrb.features.tickets.book.BookManager;
 import com.jakewharton.rxbinding.view.RxView;
 
 import java.text.SimpleDateFormat;
@@ -28,10 +33,6 @@ import java.util.concurrent.TimeUnit;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
-import io.realm.Realm;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.MyViewHolder> {
     private Context context;
@@ -47,13 +48,9 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         this.parentView = parentView;
     }
 
-    public List<BookRecord> getBookRecords() {
-        return bookRecords;
-    }
-
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MyViewHolder(LayoutInflater.from(this.context).inflate(R.layout.item_bookrecord, parent, false));
+        return new MyViewHolder(LayoutInflater.from(this.context).inflate(R.layout.item_bookrecord_v2, parent, false));
     }
 
     @Override
@@ -67,53 +64,53 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
     private void onBindViewHolderImp(MyViewHolder holder, int position) {
         final BookRecord br = this.bookRecords.get(position);
-        holder.date_textView.setText(AdaptHelper.dateToString(br.getGetInDate()));
+        holder.date_textView.setText(new SimpleDateFormat("yyyy/MM/dd E").format(br.getGetInDate()));
+        String trainType = br.getTrainType();
+        if (trainType != null && !trainType.isEmpty()) {
+            holder.trainType_layout.setVisibility(View.VISIBLE);
+            holder.trainType_textView.setText(trainType);
+        } else
+            holder.trainType_layout.setVisibility(View.GONE);
         holder.no_textView_no.setText(br.getTrainNo());
         holder.from_textView.setText(BookableStation.getNameByNo(br.getFromStation()));
         holder.to_textView.setText(BookableStation.getNameByNo(br.getToStation()));
-        holder.qtu_textView.setText(Integer.toString(br.getOrderQtu()));
-        holder.personId_textView.setText(br.getPersonId());
-        holder.code_textView.setText(br.getCode());
-        holder.code_linearLayout.setVisibility(br.getCode().isEmpty() ? View.GONE : View.VISIBLE);
-        holder.book_button.setVisibility(!br.getCode().isEmpty() || br.isCancelled() ? View.GONE : View.VISIBLE);
+        holder.qty_textView.setText(Integer.toString(br.getOrderQtu()));
         holder.cancel_button.setVisibility(br.getCode().isEmpty() || br.isCancelled() ? View.GONE : View.VISIBLE);
-        holder.book_button.setOnClickListener(new OnBookBtnClickListener(br));
+        holder.book_textView.setVisibility(!br.getCode().isEmpty() || br.isCancelled() ? View.INVISIBLE : View.VISIBLE);
+        holder.book_linearLayou.setOnClickListener(!br.getCode().isEmpty() || br.isCancelled() ? null : new OnBookBtnClickListener(br));
+        setBookBg(holder, br);
         holder.cancel_button.setOnClickListener(new OnCancelBtnClickListener(br));
-        holder.isBooked_linearLayout.setVisibility(br.getCode().isEmpty() || br.isCancelled() ? View.GONE : View.VISIBLE);
-        holder.isCancelled_linearLayout.setVisibility(br.isCancelled() ? View.VISIBLE : View.GONE);
+        holder.isBooked_linearLayout.setVisibility(br.getCode().isEmpty() || br.isCancelled() ? View.INVISIBLE : View.VISIBLE);
+        holder.isCancelled_linearLayout.setVisibility(br.isCancelled() ? View.VISIBLE : View.INVISIBLE);
         setDeleteButton(holder, br);
         setDepartureTime(holder, br);
         setArrivalTime(holder, br);
-        setFareAndTotalPrice(holder, br);
+        holder.cardView.setOnClickListener(v -> {
+            EventBus.getDefault().post(new OnDisplayItemDetailEvent(position));
+            EventBus.getDefault().postSticky(new BookRecordActivity.Data(br));
+            Intent intent = new Intent(context, BookRecordActivity.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) context,
+                        Pair.create(holder.mainSpace_linearLayout, holder.mainSpace_linearLayout.getTransitionName())
+                );
+                context.startActivity(intent, options.toBundle());
+            } else {
+                context.startActivity(intent);
+            }
+        });
     }
 
     private void setDeleteButton(MyViewHolder holder, BookRecord bookRecord) {
         RxView.clicks(holder.delete_button)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(v -> {
-                    int index = bookRecords.indexOf(bookRecord);
-                    notifyItemRemoved(index);
-                    bookRecords.remove(index);
-                    Realm realm = Realm.getDefaultInstance();
-                    BookRecord tmp = realm.where(BookRecord.class).equalTo("id", bookRecord.getId()).findFirst();
-                    if (tmp == null) return;
-                    realm.beginTransaction();
-                    tmp.removeFromRealm();
-                    realm.commitTransaction();
-                    EventBus.getDefault().post(new OnBookRecordRemovedEvent());
+//                    int index = bookRecords.indexOf(bookRecord);
+//                    bookRecords.remove(index);
+//                    notifyItemRemoved(index);
+//                    BookManager bookManager = new BookManager();
+//                    bookManager.delete(bookRecord.getId());
+                    BookRecordModel.getInstance().delete(bookRecord);
                 });
-    }
-
-    private void setFareAndTotalPrice(MyViewHolder holder, BookRecord br) {
-        if (br.getFares() != 0) {
-            holder.fare_linearLayout.setVisibility(View.VISIBLE);
-            holder.fare_textView.setText(Integer.toString(br.getFares()));
-            holder.totalPrice_linearLayout.setVisibility(View.VISIBLE);
-            holder.totalPrice_textView.setText(Integer.toString(br.getFares() * br.getOrderQtu()));
-        } else {
-            holder.fare_linearLayout.setVisibility(View.GONE);
-            holder.totalPrice_linearLayout.setVisibility(View.GONE);
-        }
     }
 
     private void setArrivalTime(MyViewHolder holder, BookRecord bookRecord) {
@@ -136,6 +133,20 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         }
     }
 
+    private void setBookBg(MyViewHolder holder, BookRecord bookRecord) {
+        Drawable drawable = !bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? null : getDrawable(R.drawable.book_bg);
+        if (Build.VERSION.SDK_INT >= 16)
+            holder.book_linearLayou.setBackground(drawable);
+        else
+            holder.book_linearLayou.setBackgroundDrawable(drawable);
+    }
+
+    private Drawable getDrawable(int id) {
+        if (Build.VERSION.SDK_INT >= 21)
+            return context.getDrawable(id);
+        return context.getResources().getDrawable(id);
+    }
+
     @Override
     public int getItemCount() {
         return this.bookRecords.size();
@@ -146,42 +157,38 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         TextView date_textView;
         @Bind(R.id.textView_no)
         TextView no_textView_no;
+        @Bind(R.id.textView_trainType)
+        TextView trainType_textView;
+        @Bind(R.id.layout_trainType)
+        LinearLayout trainType_layout;
         @Bind(R.id.textView_from)
         TextView from_textView;
         @Bind(R.id.textView_to)
         TextView to_textView;
-        @Bind(R.id.textView_qtu)
-        TextView qtu_textView;
-        @Bind(R.id.textView_personid)
-        TextView personId_textView;
-        @Bind(R.id.textView_code)
-        TextView code_textView;
-        @Bind(R.id.textView_isCancelled)
-        TextView isCancelled_textView;
-        @Bind(R.id.linearLayout_code)
-        LinearLayout code_linearLayout;
-        @Bind(R.id.button_cancel)
-        Button cancel_button;
-        @Bind(R.id.button_delete)
-        Button delete_button;
-        @Bind(R.id.button_book)
-        Button book_button;
+        @Bind(R.id.linearLayout_dateAndNo)
+        LinearLayout dateAndNo_linearLayout;
         @Bind(R.id.textView_arrivalTime)
         TextView arrival_textView;
         @Bind(R.id.textView_departureTime)
         TextView departureTime_textView;
-        @Bind(R.id.textView_fare)
-        TextView fare_textView;
-        @Bind(R.id.textView_totalPrice)
-        TextView totalPrice_textView;
-        @Bind(R.id.linearLayout_fare)
-        LinearLayout fare_linearLayout;
-        @Bind(R.id.linearLayout_totalPrice)
-        LinearLayout totalPrice_linearLayout;
         @Bind(R.id.linearLayout_isBooked)
         LinearLayout isBooked_linearLayout;
         @Bind(R.id.linearLayout_isCancelled)
         LinearLayout isCancelled_linearLayout;
+        @Bind(R.id.textView_book)
+        TextView book_textView;
+        @Bind(R.id.card_view)
+        CardView cardView;
+        @Bind(R.id.button_cancel)
+        Button cancel_button;
+        @Bind(R.id.button_delete)
+        Button delete_button;
+        @Bind(R.id.linearLayout_book)
+        LinearLayout book_linearLayou;
+        @Bind(R.id.textView_qty)
+        TextView qty_textView;
+        @Bind(R.id.linearLayout_mainSpace)
+        LinearLayout mainSpace_linearLayout;
 
         public MyViewHolder(View itemView) {
             super(itemView);
@@ -198,6 +205,18 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         public long getId() {
             return id;
+        }
+    }
+
+    static class OnDisplayItemDetailEvent {
+        private int index;
+
+        public OnDisplayItemDetailEvent(int index) {
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
         }
     }
 
@@ -236,24 +255,24 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
 
         @Override
         public void onClick(View v) {
-            if (!NetworkChecker.isConnected(context)) {
-                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
-                return;
-            }
-            Observable.just(bookRecord.getId())
-                    .map(id -> BookManager.cancel(id))
-                    .subscribeOn(Schedulers.io())
-                    .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", "退票中"))
-                    .subscribeOn(AndroidSchedulers.mainThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(result -> {
-                        progressDialog.dismiss();
-                        notifyItemChanged(bookRecords.indexOf(bookRecord));
-                        String s = context.getString(R.string.cancel_suc);
-                        if (!result)
-                            s = context.getString(R.string.cancel_fale);
-                        SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
-                    });
+//            if (!NetworkChecker.isConnected(context)) {
+//                SnackbarHelper.show(parentView, context.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
+//                return;
+//            }
+//            Observable.just(bookRecord.getId())
+//                    .map(id -> BookManager.cancel(id))
+//                    .subscribeOn(Schedulers.io())
+//                    .doOnSubscribe(() -> progressDialog = ProgressDialog.show(context, "", "退票中"))
+//                    .subscribeOn(AndroidSchedulers.mainThread())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(result -> {
+//                        progressDialog.dismiss();
+//                        notifyItemChanged(bookRecords.indexOf(bookRecord));
+//                        String s = context.getString(R.string.cancel_suc);
+//                        if (!result)
+//                            s = context.getString(R.string.cancel_fale);
+//                        SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
+//                    });
         }
     }
 }

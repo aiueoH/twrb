@@ -99,13 +99,6 @@ public class QuickBookDialog extends Dialog {
         }
         if (setBookingInfo())
             return;
-
-        int remainCDTime = BookManager.getBookCDTime(context);
-        if (remainCDTime > 0) {
-            String s = String.format(context.getString(R.string.cold_down_msg), remainCDTime);
-            SnackbarHelper.show(qtu_spinner, s, Snackbar.LENGTH_LONG);
-            return;
-        }
         dismiss();
         EventBus.getDefault().post(new OnBookingEvent(this.bookInfo));
     }

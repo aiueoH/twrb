@@ -1,15 +1,18 @@
-package com.dowob.twrb.features.tickets.book;
+package com.dowob.twrb.features.tickets;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.events.OnBookRecordAddedEvent;
+import com.dowob.twrb.events.OnBookRecordRemovedEvent;
 import com.dowob.twrb.events.OnBookedEvent;
-import com.dowob.twrb.features.tickets.AdaptHelper;
+import com.dowob.twrb.features.tickets.book.BookRecordFactory;
+import com.dowob.twrb.features.tickets.book.Booker;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.BookHelper;
@@ -150,12 +153,14 @@ public class BookManager {
     }
 
     // For book by timetable.
+    @Nullable
     public ByteArrayOutputStream step1(String from, String to, Calendar getInDate, String no, int qty, String personId, TrainInfo trainInfo) {
         mBooker = new Booker();
         this.trainInfo = trainInfo;
         return step1(from, to, getInDate, no, qty, personId);
     }
 
+    @Nullable
     private ByteArrayOutputStream step1(String from, String to, Calendar getInDate, String no, int qty, String personId) {
         mBooker = new Booker();
         this.from = from;
@@ -184,6 +189,7 @@ public class BookManager {
     }
 
     // For book by my ticket.
+    @Nullable
     public ByteArrayOutputStream step1(Context context, long bookRecordId) {
         Realm.getDefaultInstance().refresh();
         BookRecord bookRecord = BookRecord.get(bookRecordId);
@@ -207,10 +213,10 @@ public class BookManager {
             List<String> data = result.getValue();
             bookRecord.setCode(data.get(0));
             Realm.getDefaultInstance().commitTransaction();
-            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
+//            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
             MyLogger.i("訂票成功。code:" + data.get(0));
         } else {
-            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
+//            EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
             MyLogger.i("訂票失敗。" + result.getKey());
         }
         return result;
@@ -220,5 +226,17 @@ public class BookManager {
         long id = BookRecordFactory.createBookRecord(bookInfo, trainInfo).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(id));
         return id;
+    }
+
+    public boolean delete(long bookRecordId) {
+        Realm realm = Realm.getDefaultInstance();
+        BookRecord bookRecord = realm.where(BookRecord.class).equalTo("id", bookRecordId).findFirst();
+        if (bookRecord == null)
+            return false;
+        realm.beginTransaction();
+        bookRecord.removeFromRealm();
+        realm.commitTransaction();
+        EventBus.getDefault().post(new OnBookRecordRemovedEvent(bookRecordId));
+        return true;
     }
 }

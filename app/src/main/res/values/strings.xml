@@ -13,6 +13,8 @@
     <string name="tab_name_search">查詢班次</string>
     <string name="tab_name_ticket">我的車票</string>
 
+    <string name="toolbar_title_ticketDetail">車票資訊</string>
+
     <string name="network_not_connected">目前沒有連上網路，很抱歉這樣我沒辦法運作</string>
     <string name="book_suc">訂票成功，恭喜！快去我的車票查看吧！</string>
     <string name="book_fale">非常抱歉，沒有訂到票</string>

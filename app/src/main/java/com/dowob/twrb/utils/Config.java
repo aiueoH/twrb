@@ -1,7 +1,7 @@
 package com.dowob.twrb.utils;
 
 public class Config {
-    public static final int BUTTON_THROTTLE = 500;
+    public static final int BUTTON_CLICK_THROTTLE = 500;
 
     public static final long REALM_SCHEMA_VERSION = 1;
 

@@ -183,13 +183,13 @@ public class SearchFragment extends Fragment {
     }
 
     private void setClickListeners() {
-        RxView.clicks(from_textView).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+        RxView.clicks(from_textView).throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
                 .subscribe(v -> fromLinkedSpinner.show());
-        RxView.clicks(to_textView).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+        RxView.clicks(to_textView).throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
                 .subscribe(v -> toLinkedSpinner.show());
-        RxView.clicks(swap_imageButton).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+        RxView.clicks(swap_imageButton).throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
                 .subscribe(v -> onSwapButtonClick());
-        RxView.clicks(search_button).throttleFirst(Config.BUTTON_THROTTLE, TimeUnit.MILLISECONDS)
+        RxView.clicks(search_button).throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
                 .subscribe(v -> onSearchButtonClick());
     }
 

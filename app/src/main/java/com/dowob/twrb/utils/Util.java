@@ -1,18 +1,13 @@
 package com.dowob.twrb.utils;
 
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 
 public class Util {
-    public static void runOnUiThread(Runnable runnable) {
-        Observable.just(runnable)
-                .map(r -> {
-                    r.run();
-                    return null;
-                })
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .toBlocking()
-                .forEach(o -> {
-                });
+    public static Drawable getDrawable(Context context, int id) {
+        if (Build.VERSION.SDK_INT >= 21)
+            return context.getDrawable(id);
+        return context.getResources().getDrawable(id);
     }
 }

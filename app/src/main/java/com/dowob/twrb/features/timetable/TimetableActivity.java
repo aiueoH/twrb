@@ -19,7 +19,7 @@ import com.dowob.twrb.R;
 import com.dowob.twrb.database.TimetableStation;
 import com.dowob.twrb.events.OnSearchedEvent;
 import com.dowob.twrb.features.shared.SnackbarHelper;
-import com.dowob.twrb.features.tickets.BookManager;
+import com.dowob.twrb.features.tickets.BookRecordModel;
 import com.dowob.twrb.features.tickets.book.QuickBookDialog;
 import com.dowob.twrb.features.tickets.book.RandInputDialog;
 import com.twrb.core.book.BookInfo;
@@ -54,7 +54,6 @@ public class TimetableActivity extends AppCompatActivity {
     TextView date_textView;
     @Bind(R.id.toolbar)
     Toolbar toolbar;
-    BookManager bookManager;
     private Calendar searchDate;
     private SearchInfo searchInfo;
     private List<TrainInfo> trainInfos;
@@ -149,9 +148,8 @@ public class TimetableActivity extends AppCompatActivity {
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
-        bookManager = new BookManager();
         Observable.just(e.getBookInfo())
-                .map(bi -> bookManager.step1(
+                .map(bi -> BookRecordModel.getInstance().book(
                         bi.fromStation,
                         bi.toStation,
                         getInDateTime,
@@ -177,20 +175,20 @@ public class TimetableActivity extends AppCompatActivity {
 
     public void onEvent(RandInputDialog.OnSubmitEvent e) {
         Observable.just(e.getRandInput())
-                .map(randInput -> bookManager.step2(randInput))
+                .map(randInput -> BookRecordModel.getInstance().sendRandomInput(randInput))
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", this.getString(R.string.is_booking)))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     mProgressDialog.dismiss();
-                    String s = BookManager.getResultMsg(this, result.getKey());
+                    String s = BookRecordModel.getResultMsg(this, result.getKey());
                     SnackbarHelper.show(tabLayout, s, Snackbar.LENGTH_LONG);
                 });
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
-        new BookManager().save(e.getBookInfo(), selectedTrainInfo);
+        BookRecordModel.getInstance().save(e.getBookInfo(), selectedTrainInfo);
         Snackbar.make(viewPager, getString(R.string.save_to_book_record), Snackbar.LENGTH_LONG).show();
     }
 

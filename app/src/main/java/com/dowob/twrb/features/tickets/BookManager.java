@@ -26,7 +26,7 @@ import java.util.List;
 import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 
-public class BookManager {
+class BookManager {
     private String from, to, no, personId;
     private Calendar getInDate;
     private int qty;

@@ -1,10 +1,15 @@
 package com.dowob.twrb.features.tickets;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
+import com.dowob.twrb.events.OnBookRecordAddedEvent;
+import com.dowob.twrb.features.tickets.book.BookRecordFactory;
 import com.dowob.twrb.features.tickets.book.Booker;
+import com.twrb.core.book.BookInfo;
 import com.twrb.core.timetable.TrainInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -13,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import de.greenrobot.event.EventBus;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
@@ -30,8 +36,28 @@ public class BookRecordModel {
         return instance;
     }
 
+    @NonNull
     public static String getResultMsg(Context context, Booker.Result result) {
-        return BookManager.getResultMsg(context, result);
+        switch (result) {
+            case OK:
+                return context.getString(R.string.book_suc);
+            case NO_SEAT:
+                return context.getString(R.string.book_no_seat);
+            case OUT_TIME:
+                return context.getString(R.string.book_out_time);
+            case NOT_YET_BOOK:
+                return context.getString(R.string.book_not_yet);
+            case OVER_QUOTA:
+                return context.getString(R.string.book_over_quota);
+            case FULL_UP:
+                return context.getString(R.string.book_full_up);
+            case IO_EXCEPTION:
+                return context.getString(R.string.book_io_exception);
+            case WRONG_RANDINPUT:
+                return context.getString(R.string.book_wrong_randinput);
+            default:
+                return context.getString(R.string.book_unknown);
+        }
     }
 
     public ByteArrayOutputStream book(Context context, long bookRecordId) {
@@ -56,6 +82,12 @@ public class BookRecordModel {
         if (result.getKey().equals(Booker.Result.OK))
             notifyOnBookRecordCreate();
         return result;
+    }
+
+    public long save(BookInfo bookInfo, TrainInfo trainInfo) {
+        long id = BookRecordFactory.createBookRecord(bookInfo, trainInfo).getId();
+        EventBus.getDefault().post(new OnBookRecordAddedEvent(id));
+        return id;
     }
 
     public boolean cancel(long bookRecordId) {

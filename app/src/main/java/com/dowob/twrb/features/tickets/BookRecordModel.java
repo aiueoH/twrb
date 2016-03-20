@@ -30,6 +30,7 @@ public class BookRecordModel {
     private List<Observer> observers = new ArrayList<>();
 
     private BookRecordModel() {
+        EventBus.getDefault().register(this);
     }
 
     public static BookRecordModel getInstance() {
@@ -60,6 +61,10 @@ public class BookRecordModel {
         }
     }
 
+    public void onEvent(OnBookRecordAddedEvent e) {
+        notifyOnBookRecordCreate(e.getBookRecordId());
+    }
+
     public ByteArrayOutputStream book(Context context, long bookRecordId) {
         bookManager = new BookManager();
         return bookManager.step1(context, bookRecordId);
@@ -78,10 +83,7 @@ public class BookRecordModel {
     }
 
     public AbstractMap.SimpleEntry<Booker.Result, List<String>> sendRandomInput(String randomInput) {
-        AbstractMap.SimpleEntry<Booker.Result, List<String>> result = bookManager.step2(randomInput);
-        if (result.getKey().equals(Booker.Result.OK))
-            notifyOnBookRecordCreate();
-        return result;
+        return bookManager.step2(randomInput);
     }
 
     public long save(BookInfo bookInfo, TrainInfo trainInfo) {
@@ -113,9 +115,9 @@ public class BookRecordModel {
         return Realm.getDefaultInstance().where(BookRecord.class).equalTo("id", bookRecordId).findFirst();
     }
 
-    private void notifyOnBookRecordCreate() {
+    private void notifyOnBookRecordCreate(long bookRecordId) {
         for (Observer observer : observers)
-            observer.notifyBookRecordCreate();
+            observer.notifyBookRecordCreate(bookRecordId);
     }
 
     private void notifyOnBookRecordUpdate(long bookRecordId) {
@@ -137,7 +139,8 @@ public class BookRecordModel {
     }
 
     interface Observer {
-        void notifyBookRecordCreate();
+        default void notifyBookRecordCreate(long bookRecordId) {
+        }
 
         void notifyBookRecordUpdate(long bookRecordId);
 

@@ -23,11 +23,12 @@ import android.widget.TextView;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
-import com.dowob.twrb.events.OnBookRecordAddedEvent;
 import com.dowob.twrb.features.shared.NetworkChecker;
 import com.dowob.twrb.features.shared.SnackbarHelper;
+import com.dowob.twrb.features.tickets.book.Booker;
 
 import java.io.ByteArrayOutputStream;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,6 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     private BookRecordAdapter bookRecordAdapter;
     private ProgressDialog progressDialog;
     private long bookingRecordId;
-    private int displayingItemIndex;
     private BookRecordModel bookRecordModel = BookRecordModel.getInstance();
     private List<BookRecord> bookRecords;
 
@@ -66,7 +66,6 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
                 .setOnBookButtonClickListener(this::onBookRecordBookButtonClick)
                 .setOnItemClickListener(this::onBookRecordItemClick)
                 .createBookRecordAdapter();
-        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -74,17 +73,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         View view = inflater.inflate(R.layout.fragment_bookrecord, container, false);
         ButterKnife.bind(this, view);
         parentView = recyclerView;
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(bookRecordAdapter);
-        // Add space at last item(buttom).
-        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                int position = parent.getChildAdapterPosition(view);
-                if (position == state.getItemCount() - 1)
-                    outRect.bottom = Math.round(20 * getResources().getDisplayMetrics().density);
-            }
-        });
+        setUpRecyclerView();
         updateEmptyMsg();
         return view;
     }
@@ -97,8 +86,21 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     @Override
     public void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
         bookRecordModel.unregisterObserver(this);
+    }
+
+    private void setUpRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(bookRecordAdapter);
+        // Add space at last item(buttom).
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                int position = parent.getChildAdapterPosition(view);
+                if (position == state.getItemCount() - 1)
+                    outRect.bottom = Math.round(20 * getResources().getDisplayMetrics().density);
+            }
+        });
     }
 
     private void onBookRecordItemClick(View view, int which) {
@@ -106,7 +108,8 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecords.get(which)));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             View mainSpace = view.findViewById(R.id.linearLayout_mainSpace);
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(),
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    getActivity(),
                     Pair.create(mainSpace, mainSpace.getTransitionName())
             );
             this.startActivity(intent, options.toBundle());
@@ -135,7 +138,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     }
 
     private void onGetCaptcha(ByteArrayOutputStream captcha) {
-        progressDialog.dismiss();
+        dismissProgressDialog();
         if (captcha == null) {
             SnackbarHelper.show(recyclerView, getString(R.string.book_unknown), Snackbar.LENGTH_LONG);
             return;
@@ -164,35 +167,39 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
                 .doOnSubscribe(this::showProgressDialog)
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> {
-                    progressDialog.dismiss();
-                    String s = BookManager.getResultMsg(getContext(), result.getKey());
-                    SnackbarHelper.show(recyclerView, s, Snackbar.LENGTH_LONG);
-                });
+                .subscribe(this::onBooked);
+    }
+
+    private void onBooked(AbstractMap.SimpleEntry<Booker.Result, List<String>> result) {
+        dismissProgressDialog();
+        String s = BookManager.getResultMsg(getContext(), result.getKey());
+        SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
     }
 
     private void showProgressDialog() {
         progressDialog = ProgressDialog.show(getContext(), "", getContext().getString(R.string.is_booking));
     }
 
-    public void onEventMainThread(OnBookRecordAddedEvent e) {
-        BookRecord bookRecord = bookRecordModel.getBookRecord(e.getBookRecordId());
-        bookRecords.add(0, bookRecord);
-        this.bookRecordAdapter.notifyItemInserted(0);
-        this.recyclerView.scrollToPosition(0);
-        updateEmptyMsg();
+    private void dismissProgressDialog() {
+        if (progressDialog != null)
+            progressDialog.dismiss();
     }
 
     public void updateEmptyMsg() {
         this.emptyMsg_textView.setVisibility(bookRecordModel.getBookRecords().isEmpty() ? View.VISIBLE : View.GONE);
     }
 
-    public void onEvent(BookRecordAdapter.OnDisplayItemDetailEvent e) {
-        displayingItemIndex = e.getIndex();
-    }
-
     @Override
-    public void notifyBookRecordCreate() {
+    public void notifyBookRecordCreate(long bookRecordId) {
+        getActivity().runOnUiThread(() -> {
+            BookRecord bookRecord = bookRecordModel.getBookRecord(bookRecordId);
+            if (bookRecord == null) return;
+            bookRecords.add(0, bookRecord);
+            bookRecordAdapter.notifyItemInserted(0);
+            bookRecordAdapter.notifyItemRangeChanged(0, bookRecords.size()); // Use to update holder position.
+            recyclerView.scrollToPosition(0);
+            updateEmptyMsg();
+        });
     }
 
     @Override
@@ -214,6 +221,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
             if (index == -1) return;
             bookRecords.remove(index);
             bookRecordAdapter.notifyItemRemoved(index);
+            bookRecordAdapter.notifyItemRangeChanged(0, bookRecords.size()); // Use to update holder position.
             updateEmptyMsg();
         });
     }

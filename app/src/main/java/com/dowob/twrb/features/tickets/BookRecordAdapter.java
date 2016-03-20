@@ -39,21 +39,18 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
     }
 
     @Override
+    public int getItemCount() {
+        return bookRecords.size();
+    }
+
+    @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
         return new MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_bookrecord_v2, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, final int position) {
-        try {
-            onBindViewHolderImp(holder, position);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void onBindViewHolderImp(MyViewHolder holder, int position) {
+    public void onBindViewHolder(MyViewHolder holder, int position) {
         final BookRecord br = this.bookRecords.get(position);
         holder.date_textView.setText(new SimpleDateFormat("yyyy/MM/dd E").format(br.getGetInDate()));
         holder.no_textView_no.setText(br.getTrainNo());
@@ -122,17 +119,12 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return this.bookRecords.size();
-    }
-
-    public void onItemClick(View view, int which) {
+    private void onItemClick(View view, int which) {
         if (onItemClickListener != null)
             onItemClickListener.onClick(view, which);
     }
 
-    public void onBookButtonClick(View view, int which) {
+    private void onBookButtonClick(View view, int which) {
         if (onBookButtonClickListener != null)
             onBookButtonClickListener.onClick(view, which);
     }
@@ -178,18 +170,6 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         public MyViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-        }
-    }
-
-    static class OnDisplayItemDetailEvent {
-        private int index;
-
-        public OnDisplayItemDetailEvent(int index) {
-            this.index = index;
-        }
-
-        public int getIndex() {
-            return index;
         }
     }
 

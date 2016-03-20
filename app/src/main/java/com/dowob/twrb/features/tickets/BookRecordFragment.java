@@ -97,8 +97,10 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
                 int position = parent.getChildAdapterPosition(view);
+                if (position == 0)
+                    outRect.top = Math.round(30 * getResources().getDisplayMetrics().density);
                 if (position == state.getItemCount() - 1)
-                    outRect.bottom = Math.round(20 * getResources().getDisplayMetrics().density);
+                    outRect.bottom = Math.round(30 * getResources().getDisplayMetrics().density);
             }
         });
     }

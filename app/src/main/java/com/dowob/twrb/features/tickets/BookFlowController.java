@@ -58,21 +58,23 @@ public class BookFlowController implements BookRecordModel.BookListener {
         captcha_imageView.setImageBitmap(captcha);
         new AlertDialog.Builder(activity)
                 .setView(view)
-                .setPositiveButton("送出", (dialog, which) -> {
-                    EditText editText = (EditText) view.findViewById(R.id.editText_randInput);
-                    Observable.just(editText.getText().toString())
-                            .map(r -> {
-                                randomInputReceiver.answerRandomInput(r);
-                                return null;
-                            })
-                            .subscribeOn(Schedulers.io())
-                            .doOnSubscribe(this::showProgressDialog)
-                            .subscribeOn(AndroidSchedulers.mainThread())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(n -> dismissProgressDialog());
-                })
+                .setPositiveButton("送出", (dialog, which) -> onSendButtonClick(randomInputReceiver, view))
                 .setOnCancelListener(dialog -> randomInputReceiver.answerRandomInput(""))
                 .show();
+    }
+
+    private void onSendButtonClick(BookRecordModel.RandomInputReceiver randomInputReceiver, View view) {
+        EditText editText = (EditText) view.findViewById(R.id.editText_randInput);
+        Observable.just(editText.getText().toString())
+                .map(r -> {
+                    randomInputReceiver.answerRandomInput(r);
+                    return null;
+                })
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe(this::showProgressDialog)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(n -> dismissProgressDialog());
     }
 
     private void showProgressDialog() {

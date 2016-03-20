@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.events.OnBookRecordAddedEvent;
-import com.dowob.twrb.events.OnBookRecordRemovedEvent;
 import com.dowob.twrb.events.OnBookedEvent;
 import com.dowob.twrb.features.tickets.book.BookRecordFactory;
 import com.dowob.twrb.features.tickets.book.Booker;
@@ -236,7 +235,6 @@ class BookManager {
         realm.beginTransaction();
         bookRecord.removeFromRealm();
         realm.commitTransaction();
-        EventBus.getDefault().post(new OnBookRecordRemovedEvent(bookRecordId));
         return true;
     }
 }

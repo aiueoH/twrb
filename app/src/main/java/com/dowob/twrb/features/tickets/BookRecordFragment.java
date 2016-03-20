@@ -1,10 +1,6 @@
 package com.dowob.twrb.features.tickets;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,27 +13,18 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
-import com.dowob.twrb.features.shared.NetworkChecker;
 import com.dowob.twrb.features.shared.SnackbarHelper;
-import com.dowob.twrb.features.tickets.book.Booker;
 
-import java.io.ByteArrayOutputStream;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class BookRecordFragment extends Fragment implements BookRecordModel.Observer {
     @Bind(R.id.textView_emptyMsg)
@@ -47,8 +34,6 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
 
     private View parentView;
     private BookRecordAdapter bookRecordAdapter;
-    private ProgressDialog progressDialog;
-    private long bookingRecordId;
     private BookRecordModel bookRecordModel = BookRecordModel.getInstance();
     private List<BookRecord> bookRecords;
 
@@ -125,66 +110,10 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     }
 
     private void book(long bookRecordId) {
-        if (!NetworkChecker.isConnected(getContext())) {
-            SnackbarHelper.show(parentView, getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
-            return;
-        }
-        bookingRecordId = bookRecordId;
-        Observable.just(bookRecordId)
-                .map(id -> bookRecordModel.book(getContext(), id))
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(this::showProgressDialog)
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::onGetCaptcha);
-    }
-
-    private void onGetCaptcha(ByteArrayOutputStream captcha) {
-        dismissProgressDialog();
-        if (captcha == null) {
-            SnackbarHelper.show(recyclerView, getString(R.string.book_unknown), Snackbar.LENGTH_LONG);
-            return;
-        }
-        Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha.toByteArray(), 0, captcha.size());
-        showRequireRandomInputDialog(captcha_bitmap);
-    }
-
-    private void showRequireRandomInputDialog(Bitmap captcha) {
-        final View view = LayoutInflater.from(getActivity()).inflate(R.layout.require_randominput, null);
-        ImageView captcha_imageView = (ImageView) view.findViewById(R.id.imageView_captcha);
-        captcha_imageView.setImageBitmap(captcha);
-        new AlertDialog.Builder(getActivity())
-                .setView(view)
-                .setPositiveButton("送出", (dialog, which) -> {
-                    EditText editText = (EditText) view.findViewById(R.id.editText_randInput);
-                    sendRandomInput(editText.getText().toString());
-                })
-                .show();
-    }
-
-    public void sendRandomInput(String randomInput) {
-        Observable.just(randomInput)
-                .map(r -> bookRecordModel.sendRandomInput(bookingRecordId, r))
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(this::showProgressDialog)
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::onBooked);
-    }
-
-    private void onBooked(AbstractMap.SimpleEntry<Booker.Result, List<String>> result) {
-        dismissProgressDialog();
-        String s = BookManager.getResultMsg(getContext(), result.getKey());
-        SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
-    }
-
-    private void showProgressDialog() {
-        progressDialog = ProgressDialog.show(getContext(), "", getContext().getString(R.string.is_booking));
-    }
-
-    private void dismissProgressDialog() {
-        if (progressDialog != null)
-            progressDialog.dismiss();
+        new BookFlowController(getActivity(), parentView, result -> {
+            String s = BookManager.getResultMsg(getContext(), result.getKey());
+            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
+        }).book(bookRecordId);
     }
 
     public void updateEmptyMsg() {

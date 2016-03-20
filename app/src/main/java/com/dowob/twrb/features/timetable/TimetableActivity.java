@@ -71,8 +71,8 @@ public class TimetableActivity extends AppCompatActivity {
         this.searchInfo = e.getSearchInfo();
         this.searchDate = parseSearchDate();
         this.date_textView.setText(formatSearchDate());
-        this.from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
-        this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
+        this.from_textView.setText(TimetableStation.getByNo(this.searchInfo.fromStation).getNameCh());
+        this.to_textView.setText(TimetableStation.getByNo(this.searchInfo.toStation).getNameCh());
 
         ViewPagerAdapter vpa = new ViewPagerAdapter(getSupportFragmentManager());
         EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(trainInfos, searchDate, searchInfo));
@@ -134,8 +134,8 @@ public class TimetableActivity extends AppCompatActivity {
         selectedTrainInfo = ti;
         BookInfo bi = new BookInfo();
         bi.trainNo = ti.no;
-        bi.fromStation = TimetableStation.get(this.searchInfo.fromStation).getBookNo();
-        bi.toStation = TimetableStation.get(this.searchInfo.toStation).getBookNo();
+        bi.fromStation = TimetableStation.getByNo(this.searchInfo.fromStation).getBookNo();
+        bi.toStation = TimetableStation.getByNo(this.searchInfo.toStation).getBookNo();
         bi.getinDate = this.searchInfo.searchDate;
         new QuickBookDialog(this, bi).show();
     }

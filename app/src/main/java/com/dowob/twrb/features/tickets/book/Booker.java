@@ -20,7 +20,7 @@ public class Booker {
      * @param no
      * @param qty
      * @param personId
-     * @return BookResult, {code, get in time, station and post office pickup date, convenience store pickup time, internet puckup time}
+     * @return BookResult, {code, getByNo in time, station and post office pickup date, convenience store pickup time, internet puckup time}
      * @throws IOException
      */
     public AbstractMap.SimpleEntry<Result, List<String>> book(String from, String to, Calendar date, String no, int qty, String personId) {

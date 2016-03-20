@@ -7,14 +7,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
+import com.dowob.twrb.database.TimetableStation;
 import com.dowob.twrb.features.shared.NetworkChecker;
 import com.dowob.twrb.features.shared.SnackbarHelper;
+import com.dowob.twrb.utils.Util;
 import com.jakewharton.rxbinding.view.RxView;
 
 import java.text.SimpleDateFormat;
@@ -72,6 +76,10 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     LinearLayout isCancelled_linearLayout;
     @Bind(R.id.layout_trainType)
     LinearLayout trainType_layout;
+    @Bind(R.id.imageView_mainSpace)
+    ImageView mainSpace_imageView;
+    @Bind(R.id.relativeLayout_mainSpace)
+    RelativeLayout mainSpace_relativeLayout;
 
     private View parentView;
 
@@ -129,6 +137,8 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
         cancel_button.setVisibility(bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
         isBooked_linearLayout.setVisibility(bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
         isCancelled_linearLayout.setVisibility(bookRecord.isCancelled() ? View.VISIBLE : View.GONE);
+        int cityNo = Integer.parseInt(TimetableStation.getByBookNo(bookRecord.getToStation()).getCityNo());
+        mainSpace_imageView.setImageResource(Util.getCityDrawableId(cityNo));
         setArrivalTime();
         setDepartureTime();
         setFareAndTotalPrice();

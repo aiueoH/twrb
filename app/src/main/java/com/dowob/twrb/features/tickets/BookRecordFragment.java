@@ -94,7 +94,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         Intent intent = new Intent(getContext(), BookRecordActivity.class);
         EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecords.get(which)));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            View mainSpace = view.findViewById(R.id.linearLayout_mainSpace);
+            View mainSpace = view.findViewById(R.id.relativeLayout_mainSpace);
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     getActivity(),
                     Pair.create(mainSpace, mainSpace.getTransitionName())

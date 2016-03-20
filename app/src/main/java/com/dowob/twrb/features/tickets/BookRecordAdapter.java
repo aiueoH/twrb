@@ -9,12 +9,15 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
+import com.dowob.twrb.database.TimetableStation;
 import com.dowob.twrb.utils.Config;
 import com.dowob.twrb.utils.Util;
 import com.jakewharton.rxbinding.view.RxView;
@@ -65,6 +68,9 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         setDepartureTime(holder, br);
         setArrivalTime(holder, br);
         setCardViewClickListener(holder, position);
+        int cityNo = Integer.parseInt(TimetableStation.getByBookNo(br.getToStation()).getCityNo());
+        holder.mainSpace_imageView.setImageResource(Util.getCityDrawableId(cityNo));
+
     }
 
     private void setTrainType(MyViewHolder holder, BookRecord br) {
@@ -166,6 +172,11 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         LinearLayout book_linearLayou;
         @Bind(R.id.textView_qty)
         TextView qty_textView;
+        @Bind(R.id.imageView_mainSpace)
+        ImageView mainSpace_imageView;
+        @Bind(R.id.relativeLayout_mainSpace)
+        RelativeLayout mainSpace_relativeLayout;
+
 
         public MyViewHolder(View itemView) {
             super(itemView);

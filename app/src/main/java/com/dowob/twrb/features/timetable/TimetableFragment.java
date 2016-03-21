@@ -53,8 +53,8 @@ public class TimetableFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_timetable, container, false);
         ButterKnife.bind(this, view);
-        from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
-        to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
+        from_textView.setText(TimetableStation.getByNo(this.searchInfo.fromStation).getNameCh());
+        to_textView.setText(TimetableStation.getByNo(this.searchInfo.toStation).getNameCh());
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(new TrainInfoAdapter(getActivity(), trainInfos, searchDate));
         scrollToMostNearlyTimeTrain();

@@ -55,9 +55,9 @@ public class BookRecord extends RealmObject {
                 {"2016/10/11", "2016/09/23"},
 
                 {"2016/12/31", "2016/12/16"},
-                {"2016/01/01", "2016/12/16"},
-                {"2016/01/02", "2016/12/16"},
-                {"2016/01/03", "2016/12/16"},
+                {"2017/01/01", "2016/12/16"},
+                {"2017/01/02", "2016/12/16"},
+                {"2017/01/03", "2016/12/16"},
         };
         SPECIAL_DATE = new HashMap<>();
         DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
@@ -88,13 +88,12 @@ public class BookRecord extends RealmObject {
     private Date getInDate;
     private String fromStation;
     private String toStation;
-    private String orderQtuStr;
+    private int orderQtu;
     private String trainNo;
     private String returnTicket;
-
     private String code = "";
-
     private boolean isCancelled = false;
+    private TrainInfo trainInfo;
 
     @Nullable
     public static BookRecord get(long id) {
@@ -196,12 +195,12 @@ public class BookRecord extends RealmObject {
         this.toStation = toStation;
     }
 
-    public String getOrderQtuStr() {
-        return orderQtuStr;
+    public int getOrderQtu() {
+        return orderQtu;
     }
 
-    public void setOrderQtuStr(String orderQtuStr) {
-        this.orderQtuStr = orderQtuStr;
+    public void setOrderQtu(int orderQtu) {
+        this.orderQtu = orderQtu;
     }
 
     public String getTrainNo() {
@@ -226,5 +225,13 @@ public class BookRecord extends RealmObject {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public TrainInfo getTrainInfo() {
+        return trainInfo;
+    }
+
+    public void setTrainInfo(TrainInfo trainInfo) {
+        this.trainInfo = trainInfo;
     }
 }

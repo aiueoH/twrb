@@ -5,15 +5,18 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 
+import com.dowob.twrb.BuildConfig;
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
 import com.dowob.twrb.database.City;
 import com.dowob.twrb.database.TimetableStation;
+import com.dowob.twrb.database.migration.MyMigration;
 import com.dowob.twrb.events.OnBookRecordAddedEvent;
 import com.dowob.twrb.events.OnBookableRecordFoundEvent;
 import com.dowob.twrb.features.tickets.book.autobook.DailyBookService;
 import com.dowob.twrb.features.tickets.book.autobook.FrequentlyBookService;
+import com.dowob.twrb.utils.Config;
 import com.twrb.core.MyLogger;
 import com.twrb.core.helpers.DefaultSequenceRecognizerCreator;
 
@@ -54,9 +57,11 @@ public class MyApplication extends Application {
     }
 
     private void setLogger() {
-        MyPrinter mp = new MyPrinter();
-        mp.setEnable(false);
-        MyLogger.setPrinter(mp);
+        if (BuildConfig.DEBUG) {
+            MyPrinter mp = new MyPrinter();
+            mp.setEnable(true);
+            MyLogger.setPrinter(mp);
+        }
     }
 
     public void onEvent(OnBookRecordAddedEvent e) {
@@ -106,7 +111,10 @@ public class MyApplication extends Application {
     }
 
     private void setupRealm() {
-        RealmConfiguration config = new RealmConfiguration.Builder(this).build();
+        RealmConfiguration config = new RealmConfiguration.Builder(this)
+                .schemaVersion(Config.REALM_SCHEMA_VERSION)
+                .migration(new MyMigration())
+                .build();
         Realm.setDefaultConfiguration(config);
     }
 

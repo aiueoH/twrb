@@ -16,8 +16,13 @@ public class TimetableStation extends RealmObject {
     private boolean isBookable;
 
     @Nullable
-    public static TimetableStation get(String no) {
+    public static TimetableStation getByNo(String no) {
         return Realm.getDefaultInstance().where(TimetableStation.class).equalTo("no", no).findFirst();
+    }
+
+    @Nullable
+    public static TimetableStation getByBookNo(String bookNo) {
+        return Realm.getDefaultInstance().where(TimetableStation.class).equalTo("bookNo", bookNo).findFirst();
     }
 
     public String getNo() {

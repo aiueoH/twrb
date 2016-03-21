@@ -17,11 +17,9 @@ import android.widget.TextView;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.TimetableStation;
-import com.dowob.twrb.events.OnBookRecordAddedEvent;
 import com.dowob.twrb.events.OnSearchedEvent;
 import com.dowob.twrb.features.shared.SnackbarHelper;
-import com.dowob.twrb.features.tickets.BookRecordFactory;
-import com.dowob.twrb.features.tickets.book.BookManager;
+import com.dowob.twrb.features.tickets.BookRecordModel;
 import com.dowob.twrb.features.tickets.book.QuickBookDialog;
 import com.dowob.twrb.features.tickets.book.RandInputDialog;
 import com.twrb.core.book.BookInfo;
@@ -56,7 +54,6 @@ public class TimetableActivity extends AppCompatActivity {
     TextView date_textView;
     @Bind(R.id.toolbar)
     Toolbar toolbar;
-    BookManager bookManager;
     private Calendar searchDate;
     private SearchInfo searchInfo;
     private List<TrainInfo> trainInfos;
@@ -74,8 +71,8 @@ public class TimetableActivity extends AppCompatActivity {
         this.searchInfo = e.getSearchInfo();
         this.searchDate = parseSearchDate();
         this.date_textView.setText(formatSearchDate());
-        this.from_textView.setText(TimetableStation.get(this.searchInfo.fromStation).getNameCh());
-        this.to_textView.setText(TimetableStation.get(this.searchInfo.toStation).getNameCh());
+        this.from_textView.setText(TimetableStation.getByNo(this.searchInfo.fromStation).getNameCh());
+        this.to_textView.setText(TimetableStation.getByNo(this.searchInfo.toStation).getNameCh());
 
         ViewPagerAdapter vpa = new ViewPagerAdapter(getSupportFragmentManager());
         EventBus.getDefault().postSticky(new TimetableFragment.OnPassingTrainInfoEvent(trainInfos, searchDate, searchInfo));
@@ -137,8 +134,8 @@ public class TimetableActivity extends AppCompatActivity {
         selectedTrainInfo = ti;
         BookInfo bi = new BookInfo();
         bi.trainNo = ti.no;
-        bi.fromStation = TimetableStation.get(this.searchInfo.fromStation).getBookNo();
-        bi.toStation = TimetableStation.get(this.searchInfo.toStation).getBookNo();
+        bi.fromStation = TimetableStation.getByNo(this.searchInfo.fromStation).getBookNo();
+        bi.toStation = TimetableStation.getByNo(this.searchInfo.toStation).getBookNo();
         bi.getinDate = this.searchInfo.searchDate;
         new QuickBookDialog(this, bi).show();
     }
@@ -151,21 +148,25 @@ public class TimetableActivity extends AppCompatActivity {
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
-        bookManager = new BookManager();
         Observable.just(e.getBookInfo())
-                .map(bi -> bookManager.step1(
+                .map(bi -> BookRecordModel.getInstance().book(
                         bi.fromStation,
                         bi.toStation,
                         getInDateTime,
                         bi.trainNo,
                         Integer.parseInt(bi.orderQtuStr),
-                        bi.personId))
+                        bi.personId,
+                        selectedTrainInfo))
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(captcha_stream -> {
                     mProgressDialog.dismiss();
+                    if (captcha_stream == null) {
+                        SnackbarHelper.show(tabLayout, "網路有些問題，再試一次看看", Snackbar.LENGTH_LONG);
+                        return;
+                    }
                     Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha_stream.toByteArray(), 0, captcha_stream.size());
                     RandInputDialog randInputDialog = new RandInputDialog(this, captcha_bitmap);
                     randInputDialog.show();
@@ -174,21 +175,20 @@ public class TimetableActivity extends AppCompatActivity {
 
     public void onEvent(RandInputDialog.OnSubmitEvent e) {
         Observable.just(e.getRandInput())
-                .map(randInput -> bookManager.step2(randInput))
+                .map(randInput -> BookRecordModel.getInstance().sendRandomInput(randInput))
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", this.getString(R.string.is_booking)))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     mProgressDialog.dismiss();
-                    String s = BookManager.getResultMsg(this, result.getKey());
+                    String s = BookRecordModel.getResultMsg(this, result.getKey());
                     SnackbarHelper.show(tabLayout, s, Snackbar.LENGTH_LONG);
                 });
     }
 
     public void onEvent(QuickBookDialog.OnSavingEvent e) {
-        long brId = BookRecordFactory.createBookRecord(e.getBookInfo()).getId();
-        EventBus.getDefault().post(new OnBookRecordAddedEvent(brId));
+        BookRecordModel.getInstance().save(e.getBookInfo(), selectedTrainInfo);
         Snackbar.make(viewPager, getString(R.string.save_to_book_record), Snackbar.LENGTH_LONG).show();
     }
 

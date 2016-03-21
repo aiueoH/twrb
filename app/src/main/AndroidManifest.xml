@@ -25,6 +25,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".features.timetable.TimetableActivity"/>
+        <activity android:name=".features.tickets.BookRecordActivity"/>
 
         <service android:name=".features.tickets.book.autobook.DailyBookService"/>
         <service android:name=".features.tickets.book.autobook.FrequentlyBookService"/>

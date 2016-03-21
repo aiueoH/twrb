@@ -1,5 +1,8 @@
 package com.dowob.twrb.database;
 
+import android.support.annotation.Nullable;
+
+import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -10,6 +13,11 @@ public class City extends RealmObject {
     private String nameCh;
     private String nameEn;
     private RealmList<TimetableStation> timetableStations;
+
+    @Nullable
+    public static City get(String no) {
+        return Realm.getDefaultInstance().where(City.class).equalTo("no", no).findFirst();
+    }
 
     public String getNo() {
         return no;

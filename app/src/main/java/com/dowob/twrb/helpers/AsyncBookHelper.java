@@ -24,7 +24,7 @@ public class AsyncBookHelper extends NotifiableAsyncTask<Long, Integer, BookResu
 //                return result;
 //            }
 //            Realm.getDefaultInstance().refresh();
-//            BookRecord br = BookRecord.get(this.bookRecordId);
+//            BookRecord br = BookRecord.getByNo(this.bookRecordId);
 //            Realm.getDefaultInstance().beginTransaction();
 //            if (br == null || !br.getCode().isEmpty()) {
 //                br = new BookRecord();

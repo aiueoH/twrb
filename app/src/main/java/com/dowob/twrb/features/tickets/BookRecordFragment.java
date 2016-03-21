@@ -1,12 +1,13 @@
 package com.dowob.twrb.features.tickets;
 
-import android.app.ProgressDialog;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Intent;
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,12 +17,7 @@ import android.widget.TextView;
 
 import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
-import com.dowob.twrb.events.OnBookRecordAddedEvent;
-import com.dowob.twrb.events.OnBookRecordRemovedEvent;
-import com.dowob.twrb.events.OnBookedEvent;
 import com.dowob.twrb.features.shared.SnackbarHelper;
-import com.dowob.twrb.features.tickets.book.BookManager;
-import com.dowob.twrb.features.tickets.book.RandInputDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,23 +25,17 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
-import io.realm.Realm;
-import io.realm.RealmResults;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
-public class BookRecordFragment extends Fragment {
+public class BookRecordFragment extends Fragment implements BookRecordModel.Observer {
     @Bind(R.id.textView_emptyMsg)
     TextView emptyMsg_textView;
     @Bind(R.id.recyclerView)
     RecyclerView recyclerView;
-    private BookRecordAdapter bookRecordAdapter;
-    private List<BookRecord> bookRecords;
 
-    private ProgressDialog mProgressDialog;
-    private BookManager bookManager;
-    private long bookingRecordId;
+    private View parentView;
+    private BookRecordAdapter bookRecordAdapter;
+    private BookRecordModel bookRecordModel = BookRecordModel.getInstance();
+    private List<BookRecord> bookRecords;
 
     public static BookRecordFragment newInstance() {
         return new BookRecordFragment();
@@ -54,111 +44,128 @@ public class BookRecordFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Realm.getDefaultInstance().refresh();
-        RealmResults<BookRecord> rrs = Realm.getDefaultInstance().where(BookRecord.class).findAll();
-        rrs.sort("id", RealmResults.SORT_ORDER_DESCENDING);
-        this.bookRecords = new ArrayList<>();
-        this.bookRecords.addAll(rrs);
-        this.bookRecordAdapter = new BookRecordAdapter(getActivity(), this.bookRecords);
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
+        bookRecordModel.registerObserver(this);
+        bookRecords = new ArrayList<>(bookRecordModel.getBookRecords());
+        bookRecordAdapter = new BookRecordAdapter.Builder()
+                .setBookRecords(bookRecords)
+                .setOnBookButtonClickListener(this::onBookRecordBookButtonClick)
+                .setOnItemClickListener(this::onBookRecordItemClick)
+                .createBookRecordAdapter();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_bookrecord, container, false);
         ButterKnife.bind(this, view);
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        this.recyclerView.setAdapter(this.bookRecordAdapter);
+        parentView = recyclerView;
+        setUpRecyclerView();
         updateEmptyMsg();
-        this.bookRecordAdapter.setParentView(this.recyclerView);
         return view;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        bookManager = null;
     }
 
-    public void onEvent(BookRecordAdapter.OnBookEvent e) {
-        bookingRecordId = e.getId();
-        bookManager = new BookManager();
-        Observable.just(e.getId())
-                .map(id -> bookManager.step1(getContext(), id))
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(getContext(), "", getContext().getString(R.string.is_booking)))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(captcha_stream -> {
-                    mProgressDialog.dismiss();
-                    Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha_stream.toByteArray(), 0, captcha_stream.size());
-                    RandInputDialog randInputDialog = new RandInputDialog(getContext(), captcha_bitmap);
-                    randInputDialog.show();
-                });
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        bookRecordModel.unregisterObserver(this);
     }
 
-    public void onEvent(RandInputDialog.OnSubmitEvent e) {
-        if (bookManager == null)
-            return;
-        Observable.just(e.getRandInput())
-                .map(randInput -> bookManager.step2(bookingRecordId, randInput))
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(getContext(), "", getContext().getString(R.string.is_booking)))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> {
-                    mProgressDialog.dismiss();
-                    String s = BookManager.getResultMsg(getContext(), result.getKey());
-                    SnackbarHelper.show(recyclerView, s, Snackbar.LENGTH_LONG);
-                });
-    }
-
-    public void onEventMainThread(OnBookedEvent e) {
-        long id = e.getBookRecordId();
-        for (int i = 0; i < this.bookRecords.size(); i++)
-            if (id == this.bookRecords.get(i).getId()) {
-                this.bookRecordAdapter.notifyItemChanged(i);
-                this.recyclerView.scrollToPosition(i);
-                break;
+    private void setUpRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(bookRecordAdapter);
+        // Add space at last item(buttom).
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                int position = parent.getChildAdapterPosition(view);
+                if (position == 0)
+                    outRect.top = Math.round(30 * getResources().getDisplayMetrics().density);
+                if (position == state.getItemCount() - 1)
+                    outRect.bottom = Math.round(30 * getResources().getDisplayMetrics().density);
             }
+        });
     }
 
-    public void onEventMainThread(OnBookRecordAddedEvent e) {
-        BookRecord br = BookRecord.get(e.getBookRecordId());
-        bookRecords.add(0, br);
-        this.bookRecordAdapter.notifyItemInserted(0);
-        this.recyclerView.scrollToPosition(0);
-        updateEmptyMsg();
+    private void onBookRecordItemClick(View view, BookRecord bookRecord) {
+        Intent intent = new Intent(getContext(), BookRecordActivity.class);
+        EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecord));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            View mainSpace = view.findViewById(R.id.relativeLayout_mainSpace);
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    getActivity(),
+                    Pair.create(mainSpace, mainSpace.getTransitionName())
+            );
+            this.startActivity(intent, options.toBundle());
+        } else {
+            this.startActivity(intent);
+        }
     }
 
-    public void onEventMainThread(OnBookRecordRemovedEvent e) {
-        updateEmptyMsg();
+    private void onBookRecordBookButtonClick(View view, BookRecord bookRecord) {
+        book(bookRecord.getId());
     }
 
-    public void onEventMainThread(ShowSnackbarEvent e) {
-        e.getSnackbar().show();
+    private void book(long bookRecordId) {
+        new BookFlowController(getActivity(), parentView, result -> {
+            String s = BookManager.getResultMsg(getContext(), result.getKey());
+            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
+        }).book(bookRecordId);
     }
 
     public void updateEmptyMsg() {
-        this.emptyMsg_textView.setVisibility(this.bookRecords.isEmpty() ? View.VISIBLE : View.GONE);
+        this.emptyMsg_textView.setVisibility(bookRecordModel.getBookRecords().isEmpty() ? View.VISIBLE : View.GONE);
     }
 
-    public static class ShowSnackbarEvent {
-        private Snackbar snackbar;
+    @Override
+    public void notifyBookRecordCreate(long bookRecordId) {
+        getActivity().runOnUiThread(() -> {
+            BookRecord bookRecord = bookRecordModel.getBookRecord(bookRecordId);
+            if (bookRecord == null) return;
+            bookRecords.add(0, bookRecord);
+            bookRecordAdapter.notifyItemInserted(0);
+            recyclerView.scrollToPosition(0);
+            updateEmptyMsg();
+        });
+    }
 
-        public ShowSnackbarEvent(@NonNull Snackbar snackbar) {
-            this.snackbar = snackbar;
-        }
+    @Override
+    public void notifyBookRecordUpdate(long bookRecordId) {
+        getActivity().runOnUiThread(() -> {
+            int index = findBookRecordIndexById(bookRecordId);
+            if (index == -1) return;
+            BookRecord bookRecord = bookRecordModel.getBookRecord(bookRecordId);
+            if (bookRecord == null) return;
+            bookRecords.set(index, bookRecord);
+            bookRecordAdapter.notifyItemChanged(index);
+        });
+    }
 
-        @NonNull
-        public Snackbar getSnackbar() {
-            return snackbar;
-        }
+    @Override
+    public void notifyBookRecordRemove(long bookRecordId) {
+        getActivity().runOnUiThread(() -> {
+            int index = findBookRecordIndexById(bookRecordId);
+            if (index == -1) return;
+            bookRecords.remove(index);
+            bookRecordAdapter.notifyItemRemoved(index);
+            updateEmptyMsg();
+        });
+    }
+
+    private int findBookRecordIndexById(final long bookingRecordId) {
+        final List<Integer> index = new ArrayList<>();
+        getActivity().runOnUiThread(() -> {
+            for (int i = 0; i < bookRecords.size(); i++)
+                if (bookRecords.get(i).getId() == bookingRecordId) {
+                    index.add(i);
+                    break;
+                }
+        });
+        if (!index.isEmpty())
+            return index.get(0);
+        return -1;
     }
 }

@@ -19,7 +19,7 @@ public class BookRecordFactory {
         BookRecord br = new BookRecord();
         br.setId(BookRecord.generateId());
         AdaptHelper.to(bookInfo, br);
-        setTrainInfoIntoBookRecord(trainInfo, br);
+        br.setTrainInfo(createTrainInfo(trainInfo));
         Realm.getDefaultInstance().beginTransaction();
         Realm.getDefaultInstance().copyToRealm(br);
         Realm.getDefaultInstance().commitTransaction();
@@ -55,9 +55,7 @@ public class BookRecordFactory {
         br.setTrainNo(no);
         br.setReturnTicket(returnTicket);
         br.setCode(code);
-
-        setTrainInfoIntoBookRecord(trainInfo, br);
-
+        br.setTrainInfo(createTrainInfo(trainInfo));
         Realm.getDefaultInstance().beginTransaction();
         Realm.getDefaultInstance().copyToRealm(br);
         Realm.getDefaultInstance().commitTransaction();
@@ -73,11 +71,25 @@ public class BookRecordFactory {
         return br;
     }
 
-    private static void setTrainInfoIntoBookRecord(TrainInfo trainInfo, BookRecord br) {
-        br.setDepartureDateTime(parseTime(trainInfo.departureTime));
-        br.setArrivalDateTime(parseTime(trainInfo.arrivalTime));
-        br.setFares(Integer.parseInt(trainInfo.fares));
-        br.setTrainType(trainInfo.type);
+    private static com.dowob.twrb.database.TrainInfo createTrainInfo(TrainInfo trainInfo) {
+        Realm.getDefaultInstance().beginTransaction();
+        com.dowob.twrb.database.TrainInfo t = Realm.getDefaultInstance().createObject(com.dowob.twrb.database.TrainInfo.class);
+        t.setId(com.dowob.twrb.database.TrainInfo.generateId());
+        t.setDepartureDateTime(parseTime(trainInfo.departureTime));
+        t.setArrivalDateTime(parseTime(trainInfo.arrivalTime));
+        t.setFares(Integer.parseInt(trainInfo.fares));
+        t.setTrainType(trainInfo.type);
+        t.setAcrossNight(trainInfo.acrossNight);
+        t.setBike(trainInfo.bike);
+        t.setBreastfeeding(trainInfo.breastfeeding);
+        t.setEveryday(trainInfo.everyday);
+        t.setHandicapped(trainInfo.handicapped);
+        t.setDepartureStation(trainInfo.departureStation);
+        t.setDestination(trainInfo.destination);
+        t.setRemarks(trainInfo.remarks);
+        t.setWay(trainInfo.way);
+        Realm.getDefaultInstance().commitTransaction();
+        return t;
     }
 
     @Nullable

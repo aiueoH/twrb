@@ -232,7 +232,10 @@ class BookManager {
         BookRecord bookRecord = realm.where(BookRecord.class).equalTo("id", bookRecordId).findFirst();
         if (bookRecord == null)
             return false;
+        com.dowob.twrb.database.TrainInfo trainInfo = bookRecord.getTrainInfo();
         realm.beginTransaction();
+        if (trainInfo != null)
+            trainInfo.removeFromRealm();
         bookRecord.removeFromRealm();
         realm.commitTransaction();
         return true;

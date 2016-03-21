@@ -17,6 +17,7 @@ import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
 import com.dowob.twrb.database.TimetableStation;
+import com.dowob.twrb.database.TrainInfo;
 import com.dowob.twrb.features.shared.NetworkChecker;
 import com.dowob.twrb.features.shared.SnackbarHelper;
 import com.dowob.twrb.utils.Util;
@@ -121,12 +122,6 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     private void updateUI() {
         setupToolbar();
         date_textView.setText(new SimpleDateFormat("yyyy/MM/dd E").format(bookRecord.getGetInDate()));
-        String trainType = bookRecord.getTrainType();
-        if (trainType != null && !trainType.isEmpty()) {
-            trainType_layout.setVisibility(View.VISIBLE);
-            trainType_textView.setText(trainType);
-        } else
-            trainType_layout.setVisibility(View.GONE);
         no_textView.setText(bookRecord.getTrainNo());
         from_textView.setText(BookableStation.getNameByNo(bookRecord.getFromStation()));
         to_textView.setText(BookableStation.getNameByNo(bookRecord.getToStation()));
@@ -140,6 +135,7 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
         isCancelled_linearLayout.setVisibility(bookRecord.isCancelled() ? View.VISIBLE : View.GONE);
         int cityNo = Integer.parseInt(TimetableStation.getByBookNo(bookRecord.getToStation()).getCityNo());
         mainSpace_imageView.setImageResource(Util.getCityDrawableId(cityNo));
+        setTrainType();
         setArrivalTime();
         setDepartureTime();
         setFareAndTotalPrice();
@@ -163,6 +159,15 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
                 });
     }
 
+    private void setTrainType() {
+        TrainInfo trainInfo = bookRecord.getTrainInfo();
+        if (trainInfo != null) {
+            trainType_layout.setVisibility(View.VISIBLE);
+            trainType_textView.setText(trainInfo.getTrainType());
+        } else
+            trainType_layout.setVisibility(View.GONE);
+    }
+
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         setTitle(getString(R.string.toolbar_title_ticketDetail));
@@ -171,8 +176,9 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     }
 
     private void setArrivalTime() {
-        if (bookRecord.getArrivalDateTime() != null) {
-            String time = new SimpleDateFormat("HH:mm").format(bookRecord.getArrivalDateTime());
+        TrainInfo trainInfo = bookRecord.getTrainInfo();
+        if (trainInfo != null) {
+            String time = new SimpleDateFormat("HH:mm").format(trainInfo.getArrivalDateTime());
             arrival_textView.setVisibility(View.VISIBLE);
             arrival_textView.setText(time);
         } else {
@@ -181,8 +187,9 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     }
 
     private void setDepartureTime() {
-        if (bookRecord.getDepartureDateTime() != null) {
-            String time = new SimpleDateFormat("HH:mm").format(bookRecord.getDepartureDateTime());
+        TrainInfo trainInfo = bookRecord.getTrainInfo();
+        if (trainInfo != null) {
+            String time = new SimpleDateFormat("HH:mm").format(trainInfo.getDepartureDateTime());
             departureTime_textView.setVisibility(View.VISIBLE);
             departureTime_textView.setText(time);
         } else {
@@ -191,11 +198,12 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     }
 
     private void setFareAndTotalPrice() {
-        if (bookRecord.getFares() != 0) {
+        TrainInfo trainInfo = bookRecord.getTrainInfo();
+        if (trainInfo != null) {
             fare_linearLayout.setVisibility(View.VISIBLE);
-            fare_textView.setText(Integer.toString(bookRecord.getFares()));
+            fare_textView.setText(Integer.toString(trainInfo.getFares()));
             totalPrice_linearLayout.setVisibility(View.VISIBLE);
-            totalPrice_textView.setText(Integer.toString(bookRecord.getFares() * bookRecord.getOrderQtu()));
+            totalPrice_textView.setText(Integer.toString(trainInfo.getFares() * bookRecord.getOrderQtu()));
         } else {
             fare_linearLayout.setVisibility(View.GONE);
             totalPrice_linearLayout.setVisibility(View.GONE);

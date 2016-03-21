@@ -86,28 +86,14 @@ public class BookRecord extends RealmObject {
     private long id;
     private String personId;
     private Date getInDate;
-    private Date departureDateTime;
-    private Date arrivalDateTime;
-    private String departureStation;
-    private String destination;
     private String fromStation;
     private String toStation;
     private int orderQtu;
     private String trainNo;
-    private String trainType;
-    private String way;
-    private String remarks;
-    private int fares;
     private String returnTicket;
-    private boolean everyday;
-    private boolean handicapped;
-    private boolean bike;
-    private boolean breastfeeding;
-    private boolean acrossNight;
-
     private String code = "";
-
     private boolean isCancelled = false;
+    private TrainInfo trainInfo;
 
     @Nullable
     public static BookRecord get(long id) {
@@ -241,107 +227,11 @@ public class BookRecord extends RealmObject {
         this.code = code;
     }
 
-    public Date getDepartureDateTime() {
-        return departureDateTime;
+    public TrainInfo getTrainInfo() {
+        return trainInfo;
     }
 
-    public void setDepartureDateTime(Date departureDateTime) {
-        this.departureDateTime = departureDateTime;
-    }
-
-    public Date getArrivalDateTime() {
-        return arrivalDateTime;
-    }
-
-    public void setArrivalDateTime(Date arrivalDateTime) {
-        this.arrivalDateTime = arrivalDateTime;
-    }
-
-    public String getDepartureStation() {
-        return departureStation;
-    }
-
-    public void setDepartureStation(String departureStation) {
-        this.departureStation = departureStation;
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public String getTrainType() {
-        return trainType;
-    }
-
-    public void setTrainType(String trainType) {
-        this.trainType = trainType;
-    }
-
-    public String getWay() {
-        return way;
-    }
-
-    public void setWay(String way) {
-        this.way = way;
-    }
-
-    public String getRemarks() {
-        return remarks;
-    }
-
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-
-    public int getFares() {
-        return fares;
-    }
-
-    public void setFares(int fares) {
-        this.fares = fares;
-    }
-
-    public boolean isEveryday() {
-        return everyday;
-    }
-
-    public void setEveryday(boolean everyday) {
-        this.everyday = everyday;
-    }
-
-    public boolean isHandicapped() {
-        return handicapped;
-    }
-
-    public void setHandicapped(boolean handicapped) {
-        this.handicapped = handicapped;
-    }
-
-    public boolean isBike() {
-        return bike;
-    }
-
-    public void setBike(boolean bike) {
-        this.bike = bike;
-    }
-
-    public boolean isBreastfeeding() {
-        return breastfeeding;
-    }
-
-    public void setBreastfeeding(boolean breastfeeding) {
-        this.breastfeeding = breastfeeding;
-    }
-
-    public boolean isAcrossNight() {
-        return acrossNight;
-    }
-
-    public void setAcrossNight(boolean acrossNight) {
-        this.acrossNight = acrossNight;
+    public void setTrainInfo(TrainInfo trainInfo) {
+        this.trainInfo = trainInfo;
     }
 }

@@ -18,6 +18,7 @@ import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.database.BookableStation;
 import com.dowob.twrb.database.TimetableStation;
+import com.dowob.twrb.database.TrainInfo;
 import com.dowob.twrb.utils.Config;
 import com.dowob.twrb.utils.Util;
 import com.jakewharton.rxbinding.view.RxView;
@@ -64,9 +65,9 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         holder.isBooked_linearLayout.setVisibility(TextUtils.isEmpty(br.getCode()) || br.isCancelled() ? View.INVISIBLE : View.VISIBLE);
         holder.isCancelled_linearLayout.setVisibility(br.isCancelled() ? View.VISIBLE : View.INVISIBLE);
         setTrainType(holder, br);
-        setBookLinearLayout(holder, br);
         setDepartureTime(holder, br);
         setArrivalTime(holder, br);
+        setBookLinearLayout(holder, br);
         setCardViewClickListener(holder, br);
         int cityNo = Integer.parseInt(TimetableStation.getByBookNo(br.getToStation()).getCityNo());
         holder.mainSpace_imageView.setImageResource(Util.getCityDrawableId(cityNo));
@@ -74,9 +75,10 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
     }
 
     private void setTrainType(MyViewHolder holder, BookRecord br) {
-        if (TextUtils.isEmpty(br.getTrainType())) {
+        TrainInfo trainInfo = br.getTrainInfo();
+        if (trainInfo != null) {
             holder.trainType_layout.setVisibility(View.VISIBLE);
-            holder.trainType_textView.setText(br.getTrainType());
+            holder.trainType_textView.setText(trainInfo.getTrainType());
         } else
             holder.trainType_layout.setVisibility(View.GONE);
     }
@@ -106,8 +108,9 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
     }
 
     private void setArrivalTime(MyViewHolder holder, BookRecord bookRecord) {
-        if (bookRecord.getArrivalDateTime() != null) {
-            String time = new SimpleDateFormat("HH:mm").format(bookRecord.getArrivalDateTime());
+        TrainInfo trainInfo = bookRecord.getTrainInfo();
+        if (trainInfo != null) {
+            String time = new SimpleDateFormat("HH:mm").format(trainInfo.getArrivalDateTime());
             holder.arrival_textView.setVisibility(View.VISIBLE);
             holder.arrival_textView.setText(time);
         } else {
@@ -116,8 +119,9 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
     }
 
     private void setDepartureTime(MyViewHolder holder, BookRecord bookRecord) {
-        if (bookRecord.getDepartureDateTime() != null) {
-            String time = new SimpleDateFormat("HH:mm").format(bookRecord.getDepartureDateTime());
+        TrainInfo trainInfo = bookRecord.getTrainInfo();
+        if (trainInfo != null) {
+            String time = new SimpleDateFormat("HH:mm").format(trainInfo.getDepartureDateTime());
             holder.departureTime_textView.setVisibility(View.VISIBLE);
             holder.departureTime_textView.setText(time);
         } else {

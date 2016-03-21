@@ -1,6 +1,7 @@
 package com.dowob.twrb.features.tickets;
 
 import android.app.ProgressDialog;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -146,6 +147,8 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(v -> {
                     BookRecordModel.getInstance().delete(bookRecord);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        getWindow().setSharedElementsUseOverlay(false);
                     onBackPressed();
                 });
         RxView.clicks(cancel_button)

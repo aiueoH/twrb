@@ -90,9 +90,9 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         });
     }
 
-    private void onBookRecordItemClick(View view, int which) {
+    private void onBookRecordItemClick(View view, BookRecord bookRecord) {
         Intent intent = new Intent(getContext(), BookRecordActivity.class);
-        EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecords.get(which)));
+        EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecord));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             View mainSpace = view.findViewById(R.id.relativeLayout_mainSpace);
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
@@ -105,8 +105,8 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         }
     }
 
-    private void onBookRecordBookButtonClick(View view, int which) {
-        book(bookRecords.get(which).getId());
+    private void onBookRecordBookButtonClick(View view, BookRecord bookRecord) {
+        book(bookRecord.getId());
     }
 
     private void book(long bookRecordId) {
@@ -127,7 +127,6 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
             if (bookRecord == null) return;
             bookRecords.add(0, bookRecord);
             bookRecordAdapter.notifyItemInserted(0);
-            bookRecordAdapter.notifyItemRangeChanged(0, bookRecords.size()); // Use to update holder position.
             recyclerView.scrollToPosition(0);
             updateEmptyMsg();
         });
@@ -152,7 +151,6 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
             if (index == -1) return;
             bookRecords.remove(index);
             bookRecordAdapter.notifyItemRemoved(index);
-            bookRecordAdapter.notifyItemRangeChanged(0, bookRecords.size()); // Use to update holder position.
             updateEmptyMsg();
         });
     }

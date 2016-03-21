@@ -64,10 +64,10 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         holder.isBooked_linearLayout.setVisibility(TextUtils.isEmpty(br.getCode()) || br.isCancelled() ? View.INVISIBLE : View.VISIBLE);
         holder.isCancelled_linearLayout.setVisibility(br.isCancelled() ? View.VISIBLE : View.INVISIBLE);
         setTrainType(holder, br);
-        setBookLinearLayout(holder, position, br);
+        setBookLinearLayout(holder, br);
         setDepartureTime(holder, br);
         setArrivalTime(holder, br);
-        setCardViewClickListener(holder, position);
+        setCardViewClickListener(holder, br);
         int cityNo = Integer.parseInt(TimetableStation.getByBookNo(br.getToStation()).getCityNo());
         holder.mainSpace_imageView.setImageResource(Util.getCityDrawableId(cityNo));
 
@@ -81,20 +81,20 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
             holder.trainType_layout.setVisibility(View.GONE);
     }
 
-    private void setCardViewClickListener(MyViewHolder holder, int position) {
+    private void setCardViewClickListener(MyViewHolder holder, BookRecord bookRecord) {
         RxView.clicks(holder.cardView)
                 .throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
-                .subscribe(aVoid -> onItemClick(holder.cardView, position));
+                .subscribe(aVoid -> onItemClick(holder.cardView, bookRecord));
     }
 
-    private void setBookLinearLayout(MyViewHolder holder, int position, BookRecord br) {
+    private void setBookLinearLayout(MyViewHolder holder, BookRecord bookRecord) {
         boolean isClickable = false;
         Drawable drawable = null;
         holder.book_linearLayou.setOnClickListener(null);
-        if (TextUtils.isEmpty(br.getCode()) && !br.isCancelled()) {
+        if (TextUtils.isEmpty(bookRecord.getCode()) && !bookRecord.isCancelled()) {
             RxView.clicks(holder.book_linearLayou)
                     .throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
-                    .subscribe(v -> onBookButtonClick(holder.book_linearLayou, position));
+                    .subscribe(v -> onBookButtonClick(holder.book_linearLayou, bookRecord));
             isClickable = true;
             drawable = Util.getDrawable(context, R.drawable.book_bg);
         }
@@ -125,22 +125,22 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         }
     }
 
-    private void onItemClick(View view, int which) {
+    private void onItemClick(View view, BookRecord bookRecord) {
         if (onItemClickListener != null)
-            onItemClickListener.onClick(view, which);
+            onItemClickListener.onClick(view, bookRecord);
     }
 
-    private void onBookButtonClick(View view, int which) {
+    private void onBookButtonClick(View view, BookRecord bookRecord) {
         if (onBookButtonClickListener != null)
-            onBookButtonClickListener.onClick(view, which);
+            onBookButtonClickListener.onClick(view, bookRecord);
     }
 
     interface OnItemClickListener {
-        void onClick(View view, int which);
+        void onClick(View view, BookRecord bookRecord);
     }
 
     interface OnBookButtonClickListener {
-        void onClick(View view, int which);
+        void onClick(View view, BookRecord bookRecord);
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {

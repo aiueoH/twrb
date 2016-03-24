@@ -1,11 +1,13 @@
 package com.dowob.twrb.features.tickets;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -24,6 +26,8 @@ import com.dowob.twrb.utils.Util;
 import com.jakewharton.rxbinding.view.RxView;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
@@ -116,7 +120,7 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     private void getBookRecord() {
         Data data = EventBus.getDefault().getStickyEvent(Data.class);
         EventBus.getDefault().removeStickyEvent(data);
-        bookRecord = data.getBookRecord();
+        bookRecord = BookRecord.get(data.getBookRecordId());
     }
 
     private void updateUI() {
@@ -129,7 +133,7 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
         personId_textView.setText(bookRecord.getPersonId());
         code_textView.setText(bookRecord.getCode());
         code_linearLayout.setVisibility(bookRecord.getCode().isEmpty() ? View.GONE : View.VISIBLE);
-        book_button.setVisibility(!bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
+        book_button.setVisibility(!bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.INVISIBLE : View.VISIBLE);
         cancel_button.setVisibility(bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
         isBooked_linearLayout.setVisibility(bookRecord.getCode().isEmpty() || bookRecord.isCancelled() ? View.GONE : View.VISIBLE);
         isCancelled_linearLayout.setVisibility(bookRecord.isCancelled() ? View.VISIBLE : View.GONE);
@@ -142,10 +146,7 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
         RxView.clicks(delete_button)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(v -> {
-                    BookRecordModel.getInstance().delete(bookRecord);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        getWindow().setSharedElementsUseOverlay(false);
-                    onBackPressed();
+                    onDeleteButtonClick();
                 });
         RxView.clicks(cancel_button)
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
@@ -157,6 +158,34 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
                 .subscribe(v -> {
                     onBookButtonClick();
                 });
+    }
+
+    private void onDeleteButtonClick() {
+        Calendar departureDateTime = Calendar.getInstance();
+        Date getInDate = bookRecord.getGetInDate();
+        Date departureTime = bookRecord.getTrainInfo().getDepartureDateTime();
+        departureDateTime.set(getInDate.getYear() + 1900, getInDate.getMonth(), getInDate.getDate(), departureTime.getHours(), departureTime.getMinutes(), departureTime.getSeconds());
+        boolean isBuyable = BookRecord.isBuyable(departureDateTime, Calendar.getInstance());
+        boolean isBooked = !TextUtils.isEmpty(bookRecord.getCode());
+        if (isBooked && isBuyable)
+            showCheckingDeletionDialog();
+        else
+            deleteAndCloseActivity();
+    }
+
+    private void showCheckingDeletionDialog() {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.check_before_delete_book_record_when_uncancelled)
+                .setPositiveButton("刪除", (dialog, which) -> deleteAndCloseActivity())
+                .setNeutralButton("不要刪除", null)
+                .show();
+    }
+
+    private void deleteAndCloseActivity() {
+        BookRecordModel.getInstance().delete(bookRecord);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            getWindow().setSharedElementsUseOverlay(false);
+        onBackPressed();
     }
 
     private void setTrainType() {
@@ -222,6 +251,14 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
             SnackbarHelper.show(parentView, getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
             return;
         }
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.check_before_cancel_book_record)
+                .setPositiveButton("退訂", (dialog, which) -> cancelBookRecord())
+                .setNeutralButton("我還不想退訂", null)
+                .show();
+    }
+
+    private void cancelBookRecord() {
         Observable.just(bookRecord.getId())
                 .map(bookRecordModel::cancel)
                 .subscribeOn(Schedulers.io())
@@ -254,14 +291,14 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     }
 
     public static class Data {
-        private BookRecord bookRecord;
+        private long bookRecordId;
 
-        public Data(BookRecord bookRecord) {
-            this.bookRecord = bookRecord;
+        public Data(long bookRecordId) {
+            this.bookRecordId = bookRecordId;
         }
 
-        public BookRecord getBookRecord() {
-            return bookRecord;
+        public long getBookRecordId() {
+            return bookRecordId;
         }
     }
 }

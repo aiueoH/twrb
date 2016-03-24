@@ -107,6 +107,10 @@ public class BookRecord extends RealmObject {
         return id;
     }
 
+    public static boolean isBuyable(Calendar departure, Calendar now) {
+        return departure.getTimeInMillis() - now.getTimeInMillis() >= 30 * 60 * 1000;
+    }
+
     public static boolean isBookable(Calendar departure, Calendar now) {
         Calendar before1Hour = (Calendar) departure.clone();
         before1Hour.add(Calendar.HOUR_OF_DAY, -1);

@@ -56,8 +56,11 @@ public class Booker {
     private Result bookResultToResult(BookResult bookResult) {
         if (bookResult.equals(BookResult.OK)) return Result.OK;
         if (bookResult.equals(BookResult.NO_SEAT)) return Result.NO_SEAT;
+        if (bookResult.equals(BookResult.NO_TICKET)) return Result.NO_TICKET;
         if (bookResult.equals(BookResult.OUT_TIME)) return Result.OUT_TIME;
         if (bookResult.equals(BookResult.NOT_YET_BOOK)) return Result.NOT_YET_BOOK;
+        if (bookResult.equals(BookResult.WRON_DATE_OR_CONTENT_FORMAT))
+            return Result.WRONG_DATE_OR_CONTENT_FORMAT;
         if (bookResult.equals(BookResult.WRONG_STATION)) return Result.WRONG_STATION;
         if (bookResult.equals(BookResult.WRONG_DATA)) return Result.WRONG_DATA;
         if (bookResult.equals(BookResult.WRONG_NO)) return Result.WRONG_NO;
@@ -73,8 +76,10 @@ public class Booker {
         OK,
         UNKNOWN,
         NO_SEAT,
+        NO_TICKET,
         OUT_TIME,
         NOT_YET_BOOK,
+        WRONG_DATE_OR_CONTENT_FORMAT,
         WRONG_STATION,
         WRONG_DATA,
         WRONG_NO,

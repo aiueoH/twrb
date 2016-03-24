@@ -45,6 +45,8 @@ public class BookRecordModel {
                 return context.getString(R.string.book_suc);
             case NO_SEAT:
                 return context.getString(R.string.book_no_seat);
+            case NO_TICKET:
+                return context.getString(R.string.book_no_ticket);
             case OUT_TIME:
                 return context.getString(R.string.book_out_time);
             case NOT_YET_BOOK:
@@ -57,6 +59,8 @@ public class BookRecordModel {
                 return context.getString(R.string.book_io_exception);
             case WRONG_RANDINPUT:
                 return context.getString(R.string.book_wrong_randinput);
+            case WRONG_DATE_OR_CONTENT_FORMAT:
+                return context.getString(R.string.book_wrong_date_or_content_format);
             default:
                 return context.getString(R.string.book_unknown);
         }
@@ -75,7 +79,7 @@ public class BookRecordModel {
         return bookManager.step1(from, to, getInDate, no, qty, personId, trainInfo);
     }
 
-    public AbstractMap.SimpleEntry<Booker.Result, List<String>> sendRandomInput(String randomInput) {
+    public AbstractMap.SimpleEntry<Booker.Result, Long> sendRandomInput(String randomInput) {
         return bookManager.step2(randomInput);
     }
 

@@ -75,7 +75,7 @@ public class BookRecordModel {
         return bookManager.step1(from, to, getInDate, no, qty, personId, trainInfo);
     }
 
-    public AbstractMap.SimpleEntry<Booker.Result, List<String>> sendRandomInput(String randomInput) {
+    public AbstractMap.SimpleEntry<Booker.Result, Long> sendRandomInput(String randomInput) {
         return bookManager.step2(randomInput);
     }
 

@@ -92,7 +92,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
 
     private void onBookRecordItemClick(View view, BookRecord bookRecord) {
         Intent intent = new Intent(getContext(), BookRecordActivity.class);
-        EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecord));
+        EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecord.getId()));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             View mainSpace = view.findViewById(R.id.relativeLayout_mainSpace);
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
@@ -111,8 +111,8 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
 
     private void book(long bookRecordId) {
         new BookFlowController(getActivity(), parentView, result -> {
-            String s = BookManager.getResultMsg(getContext(), result.getKey());
-            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
+            String msg = BookManager.getResultMsg(getContext(), result.getKey());
+            SnackbarHelper.show(parentView, msg, Snackbar.LENGTH_LONG);
         }).book(bookRecordId);
     }
 

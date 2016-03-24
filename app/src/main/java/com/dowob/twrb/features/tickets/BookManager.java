@@ -172,7 +172,7 @@ class BookManager {
     }
 
     // For book by timetable.
-    public AbstractMap.SimpleEntry<Booker.Result, List<String>> step2(String randInput) {
+    public AbstractMap.SimpleEntry<Booker.Result, Long> step2(String randInput) {
         AbstractMap.SimpleEntry<Booker.Result, List<String>> result = mBooker.step2(randInput);
         if (result.getKey().equals(Booker.Result.OK)) {
             List<String> data = result.getValue();
@@ -181,10 +181,11 @@ class BookManager {
             EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
             EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), result.getKey()));
             MyLogger.i("訂票成功。code:" + data.get(0));
+            return new AbstractMap.SimpleEntry<>(result.getKey(), bookRecord.getId());
         } else {
             MyLogger.i("訂票失敗。" + result.getKey());
+            return new AbstractMap.SimpleEntry<>(result.getKey(), null);
         }
-        return result;
     }
 
     // For book by my ticket.

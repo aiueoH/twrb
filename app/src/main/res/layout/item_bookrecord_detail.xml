@@ -287,6 +287,11 @@
                     android:textSize="18dp"/>
             </LinearLayout>
 
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                />
+
             <LinearLayout
                 android:id="@+id/linearLayout_buttom"
                 android:layout_width="match_parent"
@@ -296,35 +301,23 @@
                 android:transitionGroup="false"
                 android:transitionName="linearLayout_buttom">
 
-                <LinearLayout
-                    android:id="@+id/linearLayout_isBooked"
+                <Button
+                    android:id="@+id/button_delete"
+                    style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:text="刪除"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="18dp"/>
 
-                    <TextView
-                        android:id="@+id/textView_isBooked"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="已訂到"
-                        android:textColor="#5aa047"
-                        android:textSize="18dp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/linearLayout_isCancelled"
+                <Button
+                    android:id="@+id/button_cancel"
+                    style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/textView_isCancelled"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="已退訂"
-                        android:textColor="#f56262"
-                        android:textSize="18dp"/>
-                </LinearLayout>
+                    android:text="退訂"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="18dp"/>
 
                 <LinearLayout
                     android:layout_width="fill_parent"
@@ -332,35 +325,55 @@
                     android:gravity="end|right"
                     android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/button_delete"
-                        style="@style/Widget.AppCompat.Button.Borderless"
+                    <RelativeLayout
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="刪除"
-                        android:textColor="#AAAAAA"
-                        android:textSize="18dp"/>
+                        android:layout_height="wrap_content">
 
-                    <Button
-                        android:id="@+id/button_book"
-                        style="@style/Widget.AppCompat.Button.Borderless"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="訂票"
-                        android:textColor="@color/colorPrimary"
-                        android:textSize="18dp"/>
+                        <Button
+                            android:id="@+id/button_book"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:text="訂票"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="18dp"/>
 
-                    <Button
-                        android:id="@+id/button_cancel"
-                        style="@style/Widget.AppCompat.Button.Borderless"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="退訂"
-                        android:textColor="#AAAAAA"
-                        android:textSize="18dp"
-                        android:visibility="gone"/>
+                        <LinearLayout
+                            android:id="@+id/linearLayout_isCancelled"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/textView_isCancelled"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="已退訂"
+                                android:textColor="#f56262"
+                                android:textSize="18dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/linearLayout_isBooked"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/textView_isBooked"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="已訂到"
+                                android:textColor="#5aa047"
+                                android:textSize="18dp"/>
+                        </LinearLayout>
+                    </RelativeLayout>
 
                 </LinearLayout>
+
             </LinearLayout>
         </LinearLayout>
 

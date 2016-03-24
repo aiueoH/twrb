@@ -1,6 +1,7 @@
 package com.dowob.twrb.features.timetable;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -19,7 +20,9 @@ import com.dowob.twrb.R;
 import com.dowob.twrb.database.TimetableStation;
 import com.dowob.twrb.events.OnSearchedEvent;
 import com.dowob.twrb.features.shared.SnackbarHelper;
+import com.dowob.twrb.features.tickets.BookRecordActivity;
 import com.dowob.twrb.features.tickets.BookRecordModel;
+import com.dowob.twrb.features.tickets.book.Booker;
 import com.dowob.twrb.features.tickets.book.QuickBookDialog;
 import com.dowob.twrb.features.tickets.book.RandInputDialog;
 import com.twrb.core.book.BookInfo;
@@ -182,8 +185,15 @@ public class TimetableActivity extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     mProgressDialog.dismiss();
-                    String s = BookRecordModel.getResultMsg(this, result.getKey());
-                    SnackbarHelper.show(tabLayout, s, Snackbar.LENGTH_LONG);
+                    String msg = BookRecordModel.getResultMsg(this, result.getKey());
+                    if (result.getKey().equals(Booker.Result.OK))
+                        SnackbarHelper.show(tabLayout, msg, Snackbar.LENGTH_LONG, getString(R.string.goto_book_record_detail), v -> {
+                            Intent intent = new Intent(this, BookRecordActivity.class);
+                            EventBus.getDefault().postSticky(new BookRecordActivity.Data(result.getValue()));
+                            this.startActivity(intent);
+                        });
+                    else
+                        SnackbarHelper.show(tabLayout, msg, Snackbar.LENGTH_LONG);
                 });
     }
 

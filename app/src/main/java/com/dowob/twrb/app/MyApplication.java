@@ -17,6 +17,7 @@ import com.dowob.twrb.events.OnBookableRecordFoundEvent;
 import com.dowob.twrb.features.tickets.book.autobook.DailyBookService;
 import com.dowob.twrb.features.tickets.book.autobook.FrequentlyBookService;
 import com.dowob.twrb.utils.Config;
+import com.squareup.leakcanary.LeakCanary;
 import com.twrb.core.MyLogger;
 import com.twrb.core.helpers.DefaultSequenceRecognizerCreator;
 
@@ -45,6 +46,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        LeakCanary.install(this);
         setLogger();
         setupRealm();
         setupTimetableStationIfNotExist();

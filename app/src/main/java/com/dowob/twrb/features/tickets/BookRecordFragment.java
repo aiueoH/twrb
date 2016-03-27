@@ -36,6 +36,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     private BookRecordAdapter bookRecordAdapter;
     private BookRecordModel bookRecordModel = BookRecordModel.getInstance();
     private List<BookRecord> bookRecords;
+    private List<Long> bookRecordIds;
 
     public static BookRecordFragment newInstance() {
         return new BookRecordFragment();
@@ -46,6 +47,9 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         super.onCreate(savedInstanceState);
         bookRecordModel.registerObserver(this);
         bookRecords = new ArrayList<>(bookRecordModel.getBookRecords());
+        bookRecordIds = new ArrayList<>();
+        for (BookRecord bookRecord : bookRecords)
+            bookRecordIds.add(bookRecord.getId());
         bookRecordAdapter = new BookRecordAdapter.Builder()
                 .setBookRecords(bookRecords)
                 .setOnBookButtonClickListener(this::onBookRecordBookButtonClick)
@@ -90,9 +94,9 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         });
     }
 
-    private void onBookRecordItemClick(View view, BookRecord bookRecord) {
+    private void onBookRecordItemClick(View view, long bookRecordId) {
         Intent intent = new Intent(getContext(), BookRecordActivity.class);
-        EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecord.getId()));
+        EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookRecordId));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             View mainSpace = view.findViewById(R.id.relativeLayout_mainSpace);
             ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
@@ -105,8 +109,8 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
         }
     }
 
-    private void onBookRecordBookButtonClick(View view, BookRecord bookRecord) {
-        book(bookRecord.getId());
+    private void onBookRecordBookButtonClick(View view, long bookRecordId) {
+        book(bookRecordId);
     }
 
     private void book(long bookRecordId) {
@@ -126,6 +130,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
             BookRecord bookRecord = bookRecordModel.getBookRecord(bookRecordId);
             if (bookRecord == null) return;
             bookRecords.add(0, bookRecord);
+            bookRecordIds.add(0, bookRecordId);
             bookRecordAdapter.notifyItemInserted(0);
             recyclerView.scrollToPosition(0);
             updateEmptyMsg();
@@ -135,7 +140,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     @Override
     public void notifyBookRecordUpdate(long bookRecordId) {
         getActivity().runOnUiThread(() -> {
-            int index = findBookRecordIndexById(bookRecordId);
+            int index = bookRecordIds.indexOf(bookRecordId);
             if (index == -1) return;
             BookRecord bookRecord = bookRecordModel.getBookRecord(bookRecordId);
             if (bookRecord == null) return;
@@ -146,26 +151,13 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
 
     @Override
     public void notifyBookRecordRemove(long bookRecordId) {
+        int index = bookRecordIds.indexOf(bookRecordId);
+        if (index == -1) return;
+        bookRecords.remove(index);
+        bookRecordIds.remove(index);
         getActivity().runOnUiThread(() -> {
-            int index = findBookRecordIndexById(bookRecordId);
-            if (index == -1) return;
-            bookRecords.remove(index);
             bookRecordAdapter.notifyItemRemoved(index);
             updateEmptyMsg();
         });
-    }
-
-    private int findBookRecordIndexById(final long bookingRecordId) {
-        final List<Integer> index = new ArrayList<>();
-        getActivity().runOnUiThread(() -> {
-            for (int i = 0; i < bookRecords.size(); i++)
-                if (bookRecords.get(i).getId() == bookingRecordId) {
-                    index.add(i);
-                    break;
-                }
-        });
-        if (!index.isEmpty())
-            return index.get(0);
-        return -1;
     }
 }

@@ -86,7 +86,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
     private void setCardViewClickListener(MyViewHolder holder, BookRecord bookRecord) {
         RxView.clicks(holder.cardView)
                 .throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
-                .subscribe(aVoid -> onItemClick(holder.cardView, bookRecord));
+                .subscribe(aVoid -> onItemClick(holder.cardView, bookRecord.getId()));
     }
 
     private void setBookLinearLayout(MyViewHolder holder, BookRecord bookRecord) {
@@ -96,7 +96,7 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         if (TextUtils.isEmpty(bookRecord.getCode()) && !bookRecord.isCancelled()) {
             RxView.clicks(holder.book_linearLayou)
                     .throttleFirst(Config.BUTTON_CLICK_THROTTLE, TimeUnit.MILLISECONDS)
-                    .subscribe(v -> onBookButtonClick(holder.book_linearLayou, bookRecord));
+                    .subscribe(v -> onBookButtonClick(holder.book_linearLayou, bookRecord.getId()));
             isClickable = true;
             drawable = Util.getDrawable(context, R.drawable.book_bg);
         }
@@ -129,22 +129,22 @@ public class BookRecordAdapter extends RecyclerView.Adapter<BookRecordAdapter.My
         }
     }
 
-    private void onItemClick(View view, BookRecord bookRecord) {
+    private void onItemClick(View view, long bookRecordId) {
         if (onItemClickListener != null)
-            onItemClickListener.onClick(view, bookRecord);
+            onItemClickListener.onClick(view, bookRecordId);
     }
 
-    private void onBookButtonClick(View view, BookRecord bookRecord) {
+    private void onBookButtonClick(View view, long bookRecordId) {
         if (onBookButtonClickListener != null)
-            onBookButtonClickListener.onClick(view, bookRecord);
+            onBookButtonClickListener.onClick(view, bookRecordId);
     }
 
     interface OnItemClickListener {
-        void onClick(View view, BookRecord bookRecord);
+        void onClick(View view, long bookRecordId);
     }
 
     interface OnBookButtonClickListener {
-        void onClick(View view, BookRecord bookRecord);
+        void onClick(View view, long bookRecordId);
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {

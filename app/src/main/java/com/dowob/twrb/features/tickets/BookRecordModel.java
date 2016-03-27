@@ -96,9 +96,12 @@ public class BookRecordModel {
         return result;
     }
 
-    public void delete(BookRecord bookRecord) {
-        notifyOnBookRecordRemove(bookRecord.getId());
-        new BookManager().delete(bookRecord.getId());
+    public boolean delete(long bookRecordId) {
+        if (new BookManager().delete(bookRecordId)) {
+            notifyOnBookRecordRemove(bookRecordId);
+            return true;
+        }
+        return false;
     }
 
     public List<BookRecord> getBookRecords() {

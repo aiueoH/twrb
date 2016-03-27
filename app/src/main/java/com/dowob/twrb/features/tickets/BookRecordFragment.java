@@ -117,7 +117,7 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     }
 
     public void updateEmptyMsg() {
-        this.emptyMsg_textView.setVisibility(bookRecordModel.getBookRecords().isEmpty() ? View.VISIBLE : View.GONE);
+        this.emptyMsg_textView.setVisibility(bookRecords.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     @Override

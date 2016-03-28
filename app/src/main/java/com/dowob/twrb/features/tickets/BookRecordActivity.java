@@ -182,7 +182,7 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     }
 
     private void deleteAndCloseActivity() {
-        BookRecordModel.getInstance().delete(bookRecord);
+        BookRecordModel.getInstance().delete(bookRecord.getId());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             getWindow().setSharedElementsUseOverlay(false);
         onBackPressed();

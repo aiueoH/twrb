@@ -21,6 +21,7 @@ import java.util.AbstractMap;
 import java.util.List;
 
 import rx.Observable;
+import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -37,18 +38,24 @@ public class BookFlowController implements BookRecordModel.BookListener {
     }
 
     public void book(long bookRecordId) {
+        book(bookRecordId, false);
+    }
+
+    public void book(long bookRecordId, boolean isBackground) {
         if (!NetworkChecker.isConnected(activity)) {
             SnackbarHelper.show(parentView, activity.getString(R.string.network_not_connected), Snackbar.LENGTH_LONG);
             return;
         }
+        Scheduler scheduler = isBackground ? Schedulers.io() : AndroidSchedulers.mainThread();
         Observable.just(bookRecordId)
                 .map(id -> {
                     BookRecordModel.getInstance().book(activity, id, this);
                     return null;
                 })
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(scheduler)
                 .doOnSubscribe(this::showProgressDialog)
                 .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe();
     }
 
@@ -64,17 +71,22 @@ public class BookFlowController implements BookRecordModel.BookListener {
     }
 
     private void onSendButtonClick(BookRecordModel.RandomInputReceiver randomInputReceiver, View view) {
+        onSendButtonClick(randomInputReceiver, view, false);
+    }
+
+    private void onSendButtonClick(BookRecordModel.RandomInputReceiver randomInputReceiver, View view, boolean isBackground) {
         EditText editText = (EditText) view.findViewById(R.id.editText_randInput);
+        Scheduler scheduler = isBackground ? Schedulers.io() : AndroidSchedulers.mainThread();
         Observable.just(editText.getText().toString())
                 .map(r -> {
                     randomInputReceiver.answerRandomInput(r);
                     return null;
                 })
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(scheduler)
                 .doOnSubscribe(this::showProgressDialog)
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(n -> dismissProgressDialog());
+                .subscribe();
     }
 
     private void showProgressDialog() {
@@ -87,16 +99,16 @@ public class BookFlowController implements BookRecordModel.BookListener {
     }
 
     @Override
-    public void onRequireRandomInput(BookRecordModel.RandomInputReceiver randomInputReceiver, ByteArrayOutputStream captcha) {
-        Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha.toByteArray(), 0, captcha.size());
+    public void onRequireRandomInput(BookRecordModel.RandomInputReceiver randomInputReceiver, Bitmap captcha) {
         activity.runOnUiThread(() -> {
             dismissProgressDialog();
-            showRequireRandomInputDialog(captcha_bitmap, randomInputReceiver);
+            showRequireRandomInputDialog(captcha, randomInputReceiver);
         });
     }
 
     @Override
     public void onFinish(AbstractMap.SimpleEntry<Booker.Result, List<String>> result) {
+        dismissProgressDialog();
         listener.onFinish(result);
     }
 

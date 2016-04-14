@@ -1,6 +1,7 @@
 package com.dowob.twrb.features.tickets;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -10,7 +11,10 @@ import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.events.OnBookRecordAddedEvent;
 import com.dowob.twrb.features.tickets.book.BookRecordFactory;
 import com.dowob.twrb.features.tickets.book.Booker;
+import com.dowob.webviewbooker.Order;
+import com.dowob.webviewbooker.WebViewBooker;
 import com.twrb.core.book.BookInfo;
+import com.twrb.core.book.BookResult;
 import com.twrb.core.timetable.TrainInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -68,13 +72,13 @@ public class BookRecordModel {
         notifyOnBookRecordCreate(e.getBookRecordId());
     }
 
-    public void book(Context context, long bookRecordId, BookListener bookListener) {
-        new BookExecutor(context, bookRecordId, bookListener).book();
-    }
-
     public ByteArrayOutputStream book(String from, String to, Calendar getInDate, String no, int qty, String personId, TrainInfo trainInfo) {
         bookManager = new BookManager();
         return bookManager.step1(from, to, getInDate, no, qty, personId, trainInfo);
+    }
+
+    public void book(Context context, long bookRecordId, BookListener bookListener) {
+        new BookExecutor_WVB(context, bookRecordId, bookListener).book();
     }
 
     public AbstractMap.SimpleEntry<Booker.Result, Long> sendRandomInput(String randomInput) {
@@ -146,8 +150,7 @@ public class BookRecordModel {
     }
 
     interface BookListener {
-        void onRequireRandomInput(RandomInputReceiver randomInputReceiver, ByteArrayOutputStream captcha);
-
+        void onRequireRandomInput(RandomInputReceiver randomInputReceiver, Bitmap captcha);
         void onFinish(AbstractMap.SimpleEntry<Booker.Result, List<String>> result);
     }
 
@@ -155,35 +158,64 @@ public class BookRecordModel {
         void answerRandomInput(String randomInput);
     }
 
-    private class BookExecutor implements RandomInputReceiver {
+    private class BookExecutor_WVB implements RandomInputReceiver {
         private Context context;
         private long bookRecordId;
         private BookListener bookListener;
-        private BookManager bookManager;
+        private WebViewBooker webViewBooker;
 
-        public BookExecutor(Context context, long bookRecordId, BookListener bookListener) {
+        public BookExecutor_WVB(Context context, long bookRecordId, BookListener bookListener) {
             this.context = context;
             this.bookRecordId = bookRecordId;
             this.bookListener = bookListener;
         }
 
         public void book() {
-            bookManager = new BookManager();
-            ByteArrayOutputStream captcha = bookManager.step1(context, bookRecordId);
-            bookListener.onRequireRandomInput(this, captcha);
+            webViewBooker = new WebViewBooker(context,
+                    this::onWebViewBookerRequireCaptcha,
+                    this::onWebViewBookerFinish);
+            BookRecord bookRecord = BookRecord.get(bookRecordId);
+            String from = bookRecord.getFromStation();
+            String to = bookRecord.getToStation();
+            Calendar getInDate = Calendar.getInstance();
+            getInDate.setTime(bookRecord.getGetInDate());
+            String no = bookRecord.getTrainNo();
+            int qty = bookRecord.getOrderQtu();
+            String personId = bookRecord.getPersonId();
+            webViewBooker.sendOrder(new Order.Builder()
+                            .setFrom(from)
+                            .setTo(to)
+                            .setGetInDate(getInDate)
+                            .setPersonId(personId)
+                            .setTrainNo(no)
+                            .setQty(qty)
+                            .createOrder()
+            );
+        }
+
+        public void onWebViewBookerRequireCaptcha(Bitmap captchaImg) {
+            bookListener.onRequireRandomInput(this, captchaImg);
+        }
+
+        public void onWebViewBookerFinish(AbstractMap.SimpleEntry<BookResult, List<String>> result) {
+            AbstractMap.SimpleEntry<Booker.Result, List<String>> r =
+                    new AbstractMap.SimpleEntry<>(Booker.bookResultToResult(result.getKey()),
+                            result.getValue());
+            if (r.getKey().equals(Booker.Result.OK)) {
+                BookRecord bookRecord = BookRecord.get(bookRecordId);
+                Realm.getDefaultInstance().beginTransaction();
+                List<String> data = result.getValue();
+                bookRecord.setCode(data.get(0));
+                Realm.getDefaultInstance().commitTransaction();
+                notifyOnBookRecordUpdate(bookRecordId);
+            }
+            bookListener.onFinish(r);
         }
 
         @Override
         public void answerRandomInput(String randomInput) {
             if (!TextUtils.isEmpty(randomInput))
-                bookListener.onFinish(sendRandomInput(randomInput));
-        }
-
-        public AbstractMap.SimpleEntry<Booker.Result, List<String>> sendRandomInput(String randomInput) {
-            AbstractMap.SimpleEntry<Booker.Result, List<String>> result = bookManager.step2(bookRecordId, randomInput);
-            if (result.getKey().equals(Booker.Result.OK))
-                notifyOnBookRecordUpdate(bookRecordId);
-            return result;
+                webViewBooker.sendCaptcha(randomInput);
         }
     }
 }

@@ -53,8 +53,9 @@ public class Booker {
         }
     }
 
-    private Result bookResultToResult(BookResult bookResult) {
+    public static Result bookResultToResult(BookResult bookResult) {
         if (bookResult.equals(BookResult.OK)) return Result.OK;
+        if (bookResult.equals(BookResult.TIMEOUT)) return Result.TIMEOUT;
         if (bookResult.equals(BookResult.NO_SEAT)) return Result.NO_SEAT;
         if (bookResult.equals(BookResult.NO_TICKET)) return Result.NO_TICKET;
         if (bookResult.equals(BookResult.OUT_TIME)) return Result.OUT_TIME;
@@ -75,6 +76,7 @@ public class Booker {
     public enum Result {
         OK,
         UNKNOWN,
+        TIMEOUT,
         NO_SEAT,
         NO_TICKET,
         OUT_TIME,

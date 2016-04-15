@@ -15,10 +15,13 @@
 
     <string name="toolbar_title_ticketDetail">車票資訊</string>
 
+    <string name="book_button">訂票</string>
+    <string name="save_to_my_tickets_button">儲存至我的車票</string>
+
     <string name="network_not_connected">目前沒有連上網路，很抱歉這樣我沒辦法運作</string>
     <string name="book_suc">恭喜您訂到車票了！</string>
     <string name="book_fail">非常抱歉，沒有訂到票</string>
-    <string name="save_to_book_record">已加入車票清單中，有空去看看吧</string>
+    <string name="saved_to_book_record">已加入車票清單中，有空去看看吧</string>
     <string name="goto_book_record_detail">前往查看</string>
 
     <string name="check_before_delete_book_record_when_uncancelled">若您還沒付款取票，建議在刪除前先退訂以免累積放鳥紀錄，確定要刪除嗎？</string>

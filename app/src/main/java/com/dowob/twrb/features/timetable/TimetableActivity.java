@@ -20,12 +20,8 @@ import com.dowob.twrb.R;
 import com.dowob.twrb.database.TimetableStation;
 import com.dowob.twrb.events.OnSearchedEvent;
 import com.dowob.twrb.features.shared.SnackbarHelper;
+import com.dowob.twrb.features.tickets.BookFlowController;
 import com.dowob.twrb.features.tickets.BookRecordActivity;
-import com.dowob.twrb.features.tickets.BookRecordModel;
-import com.dowob.twrb.features.tickets.book.Booker;
-import com.dowob.twrb.features.tickets.book.QuickBookDialog;
-import com.dowob.twrb.features.tickets.book.RandInputDialog;
-import com.twrb.core.book.BookInfo;
 import com.twrb.core.timetable.SearchInfo;
 import com.twrb.core.timetable.TrainInfo;
 
@@ -38,13 +34,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-
 public class TimetableActivity extends AppCompatActivity {
-    //    @Bind(R.id.recyclerView)
-//    RecyclerView recyclerView;
     @Bind(R.id.tabs)
     TabLayout tabLayout;
     @Bind(R.id.container)
@@ -60,8 +50,6 @@ public class TimetableActivity extends AppCompatActivity {
     private Calendar searchDate;
     private SearchInfo searchInfo;
     private List<TrainInfo> trainInfos;
-    private ProgressDialog mProgressDialog;
-    private TrainInfo selectedTrainInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,73 +121,21 @@ public class TimetableActivity extends AppCompatActivity {
     }
 
     public void onEvent(TrainInfoAdapter.OnItemClickEvent e) {
-        TrainInfo ti = e.getTrainInfo();
-        selectedTrainInfo = ti;
-        BookInfo bi = new BookInfo();
-        bi.trainNo = ti.no;
-        bi.fromStation = TimetableStation.getByNo(this.searchInfo.fromStation).getBookNo();
-        bi.toStation = TimetableStation.getByNo(this.searchInfo.toStation).getBookNo();
-        bi.getinDate = this.searchInfo.searchDate;
-        new QuickBookDialog(this, bi).show();
-    }
-
-    public void onEvent(QuickBookDialog.OnBookingEvent e) {
-        Calendar getInDateTime = Calendar.getInstance();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/ddHH:mm");
-        try {
-            getInDateTime.setTime(format.parse(e.getBookInfo().getinDate + selectedTrainInfo.departureTime));
-        } catch (ParseException e1) {
-            e1.printStackTrace();
-        }
-        Observable.just(e.getBookInfo())
-                .map(bi -> BookRecordModel.getInstance().book(
-                        bi.fromStation,
-                        bi.toStation,
-                        getInDateTime,
-                        bi.trainNo,
-                        Integer.parseInt(bi.orderQtuStr),
-                        bi.personId,
-                        selectedTrainInfo))
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", getString(R.string.is_booking)))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(captcha_stream -> {
-                    mProgressDialog.dismiss();
-                    if (captcha_stream == null) {
-                        SnackbarHelper.show(tabLayout, "網路有些問題，再試一次看看", Snackbar.LENGTH_LONG);
-                        return;
-                    }
-                    Bitmap captcha_bitmap = BitmapFactory.decodeByteArray(captcha_stream.toByteArray(), 0, captcha_stream.size());
-                    RandInputDialog randInputDialog = new RandInputDialog(this, captcha_bitmap);
-                    randInputDialog.show();
+        new BookFlowController(this, toolbar, bookResult -> {
+            String msg = bookResult.getStatusMsg(TimetableActivity.this);
+            if (bookResult.isOK())
+                SnackbarHelper.show(tabLayout, msg, Snackbar.LENGTH_LONG, getString(R.string.goto_book_record_detail), v -> {
+                    Intent intent = new Intent(TimetableActivity.this, BookRecordActivity.class);
+                    EventBus.getDefault().postSticky(new BookRecordActivity.Data(bookResult.getBookRecordId()));
+                    TimetableActivity.this.startActivity(intent);
                 });
-    }
-
-    public void onEvent(RandInputDialog.OnSubmitEvent e) {
-        Observable.just(e.getRandInput())
-                .map(randInput -> BookRecordModel.getInstance().sendRandomInput(randInput))
-                .subscribeOn(Schedulers.io())
-                .doOnSubscribe(() -> mProgressDialog = ProgressDialog.show(this, "", this.getString(R.string.is_booking)))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> {
-                    mProgressDialog.dismiss();
-                    String msg = BookRecordModel.getResultMsg(this, result.getKey());
-                    if (result.getKey().equals(Booker.Result.OK))
-                        SnackbarHelper.show(tabLayout, msg, Snackbar.LENGTH_LONG, getString(R.string.goto_book_record_detail), v -> {
-                            Intent intent = new Intent(this, BookRecordActivity.class);
-                            EventBus.getDefault().postSticky(new BookRecordActivity.Data(result.getValue()));
-                            this.startActivity(intent);
-                        });
-                    else
-                        SnackbarHelper.show(tabLayout, msg, Snackbar.LENGTH_LONG);
-                });
-    }
-
-    public void onEvent(QuickBookDialog.OnSavingEvent e) {
-        BookRecordModel.getInstance().save(e.getBookInfo(), selectedTrainInfo);
-        Snackbar.make(viewPager, getString(R.string.save_to_book_record), Snackbar.LENGTH_LONG).show();
+            else
+                SnackbarHelper.show(tabLayout, msg, Snackbar.LENGTH_LONG);
+        }).book(TimetableStation.getByNo(this.searchInfo.fromStation).getBookNo(),
+                TimetableStation.getByNo(this.searchInfo.toStation).getBookNo(),
+                searchDate,
+                e.getTrainInfo(),
+                false);
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

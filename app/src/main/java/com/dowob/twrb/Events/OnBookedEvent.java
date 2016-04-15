@@ -1,21 +1,21 @@
 package com.dowob.twrb.events;
 
-import com.dowob.twrb.features.tickets.book.Booker;
+import com.dowob.twrb.features.tickets.book.BookResult;
 
 public class OnBookedEvent {
     private long bookRecordId;
-    private Booker.Result result;
+    private BookResult.Status status;
 
-    public OnBookedEvent(long bookRecordId, Booker.Result result) {
+    public OnBookedEvent(long bookRecordId, BookResult.Status status) {
         this.bookRecordId = bookRecordId;
-        this.result = result;
+        this.status = status;
     }
 
     public long getBookRecordId() {
         return bookRecordId;
     }
 
-    public Booker.Result getBookResult() {
-        return result;
+    public BookResult.Status getBookResult() {
+        return status;
     }
 }

@@ -2,22 +2,21 @@ package com.dowob.twrb.features.tickets;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.dowob.twrb.R;
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.events.OnBookRecordAddedEvent;
+import com.dowob.twrb.events.OnBookedEvent;
 import com.dowob.twrb.features.tickets.book.BookRecordFactory;
-import com.dowob.twrb.features.tickets.book.Booker;
 import com.dowob.webviewbooker.Order;
 import com.dowob.webviewbooker.WebViewBooker;
+import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
 import com.twrb.core.book.BookResult;
+import com.twrb.core.helpers.BookHelper;
 import com.twrb.core.timetable.TrainInfo;
 
-import java.io.ByteArrayOutputStream;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,7 +30,6 @@ import io.realm.Sort;
 public class BookRecordModel {
 
     private static BookRecordModel instance = new BookRecordModel();
-    private BookManager bookManager;
     private List<Observer> observers = new ArrayList<>();
 
     private BookRecordModel() {
@@ -42,47 +40,16 @@ public class BookRecordModel {
         return instance;
     }
 
-    @NonNull
-    public static String getResultMsg(Context context, Booker.Result result) {
-        switch (result) {
-            case OK:
-                return context.getString(R.string.book_suc);
-            case NO_SEAT:
-                return context.getString(R.string.book_no_seat);
-            case NO_TICKET:
-                return context.getString(R.string.book_no_ticket);
-            case OUT_TIME:
-                return context.getString(R.string.book_out_time);
-            case NOT_YET_BOOK:
-                return context.getString(R.string.book_not_yet);
-            case OVER_QUOTA:
-                return context.getString(R.string.book_over_quota);
-            case FULL_UP:
-                return context.getString(R.string.book_full_up);
-            case IO_EXCEPTION:
-                return context.getString(R.string.book_io_exception);
-            case WRONG_RANDINPUT:
-                return context.getString(R.string.book_wrong_randinput);
-            default:
-                return context.getString(R.string.book_unknown);
-        }
-    }
-
     public void onEvent(OnBookRecordAddedEvent e) {
         notifyOnBookRecordCreate(e.getBookRecordId());
     }
 
-    public ByteArrayOutputStream book(String from, String to, Calendar getInDate, String no, int qty, String personId, TrainInfo trainInfo) {
-        bookManager = new BookManager();
-        return bookManager.step1(from, to, getInDate, no, qty, personId, trainInfo);
+    public void book(Context context, String from, String to, Calendar getInDate, String no, int qty, String personId, TrainInfo trainInfo, BookListener bookListener) {
+        new NewOrderBookExecutor(context, bookListener, from, to, getInDate, no, qty, personId, trainInfo).book();
     }
 
     public void book(Context context, long bookRecordId, BookListener bookListener) {
-        new BookExecutor_WVB(context, bookRecordId, bookListener).book();
-    }
-
-    public AbstractMap.SimpleEntry<Booker.Result, Long> sendRandomInput(String randomInput) {
-        return bookManager.step2(randomInput);
+        new ExistingOrderBookExecutor(context, bookRecordId, bookListener).book();
     }
 
     public long save(BookInfo bookInfo, TrainInfo trainInfo) {
@@ -92,18 +59,42 @@ public class BookRecordModel {
     }
 
     public boolean cancel(long bookRecordId) {
-        boolean result = BookManager.cancel(bookRecordId);
+        boolean result = false;
+        try {
+            BookInfo bookInfo = new BookInfo();
+            Realm.getDefaultInstance().refresh();
+            BookRecord bookRecord = BookRecord.get(bookRecordId);
+            AdaptHelper.to(bookRecord, bookInfo);
+            result = BookHelper.cancel(bookInfo);
+            if (result) {
+                bookInfo.code = "";
+                Realm.getDefaultInstance().beginTransaction();
+                AdaptHelper.to(bookInfo, bookRecord);
+                bookRecord.setIsCancelled(true);
+                Realm.getDefaultInstance().commitTransaction();
+            }
+            MyLogger.i(result ? "已退訂" : "退訂失敗");
+        } finally {
+            Realm.getDefaultInstance().close();
+        }
         if (result)
             notifyOnBookRecordUpdate(bookRecordId);
         return result;
     }
 
     public boolean delete(long bookRecordId) {
-        if (new BookManager().delete(bookRecordId)) {
-            notifyOnBookRecordRemove(bookRecordId);
-            return true;
-        }
-        return false;
+        Realm realm = Realm.getDefaultInstance();
+        BookRecord bookRecord = realm.where(BookRecord.class).equalTo("id", bookRecordId).findFirst();
+        if (bookRecord == null)
+            return false;
+        com.dowob.twrb.database.TrainInfo trainInfo = bookRecord.getTrainInfo();
+        realm.beginTransaction();
+        if (trainInfo != null)
+            trainInfo.removeFromRealm();
+        bookRecord.removeFromRealm();
+        realm.commitTransaction();
+        notifyOnBookRecordRemove(bookRecordId);
+        return true;
     }
 
     public List<BookRecord> getBookRecords() {
@@ -151,22 +142,22 @@ public class BookRecordModel {
 
     interface BookListener {
         void onRequireRandomInput(RandomInputReceiver randomInputReceiver, Bitmap captcha);
-        void onFinish(AbstractMap.SimpleEntry<Booker.Result, List<String>> result);
+
+        void onFinish(com.dowob.twrb.features.tickets.book.BookResult bookResult);
     }
 
     public interface RandomInputReceiver {
         void answerRandomInput(String randomInput);
     }
 
-    private class BookExecutor_WVB implements RandomInputReceiver {
+    private abstract class BookExecutor implements RandomInputReceiver {
         private Context context;
-        private long bookRecordId;
+        protected Order order;
         private BookListener bookListener;
-        private WebViewBooker webViewBooker;
+        protected WebViewBooker webViewBooker;
 
-        public BookExecutor_WVB(Context context, long bookRecordId, BookListener bookListener) {
+        public BookExecutor(Context context, BookListener bookListener) {
             this.context = context;
-            this.bookRecordId = bookRecordId;
             this.bookListener = bookListener;
         }
 
@@ -174,6 +165,87 @@ public class BookRecordModel {
             webViewBooker = new WebViewBooker(context,
                     this::onWebViewBookerRequireCaptcha,
                     this::onWebViewBookerFinish);
+            webViewBooker.sendOrder(order);
+        }
+
+        final public void onWebViewBookerRequireCaptcha(Bitmap captchaImg) {
+            bookListener.onRequireRandomInput(this, captchaImg);
+        }
+
+        final public void onWebViewBookerFinish(AbstractMap.SimpleEntry<BookResult, List<String>> result) {
+            onBooked(new com.dowob.twrb.features.tickets.book.BookResult(result));
+        }
+
+        protected void onBooked(com.dowob.twrb.features.tickets.book.BookResult bookResult) {
+            bookListener.onFinish(bookResult);
+        }
+
+        @Override
+        public void answerRandomInput(String randomInput) {
+            if (!TextUtils.isEmpty(randomInput))
+                webViewBooker.sendCaptcha(randomInput);
+        }
+    }
+
+    private class NewOrderBookExecutor extends BookExecutor {
+        private TrainInfo trainInfo;
+        private String from, to, no, personId;
+        private Calendar getInDate;
+        private int qty;
+
+        public NewOrderBookExecutor(Context context, BookListener bookListener,
+                                    String from,
+                                    String to,
+                                    Calendar getInDate,
+                                    String no,
+                                    int qty,
+                                    String personId,
+                                    TrainInfo trainInfo) {
+            super(context, bookListener);
+            this.trainInfo = trainInfo;
+            this.from = from;
+            this.to = to;
+            this.no = no;
+            this.personId = personId;
+            this.getInDate = getInDate;
+            this.qty = qty;
+            this.order = new Order.Builder()
+                    .setFrom(from)
+                    .setTo(to)
+                    .setGetInDate(getInDate)
+                    .setPersonId(personId)
+                    .setTrainNo(no)
+                    .setQty(qty)
+                    .createOrder();
+        }
+
+        @Override
+        public void onBooked(com.dowob.twrb.features.tickets.book.BookResult bookResult) {
+            if (bookResult.isOK()) {
+                BookRecord bookRecord = BookRecordFactory
+                        .createBookRecord(personId,
+                                getInDate,
+                                from,
+                                to,
+                                qty,
+                                no,
+                                "0",
+                                bookResult.getCode(),
+                                trainInfo);
+                bookResult.setBookRecordId(bookRecord.getId());
+                EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
+                EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), bookResult.getStatus()));
+            }
+            super.onBooked(bookResult);
+        }
+    }
+
+    private class ExistingOrderBookExecutor extends BookExecutor {
+        private long bookRecordId;
+
+        public ExistingOrderBookExecutor(Context context, long bookRecordId, BookListener bookListener) {
+            super(context, bookListener);
+            this.bookRecordId = bookRecordId;
             BookRecord bookRecord = BookRecord.get(bookRecordId);
             String from = bookRecord.getFromStation();
             String to = bookRecord.getToStation();
@@ -182,40 +254,26 @@ public class BookRecordModel {
             String no = bookRecord.getTrainNo();
             int qty = bookRecord.getOrderQtu();
             String personId = bookRecord.getPersonId();
-            webViewBooker.sendOrder(new Order.Builder()
-                            .setFrom(from)
-                            .setTo(to)
-                            .setGetInDate(getInDate)
-                            .setPersonId(personId)
-                            .setTrainNo(no)
-                            .setQty(qty)
-                            .createOrder()
-            );
-        }
-
-        public void onWebViewBookerRequireCaptcha(Bitmap captchaImg) {
-            bookListener.onRequireRandomInput(this, captchaImg);
-        }
-
-        public void onWebViewBookerFinish(AbstractMap.SimpleEntry<BookResult, List<String>> result) {
-            AbstractMap.SimpleEntry<Booker.Result, List<String>> r =
-                    new AbstractMap.SimpleEntry<>(Booker.bookResultToResult(result.getKey()),
-                            result.getValue());
-            if (r.getKey().equals(Booker.Result.OK)) {
-                BookRecord bookRecord = BookRecord.get(bookRecordId);
-                Realm.getDefaultInstance().beginTransaction();
-                List<String> data = result.getValue();
-                bookRecord.setCode(data.get(0));
-                Realm.getDefaultInstance().commitTransaction();
-                notifyOnBookRecordUpdate(bookRecordId);
-            }
-            bookListener.onFinish(r);
+            order = new Order.Builder()
+                    .setFrom(from)
+                    .setTo(to)
+                    .setGetInDate(getInDate)
+                    .setPersonId(personId)
+                    .setTrainNo(no)
+                    .setQty(qty)
+                    .createOrder();
         }
 
         @Override
-        public void answerRandomInput(String randomInput) {
-            if (!TextUtils.isEmpty(randomInput))
-                webViewBooker.sendCaptcha(randomInput);
+        public void onBooked(com.dowob.twrb.features.tickets.book.BookResult bookResult) {
+            if (bookResult.isOK()) {
+                BookRecord bookRecord = BookRecord.get(bookRecordId);
+                Realm.getDefaultInstance().beginTransaction();
+                bookRecord.setCode(bookResult.getCode());
+                Realm.getDefaultInstance().commitTransaction();
+                notifyOnBookRecordUpdate(bookRecordId);
+            }
+            super.onBooked(bookResult);
         }
     }
 }

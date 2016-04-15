@@ -240,10 +240,8 @@ public class BookRecordActivity extends AppCompatActivity implements BookRecordM
     }
 
     private void onBookButtonClick() {
-        new BookFlowController(this, parentView, result -> {
-            String s = BookManager.getResultMsg(this, result.getKey());
-            SnackbarHelper.show(parentView, s, Snackbar.LENGTH_LONG);
-        }).book(bookRecord.getId());
+        new BookFlowController(this, parentView, result -> SnackbarHelper.show(parentView, result.getStatusMsg(this), Snackbar.LENGTH_LONG))
+                .book(bookRecord.getId());
     }
 
     private void onCancelButtonClick() {

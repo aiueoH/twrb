@@ -114,10 +114,8 @@ public class BookRecordFragment extends Fragment implements BookRecordModel.Obse
     }
 
     private void book(long bookRecordId) {
-        new BookFlowController(getActivity(), parentView, result -> {
-            String msg = BookManager.getResultMsg(getContext(), result.getKey());
-            SnackbarHelper.show(parentView, msg, Snackbar.LENGTH_LONG);
-        }).book(bookRecordId);
+        new BookFlowController(getActivity(), parentView, result -> SnackbarHelper.show(parentView, result.getStatusMsg(getContext()), Snackbar.LENGTH_LONG))
+                .book(bookRecordId);
     }
 
     public void updateEmptyMsg() {

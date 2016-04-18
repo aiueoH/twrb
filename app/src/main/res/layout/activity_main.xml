@@ -18,7 +18,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fillViewport="false"
-            app:tabGravity="fill" />
+            app:tabGravity="fill"
+            app:tabIndicatorColor="@color/jackYellow" />
 
     </android.support.design.widget.AppBarLayout>
 

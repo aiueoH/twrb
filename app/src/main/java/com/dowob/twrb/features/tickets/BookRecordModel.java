@@ -177,6 +177,7 @@ public class BookRecordModel {
         }
 
         protected void onBooked(com.dowob.twrb.features.tickets.book.BookResult bookResult) {
+            webViewBooker.destroy();
             bookListener.onFinish(bookResult);
         }
 

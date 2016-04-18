@@ -191,7 +191,7 @@ public class BookFlowController implements BookRecordModel.BookListener {
         new AlertDialog.Builder(activity)
                 .setView(view)
                 .setPositiveButton("送出", (dialog, which) -> onSendButtonClick(randomInputReceiver, view))
-                .setOnCancelListener(dialog -> randomInputReceiver.answerRandomInput(""))
+                .setOnCancelListener(dialog -> randomInputReceiver.answerRandomInput(null))
                 .show();
     }
 

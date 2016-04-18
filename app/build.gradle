@@ -8,8 +8,8 @@ android {
         applicationId "com.dowob.twrb"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 11
-        versionName "2.5.201603250114"
+        versionCode 12
+        versionName "2.6.201604181912"
         multiDexEnabled true
     }
     buildTypes {

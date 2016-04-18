@@ -215,7 +215,10 @@ public class BookFlowController implements BookRecordModel.BookListener {
     }
 
     private void showProgressDialog() {
-        progressDialog = ProgressDialog.show(activity, "", activity.getString(R.string.is_booking));
+        progressDialog = new ProgressDialog(activity);
+        progressDialog.setMessage(activity.getString(R.string.is_booking));
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
     }
 
     private void dismissProgressDialog() {

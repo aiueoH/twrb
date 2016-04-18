@@ -182,7 +182,7 @@ public class BookRecordModel {
 
         @Override
         public void answerRandomInput(String randomInput) {
-            if (!TextUtils.isEmpty(randomInput))
+//            if (!TextUtils.isEmpty(randomInput))
                 webViewBooker.sendCaptcha(randomInput);
         }
     }

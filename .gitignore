@@ -5,6 +5,7 @@
 .DS_Store
 /build
 /.idea/vcs.xml
+/app/app.iml
 /captures
 
 /twrbcore

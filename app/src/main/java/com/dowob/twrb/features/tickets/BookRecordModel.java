@@ -3,13 +3,11 @@ package com.dowob.twrb.features.tickets;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.events.OnBookRecordAddedEvent;
 import com.dowob.twrb.events.OnBookedEvent;
 import com.dowob.twrb.features.tickets.book.BookRecordFactory;
-import com.dowob.webviewbooker.Order;
 import com.dowob.webviewbooker.WebViewBooker;
 import com.twrb.core.MyLogger;
 import com.twrb.core.book.BookInfo;
@@ -44,16 +42,16 @@ public class BookRecordModel {
         notifyOnBookRecordCreate(e.getBookRecordId());
     }
 
-    public void book(Context context, String from, String to, Calendar getInDate, String no, int qty, String personId, TrainInfo trainInfo, BookListener bookListener) {
-        new NewOrderBookExecutor(context, bookListener, from, to, getInDate, no, qty, personId, trainInfo).book();
+    public void book(Context context, Order order, TrainInfo trainInfo, BookListener bookListener) {
+        new NewOrderBookExecutor(context, bookListener, new Order(order.getFrom(), order.getTo(), order.getGetInDate(), order.getNo(), order.getQty(), order.getPersonId()), trainInfo).book();
     }
 
     public void book(Context context, long bookRecordId, BookListener bookListener) {
         new ExistingOrderBookExecutor(context, bookRecordId, bookListener).book();
     }
 
-    public long save(BookInfo bookInfo, TrainInfo trainInfo) {
-        long id = BookRecordFactory.createBookRecord(bookInfo, trainInfo).getId();
+    public long save(Order order, TrainInfo trainInfo) {
+        long id = BookRecordFactory.createBookRecord(order, trainInfo).getId();
         EventBus.getDefault().post(new OnBookRecordAddedEvent(id));
         return id;
     }
@@ -165,7 +163,7 @@ public class BookRecordModel {
             webViewBooker = new WebViewBooker(context,
                     this::onWebViewBookerRequireCaptcha,
                     this::onWebViewBookerFinish);
-            webViewBooker.sendOrder(order);
+            webViewBooker.sendOrder(order.getWebViewBookerOrder());
         }
 
         final public void onWebViewBookerRequireCaptcha(Bitmap captchaImg) {
@@ -192,49 +190,17 @@ public class BookRecordModel {
 
     private class NewOrderBookExecutor extends BookExecutor {
         private TrainInfo trainInfo;
-        private String from, to, no, personId;
-        private Calendar getInDate;
-        private int qty;
 
-        public NewOrderBookExecutor(Context context, BookListener bookListener,
-                                    String from,
-                                    String to,
-                                    Calendar getInDate,
-                                    String no,
-                                    int qty,
-                                    String personId,
-                                    TrainInfo trainInfo) {
+        public NewOrderBookExecutor(Context context, BookListener bookListener, Order order, TrainInfo trainInfo) {
             super(context, bookListener);
+            this.order = order;
             this.trainInfo = trainInfo;
-            this.from = from;
-            this.to = to;
-            this.no = no;
-            this.personId = personId;
-            this.getInDate = getInDate;
-            this.qty = qty;
-            this.order = new Order.Builder()
-                    .setFrom(from)
-                    .setTo(to)
-                    .setGetInDate(getInDate)
-                    .setPersonId(personId)
-                    .setTrainNo(no)
-                    .setQty(qty)
-                    .createOrder();
         }
 
         @Override
         public void onBooked(com.dowob.twrb.features.tickets.book.BookResult bookResult) {
             if (bookResult.isOK()) {
-                BookRecord bookRecord = BookRecordFactory
-                        .createBookRecord(personId,
-                                getInDate,
-                                from,
-                                to,
-                                qty,
-                                no,
-                                "0",
-                                bookResult.getCode(),
-                                trainInfo);
+                BookRecord bookRecord = BookRecordFactory.createBookRecord(order, bookResult.getCode(), trainInfo);
                 bookResult.setBookRecordId(bookRecord.getId());
                 EventBus.getDefault().post(new OnBookRecordAddedEvent(bookRecord.getId()));
                 EventBus.getDefault().post(new OnBookedEvent(bookRecord.getId(), bookResult.getStatus()));
@@ -249,22 +215,7 @@ public class BookRecordModel {
         public ExistingOrderBookExecutor(Context context, long bookRecordId, BookListener bookListener) {
             super(context, bookListener);
             this.bookRecordId = bookRecordId;
-            BookRecord bookRecord = BookRecord.get(bookRecordId);
-            String from = bookRecord.getFromStation();
-            String to = bookRecord.getToStation();
-            Calendar getInDate = Calendar.getInstance();
-            getInDate.setTime(bookRecord.getGetInDate());
-            String no = bookRecord.getTrainNo();
-            int qty = bookRecord.getOrderQtu();
-            String personId = bookRecord.getPersonId();
-            order = new Order.Builder()
-                    .setFrom(from)
-                    .setTo(to)
-                    .setGetInDate(getInDate)
-                    .setPersonId(personId)
-                    .setTrainNo(no)
-                    .setQty(qty)
-                    .createOrder();
+            this.order = Order.createByBookRecordId(bookRecordId);
         }
 
         @Override
@@ -279,4 +230,5 @@ public class BookRecordModel {
             super.onBooked(bookResult);
         }
     }
+
 }

@@ -6,7 +6,16 @@ import android.os.Build;
 
 import com.dowob.twrb.R;
 
+import java.util.Calendar;
+import java.util.Date;
+
 public class Util {
+    public static Calendar dateToCalendar(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        return c;
+    }
+
     public static Drawable getDrawable(Context context, int id) {
         if (Build.VERSION.SDK_INT >= 21)
             return context.getDrawable(id);

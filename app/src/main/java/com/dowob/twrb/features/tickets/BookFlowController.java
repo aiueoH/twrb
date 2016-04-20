@@ -85,18 +85,27 @@ public class BookFlowController implements BookRecordModel.BookListener {
     }
 
     private void onBookButtonClick(View view, String from, String to, Calendar getInDate, TrainInfo trainInfo, boolean isBackground) {
-        book(from, to, getInDate, getQty(view), getPersonId(view), trainInfo, isBackground);
+        Order order = new Order.Builder()
+                .setFrom(from)
+                .setTo(to)
+                .setGetInDate(getInDate)
+                .setNo(trainInfo.no)
+                .setQty(getQty(view))
+                .setPersonId(getPersonId(view))
+                .createOrder();
+        book(order, trainInfo, isBackground);
     }
 
     private void onSaveButtonClick(View view, String from, String to, Calendar getInDate, TrainInfo trainInfo) {
-        BookInfo bookInfo = new BookInfo();
-        bookInfo.trainNo = trainInfo.no;
-        bookInfo.fromStation = from;
-        bookInfo.toStation = to;
-        bookInfo.getinDate = new SimpleDateFormat("yyyy/MM/dd").format(getInDate.getTime());
-        bookInfo.personId = getPersonId(view);
-        bookInfo.orderQtuStr = String.valueOf(getQty(view));
-        BookRecordModel.getInstance().save(bookInfo, trainInfo);
+        Order order = new Order.Builder()
+                .setFrom(from)
+                .setTo(to)
+                .setGetInDate(getInDate)
+                .setNo(trainInfo.no)
+                .setQty(getQty(view))
+                .setPersonId(getPersonId(view))
+                .createOrder();
+        BookRecordModel.getInstance().save(order, trainInfo);
         Snackbar.make(parentView, activity.getString(R.string.saved_to_book_record), Snackbar.LENGTH_LONG).show();
     }
 
@@ -135,11 +144,11 @@ public class BookFlowController implements BookRecordModel.BookListener {
         editor.commit();
     }
 
-    private void book(String from, String to, Calendar getInDate, int qty, String personId, TrainInfo trainInfo, boolean isBackground) {
+    private void book(Order order, TrainInfo trainInfo, boolean isBackground) {
         Scheduler scheduler = isBackground ? Schedulers.io() : AndroidSchedulers.mainThread();
-        Observable.just(null)
-                .map(nothing -> {
-                    BookRecordModel.getInstance().book(activity, from, to, getInDate, trainInfo.no, qty, personId, trainInfo, BookFlowController.this);
+        Observable.just(order)
+                .map(o -> {
+                    BookRecordModel.getInstance().book(activity, o, trainInfo, BookFlowController.this);
                     return null;
                 })
                 .subscribeOn(scheduler)

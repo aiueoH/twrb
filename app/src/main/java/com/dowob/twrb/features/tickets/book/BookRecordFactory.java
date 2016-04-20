@@ -4,21 +4,42 @@ import android.support.annotation.Nullable;
 
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.features.tickets.AdaptHelper;
+import com.dowob.twrb.features.tickets.Order;
 import com.twrb.core.MyLogger;
-import com.twrb.core.book.BookInfo;
 import com.twrb.core.timetable.TrainInfo;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 import io.realm.Realm;
 
 public class BookRecordFactory {
-    public static BookRecord createBookRecord(BookInfo bookInfo, TrainInfo trainInfo) {
+    public static BookRecord createBookRecord(Order order, TrainInfo trainInfo) {
+//        BookRecord br = new BookRecord();
+//        br.setId(BookRecord.generateId());
+//        setDataFromOrder(br, order);
+//        br.setTrainInfo(createTrainInfo(trainInfo));
+//        Realm.getDefaultInstance().beginTransaction();
+//        Realm.getDefaultInstance().copyToRealm(br);
+//        Realm.getDefaultInstance().commitTransaction();
+//        Realm.getDefaultInstance().close();
+//        MyLogger.i("------------------------------------");
+//        MyLogger.i("------- New BookRecord Added -------");
+//        MyLogger.i("------------------------------------");
+//        MyLogger.i("Id:" + br.getId());
+//        MyLogger.i("GetInDate:" + br.getGetInDate());
+//        MyLogger.i("PersonId:" + br.getPersonId());
+//        MyLogger.i("FromStation:" + br.getFromStation());
+//        MyLogger.i("ToStation:" + br.getToStation());
+        return createBookRecord(order, "", trainInfo);
+    }
+
+    public static BookRecord createBookRecord(Order order, String code, TrainInfo trainInfo) {
         BookRecord br = new BookRecord();
         br.setId(BookRecord.generateId());
-        AdaptHelper.to(bookInfo, br);
+        setDataFromOrder(br, order);
+        br.setCode(code);
+        br.setReturnTicket("0");
         br.setTrainInfo(createTrainInfo(trainInfo));
         Realm.getDefaultInstance().beginTransaction();
         Realm.getDefaultInstance().copyToRealm(br);
@@ -35,40 +56,13 @@ public class BookRecordFactory {
         return br;
     }
 
-    public static BookRecord createBookRecord(
-            String personId,
-            Calendar getinDate,
-            String from,
-            String to,
-            int qty,
-            String no,
-            String returnTicket,
-            String code,
-            TrainInfo trainInfo) {
-        BookRecord br = new BookRecord();
-        br.setId(BookRecord.generateId());
-        br.setPersonId(personId);
-        br.setGetInDate(getinDate.getTime());
-        br.setFromStation(from);
-        br.setToStation(to);
-        br.setOrderQtu(qty);
-        br.setTrainNo(no);
-        br.setReturnTicket(returnTicket);
-        br.setCode(code);
-        br.setTrainInfo(createTrainInfo(trainInfo));
-        Realm.getDefaultInstance().beginTransaction();
-        Realm.getDefaultInstance().copyToRealm(br);
-        Realm.getDefaultInstance().commitTransaction();
-        Realm.getDefaultInstance().close();
-        MyLogger.i("------------------------------------");
-        MyLogger.i("------- New BookRecord Added -------");
-        MyLogger.i("------------------------------------");
-        MyLogger.i("Id:" + br.getId());
-        MyLogger.i("GetInDate:" + br.getGetInDate());
-        MyLogger.i("PersonId:" + br.getPersonId());
-        MyLogger.i("FromStation:" + br.getFromStation());
-        MyLogger.i("ToStation:" + br.getToStation());
-        return br;
+    private static void setDataFromOrder(BookRecord br, Order order) {
+        br.setPersonId(order.getPersonId());
+        br.setGetInDate(order.getGetInDate().getTime());
+        br.setFromStation(order.getFrom());
+        br.setToStation(order.getTo());
+        br.setOrderQtu(order.getQty());
+        br.setTrainNo(order.getNo());
     }
 
     private static com.dowob.twrb.database.TrainInfo createTrainInfo(TrainInfo trainInfo) {

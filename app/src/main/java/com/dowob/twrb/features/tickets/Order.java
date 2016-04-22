@@ -2,7 +2,6 @@ package com.dowob.twrb.features.tickets;
 
 import com.dowob.twrb.database.BookRecord;
 import com.dowob.twrb.utils.Util;
-
 import java.util.Calendar;
 
 public class Order {

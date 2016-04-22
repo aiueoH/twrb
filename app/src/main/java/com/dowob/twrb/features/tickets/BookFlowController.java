@@ -23,11 +23,9 @@ import com.dowob.twrb.utils.Config;
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxAdapterView;
 import com.jakewharton.rxbinding.widget.RxTextView;
-import com.twrb.core.book.BookInfo;
 import com.twrb.core.helpers.IDCreator;
 import com.twrb.core.timetable.TrainInfo;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;

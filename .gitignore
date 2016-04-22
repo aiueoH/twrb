@@ -7,3 +7,5 @@
 /.idea/vcs.xml
 /app/app.iml
 /captures
+
+*.iml

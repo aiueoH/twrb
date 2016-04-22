@@ -3,8 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/twrb.iml" filepath="$PROJECT_DIR$/twrb.iml" />
       <module fileurl="file://$PROJECT_DIR$/twrbcore/twrbcore.iml" filepath="$PROJECT_DIR$/twrbcore/twrbcore.iml" />
-      <module fileurl="file://$PROJECT_DIR$/twrbtest.iml" filepath="$PROJECT_DIR$/twrbtest.iml" />
       <module fileurl="file://$PROJECT_DIR$/webviewbooker/webviewbooker.iml" filepath="$PROJECT_DIR$/webviewbooker/webviewbooker.iml" />
     </modules>
   </component>

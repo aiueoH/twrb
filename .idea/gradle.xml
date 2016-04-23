@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/twrbcore" />
             <option value="$PROJECT_DIR$/webviewbooker" />
+            <option value="$PROJECT_DIR$/webviewtimetablesearcher" />
           </set>
         </option>
         <option name="myModules">
@@ -20,6 +21,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/twrbcore" />
             <option value="$PROJECT_DIR$/webviewbooker" />
+            <option value="$PROJECT_DIR$/webviewtimetablesearcher" />
           </set>
         </option>
       </GradleProjectSettings>

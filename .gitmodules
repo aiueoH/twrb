@@ -4,3 +4,6 @@
 [submodule "twrbcore"]
 	path = twrbcore
 	url = ./twrbcore
+[submodule "webviewtimetablesearcher"]
+	path = webviewtimetablesearcher
+	url = ./webviewtimetablesearcher

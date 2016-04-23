@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/twrb.iml" filepath="$PROJECT_DIR$/twrb.iml" />
       <module fileurl="file://$PROJECT_DIR$/twrbcore/twrbcore.iml" filepath="$PROJECT_DIR$/twrbcore/twrbcore.iml" />
       <module fileurl="file://$PROJECT_DIR$/webviewbooker/webviewbooker.iml" filepath="$PROJECT_DIR$/webviewbooker/webviewbooker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/webviewtimetablesearcher/webviewtimetablesearcher.iml" filepath="$PROJECT_DIR$/webviewtimetablesearcher/webviewtimetablesearcher.iml" />
     </modules>
   </component>
 </project>
